@@ -1,0 +1,224 @@
+\documentclass[12pt,letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{float}
+\floatstyle{boxed} 
+\restylefloat{figure}
+\usepackage{framed}
+\usepackage[letterpaper]{geometry}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{natbib}
+\usepackage[parfill]{parskip}
+\usepackage[section]{placeins}
+\usepackage{upgreek}
+\usepackage{stmaryrd}
+
+\lstset{language=[Objective]Caml}
+\newcommand{\T}[1]{\texttt{#1}}
+
+
+\begin{document}
+\begin{flushright}
+Parallel Mergesort\\
+Justin Raymond\\
+\today
+\end{flushright}
+
+\section{Description}
+\subsection{Specification}
+Parallel mergesort is an algorithm for sorting a list in parallel.
+We use a tree because splitting a tree is a constant time operation.
+Splitting a list has complexity linear in the size of the list, so
+ the divide step of mergesort takes is linear in the size of the list,
+ increasing the parallel overhead.
+
+We use binary trees with a sized cached for each node.
+
+\lstinputlisting[firstline=5,lastline=6]{parallel_mergesort.ml}
+
+We define a \textit{sorted tree} as follows.
+\begin{enumerate}
+  \item \T{E} is sorted.
+  \item \T{N(x,s,l,r)} is sorted if \T{l} is sorted, \T{r} is sorted and \T{max(l) <= x < min(r)}.
+\end{enumerate}
+
+Our analysis requires that the trees passed as arguments to some functions be \T{balanced}.
+We use the following notion of balance.
+\begin{enumerate}
+  \item \T{E} is balanced.
+  \item \T{N(x,s,l,r)} is balanced if \T{l} is balanced, \T{r} is balanced, and \T{abs(size l - size r) < 2}.
+\end{enumerate}
+
+The function \T{mergesort} applied to a tree \T{t} will return a sorted, balanced tree \T{t'}.
+
+\subsection{Implementation and Analysis}
+
+\subsubsection{\T{size}} 
+We use the function \T{size} to determine the size of a tree.
+An empty tree has a size of 0.
+The size of a node is cached at the node itself.
+\lstinputlisting[firstline=6,lastline=10,numbers=left]{parallel_mergesort.ml}
+The work and span of \T{size} is obviously constant.
+
+\subsubsection{\T{take\_and\_drop}}
+The function \T{take\_and\_drop} divides a tree into two trees, preserving the order of the elements.
+The left and right trees either have the same size, or the right tree has size one greater than the left subtree.
+\lstinputlisting[firstline=37,lastline=48,numbers=left]{parallel_mergesort.ml}
+We analyze the work and span of \T{take\_and\_drop} in terms of the depth of the argument tree.
+We either are at the base case or make one recursive call.
+At each recursive call we do some constant amount of work.
+So 
+\[ W_{tad}(d) =
+  \begin{cases}
+    k_1 &\text{if }d=0\\
+    k + W_{tad}(d-1) &\text{otherwise}
+  \end{cases}
+\]
+The solution to this recurrence is $W_{tad}(d) \leq kd + k_1$.
+Similarly, the span is $S_{tad}(n, d) \leq kd + k_1$.
+
+\subsubsection{\T{del\_min}}
+The function \T{del\_min} deletes the smallest element from a sorted tree and returns the element along with the remaining tree.
+\T{del\_min} requires the size of the input tree to be greater than zero.
+\lstinputlisting[firstline=12,lastline=18,numbers=left]{parallel_mergesort.ml}
+The work depends on the length of the path to the leftmost child, which in the worst case is the depth of the tree. 
+\[ W_{del}(d) =
+  \begin{cases}
+    k_1 & \text{if left child is \T{E}}\\
+    k + W_{del}(d-1) &\text{otherwise}
+  \end{cases}
+\]
+The solution to this recurrence is $W_{del}(d) \leq kd + k_1$.
+Similarly the span is $S_{del}(d) \leq kd + k_1$.
+
+
+\subsubsection{\T{rebalance}}
+The function \T{rebalance} takes tree and returns a balanced tree, preserving the order of the elements.
+Our rebalancing strategy is simple. 
+First we divide a potentially unbalanced tree into two trees whose sizes differ by at most one.
+Then we retrieve the minimum of the larger tree to serve as the root of a new tree.
+Finally, we recursively repeat this operation on the left and right subtrees of the new tree.
+We use \T{take\_and\_drop} to divide the tree into two subtrees whose size differ by at most one.
+We delete the minimum element of the right subtree and use it to create a new root.
+Then we recursively rebalance the left and right subtrees.
+\lstinputlisting[firstline=50,lastline=59,numbers=left]{parallel_mergesort.ml}
+The work of \T{rebalance} is
+\[ W_{reb}(n) = 
+  \begin{cases}
+    k_1 & \text{if } n=0\\
+    k + W_{tad}(n) + W_{del}(n) + W_{reb}(n/2) + W_{reb}(n/2) & \text{otherwise}
+  \end{cases}
+\]
+For $n>0$, $W_{reb}(n) \leq k + 2n + 2W_{reb}(n/2)$.
+We can use the master method to solve this recurrence.
+The recurrence is of the form $T(n) = aT(\frac{n}{b}) + f(n)$, where $a=2, b=2$ and $f(n) = 2n$.
+Since $f(n) = \Theta(n^{\log_2 2}) = \Theta(n)$, $W_{reb}(n) = \Theta(n\log n)$.
+
+We can make the recursive calls to rebalance in parallel, so the span will be less than the work.
+\[ S_{reb}(n) = 
+  \begin{cases}
+    k_1 & \text{if } n=0\\
+    k + S_{tad}(n) + S_{del}(n) + max(S_{reb}(n/2),S_{reb}(n/2)) & \text{otherwise}
+  \end{cases}
+\]
+For $n>0$, $S_{reb}(n) \leq k + 2n + S_{reb}(n/2)$.
+Again we can use the master method, with $a=1, b=2$, and $f(n) = 2n$.
+The third case of the master method applies.
+With $\epsilon = 1$, $f(n) = \Omega(n^{\log_2 1 + \epsilon}) = \Omega(n)$.
+We must also verify $a f(\frac{n}{b}) \leq c f(n)$ for some constant $c<1$ and all sufficiently large $n$.
+This holds for $c=1$ and all $n>0$.
+So $S_{reb}(n) = \Theta(n)$.
+
+
+\subsubsection{\T{split\_at}}
+The function \T{split\_at} is used to help merge two trees.
+\T{split\_at x t} returns a pair of trees, the first contains all elements in \T{t} less than or equal to \T{x}, the second contains elements strictly greater than \T{x}.
+Observe that the output is not guaranteed to be balanced.
+\lstinputlisting[firstline=20,lastline=28,numbers=left]{parallel_mergesort.ml}
+We will assume the input tree is balanced.
+The work is expressed by the recurrence
+\[ W_{split}(d) =
+  \begin{cases}
+    k_1 & \text{if } d=0\\
+    k + W_{split}(d-1) & \text{otherwise}
+  \end{cases}
+\]
+So $W_{split}(d) = kd + k_1$.
+Similarly the span is $S_{split}(d) = kd + k_1$, since there is no opportunity to run recursive calls in parallel.
+
+
+\subsubsection{\T{merge}}
+The function \T{merge} takes two sorted trees \T{t1} and \T{t2} and returns the sorted tree containing all elements of \T{t1} and \T{t2}.
+We split \T{t2} into two trees, let us call them \T{ltx} and \T{gtx}, using \T{x}, the value at the root node of \T{t1}.
+We then return a tree with \T{x} at the root, the result of recursively merging \T{ltx} and the left child of \T{t1} as the left child, and the result of recursively merging \T{gtx} and the right child of \T{t1} as the right child.
+\lstinputlisting[firstline=30,lastline=35,numbers=left]{parallel_mergesort.ml}
+We assume the arguments are balanced.
+The work is 
+\[ W_{merge}(d_1, d_2) =
+  \begin{cases}
+    k_1 & \text{if } d=0\\
+    k + W_{split}(d_2) + W_{merge}(d_1-1,d_2) + W_{merge}(d_1-1,d_2) & \text{otherwise}
+  \end{cases}
+\]
+So \T{merge} does $kd_2 + k$ work at each step of recursion.
+Since we make two recursive calls at each level, and the are $d_1$ levels in the recursion tree,
+$W_{merge} = \mathcal{O}(d_2 2^{d_1})$.
+Notice that the order of the arguments to \T{merge} are important.
+We want to call \T{merge} with the shorter tree as the first argument, because it is the argument \T{merge} recurses on.
+
+We can make the recursive calls in parallel, so the span is
+\[ S_{merge}(d_1, d_2) =
+  \begin{cases}
+    k_1 & \text{if } d_1=0\\
+    k + S_{split}(d_2) + max(S_{merge}(d_1-1,d_2),W_{merge}(d_1-1,d_2)) & \text{otherwise}
+  \end{cases}
+\]
+For $d_1>0$, $S_{merge}(d_1, d_2) = k + d_2 + S_{merge}(d_1-1,d_2)$.
+So the $S_{merge}(d_1, d_2) = \mathcal{O}(d_1*d_2)$.
+
+
+\subsubsection{\T{mergesort}}
+The function \T{mergesort} recursively sorts it's children, then merges the results and the value at its root. We do not need to do the split present in array-based mergesort, because the split is already present in the data structure itself.
+We balance the resulting tree because the running time of \T{merge} depends on its input being balanced.
+\lstinputlisting[firstline=61,lastline=65,numbers=left]{parallel_mergesort.ml}
+The work is
+\[ W_{ms}(n) = 
+  \begin{cases}
+    k_1 & \text{if } n=0\\
+    k + W_{merge}(\log n, \log n) + W_{merge}(1, 2\log n) + W_{reb}(n) + 2W_{ms}(\frac{n}{2}) &\text{otherwise}
+  \end{cases}
+\]
+The result of the recursive calls will be balanced, so we will make the first call to \T{merge} with two trees of height $\log n$.
+In the worst case, the result will have height $2\log n$.
+So the second call to \T{merge} will be on a trees of height 1 and $2\log n$.
+Therefore for $n>0$, $W_{ms}(n) = n\log n + 4\log n + n\log n + 2W_{ms}(\frac{n}{2})$.
+We cannot apply the master method since $f(n) = 6n\log n$ is not polynomially larger than $n$.
+Instead we will use the substitution method.
+We guess $W_{ms}(n) = kn^2\log n + k_1$.
+If $n=0$, then $W_{ms}(n) = k_1$.
+If $n>0$, then $W_{ms}(n) = 6n\log n + 2W_{ms}(\frac{n}{2})$.
+We use the induction hypothesis to get $W_{ms}(n) = 6n\log n + 2k(\frac{n}{2})^2\log\frac{n}{2} + 2k_1$.
+We can simplify to $W_{ms}(n) = 6n\log n + k(\frac{n^2}{2})(\log n - \log 2) + 2k_1$.
+
+
+The recursive calls can be made in parallel, so the span is
+\[ S_{ms}(n) = 
+  \begin{cases}
+    k_1 \text{  if } n=0\\
+    k + S_{merge}(\log n, \log n) + S_{merge}(1, 2\log n) + W_{reb}(n) + max(S_{ms}(\frac{n}{2}), S_{ms}(\frac{n}{2}))
+  \end{cases}
+\]
+For $n>0$, $S_{ms}(n) = k + (\log^2 n) + 2\log n + n + S_{ms}(\frac{n}{2})$.
+We see that we have $\log^2 n$ cost $\log n$ times, so $S_{ms} = \mathcal{O}(\log^3 n)$.
+
+
+\section{Code}
+\lstinputlisting[numbers=left,firstline=5,lastline=65]{parallel_mergesort.ml}
+
+
+\end{document}
