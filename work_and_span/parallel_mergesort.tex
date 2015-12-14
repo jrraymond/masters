@@ -24,18 +24,20 @@
 
 \begin{document}
 \begin{flushright}
-Parallel Mergesort\\
+Parallel Mergesort on Trees\\
 Justin Raymond\\
 \today
 \end{flushright}
 
 \section{Description}
 \subsection{Specification}
-Parallel mergesort is an algorithm for sorting a list in parallel.
-We use a tree because splitting a tree is a constant time operation.
+Mergesort is an algorithm for sorting a list that uses a divide and conquer approach to split a list, recursively sort the splits, and then merges the resutls.
+Mergesort lends itself to parallelism because the recursive calls can be performed in parallel.
 Splitting a list has complexity linear in the size of the list, so
  the divide step of mergesort takes is linear in the size of the list,
  increasing the parallel overhead.
+To avoid this overhead, we use a tree.
+The split is already present in the tree, so splitting is a constant time operation.
 
 We use binary trees with a sized cached for each node.
 
@@ -56,7 +58,8 @@ We use the following notion of balance.
 
 The function \T{mergesort} applied to a tree \T{t} will return a sorted, balanced tree \T{t'}.
 
-\subsection{Implementation and Analysis}
+\subsection{Implementation and Analysis}a
+We write $\log n$ to mean $\log_2 n$ unless otherwise noted.
 
 \subsubsection{\T{size}} 
 We use the function \T{size} to determine the size of a tree.
@@ -72,7 +75,7 @@ The left and right trees either have the same size, or the right tree has size o
 We analyze the work and span of \T{take\_and\_drop} in terms of the depth of the argument tree.
 We either are at the base case or make one recursive call.
 At each recursive call we do some constant amount of work.
-So 
+So the work is
 \[ W_{tad}(d) =
   \begin{cases}
     k_1 &\text{if }d=0\\
@@ -94,7 +97,7 @@ The work depends on the length of the path to the leftmost child, which in the w
   \end{cases}
 \]
 The solution to this recurrence is $W_{del}(d) \leq kd + k_1$.
-Similarly the span is $S_{del}(d) \leq kd + k_1$.
+Similarly, the span is $S_{del}(d) \leq kd + k_1$.
 
 
 \subsubsection{\T{rebalance}}
@@ -117,9 +120,9 @@ The work of \T{rebalance} is
 For $n>0$, $W_{reb}(n) \leq k + 2n + 2W_{reb}(n/2)$.
 We can use the master method to solve this recurrence.
 The recurrence is of the form $T(n) = aT(\frac{n}{b}) + f(n)$, where $a=2, b=2$ and $f(n) = 2n$.
-Since $f(n) = \Theta(n^{\log_2 2}) = \Theta(n)$, $W_{reb}(n) = \Theta(n\log n)$.
+Since $f(n) = \Theta(n^{\log 2}) = \Theta(n)$, $W_{reb}(n) = \Theta(n\log n)$.
 
-We can make the recursive calls to rebalance in parallel, so the span will be less than the work.
+We can make the recursive calls to rebalance in parallel, so the span is less than the work.
 \[ S_{reb}(n) = 
   \begin{cases}
     k_1 & \text{if } n=0\\
@@ -129,7 +132,7 @@ We can make the recursive calls to rebalance in parallel, so the span will be le
 For $n>0$, $S_{reb}(n) \leq k + 2n + S_{reb}(n/2)$.
 Again we can use the master method, with $a=1, b=2$, and $f(n) = 2n$.
 The third case of the master method applies.
-With $\epsilon = 1$, $f(n) = \Omega(n^{\log_2 1 + \epsilon}) = \Omega(n)$.
+With $\epsilon = 1$, $f(n) = \Omega(n^{\log 1 + \epsilon}) = \Omega(n)$.
 We must also verify $a f(\frac{n}{b}) \leq c f(n)$ for some constant $c<1$ and all sufficiently large $n$.
 This holds for $c=1$ and all $n>0$.
 So $S_{reb}(n) = \Theta(n)$.
@@ -149,7 +152,7 @@ The work is expressed by the recurrence
   \end{cases}
 \]
 So $W_{split}(d) = kd + k_1$.
-Similarly the span is $S_{split}(d) = kd + k_1$, since there is no opportunity to run recursive calls in parallel.
+Similarly, the span is $S_{split}(d) = kd + k_1$, since there is no opportunity to run recursive calls in parallel.
 
 
 \subsubsection{\T{merge}}
@@ -166,16 +169,16 @@ The work is
   \end{cases}
 \]
 So \T{merge} does $kd_2 + k$ work at each step of recursion.
-Since we make two recursive calls at each level, and the are $d_1$ levels in the recursion tree,
+Since we make two recursive calls at each level, and therere are $d_1$ levels in the recursion tree,
 $W_{merge} = \mathcal{O}(d_2 2^{d_1})$.
 Notice that the order of the arguments to \T{merge} are important.
-We want to call \T{merge} with the shorter tree as the first argument, because it is the argument \T{merge} recurses on.
+We want to call \T{merge} with the shorter tree as the first argument, because it is the argument on which \T{merge} recurses.
 
 We can make the recursive calls in parallel, so the span is
 \[ S_{merge}(d_1, d_2) =
   \begin{cases}
     k_1 & \text{if } d_1=0\\
-    k + S_{split}(d_2) + max(S_{merge}(d_1-1,d_2),W_{merge}(d_1-1,d_2)) & \text{otherwise}
+    k + S_{split}(d_2) + max(S_{merge}(d_1-1,d_2),S_{merge}(d_1-1,d_2)) & \text{otherwise}
   \end{cases}
 \]
 For $d_1>0$, $S_{merge}(d_1, d_2) = k + d_2 + S_{merge}(d_1-1,d_2)$.
@@ -193,24 +196,20 @@ The work is
     k + W_{merge}(\log n, \log n) + W_{merge}(1, 2\log n) + W_{reb}(n) + 2W_{ms}(\frac{n}{2}) &\text{otherwise}
   \end{cases}
 \]
-The result of the recursive calls will be balanced, so we will make the first call to \T{merge} with two trees of height $\log n$.
-In the worst case, the result will have height $2\log n$.
-So the second call to \T{merge} will be on a trees of height 1 and $2\log n$.
+The result of the recursive calls are balanced, so we will make the first call to \T{merge} with two trees of depth $\log n$.
+In the worst case, the result will have depth $2\log n$.
+So the second call to \T{merge} is on trees of depth 1 and $2\log n$.
 Therefore for $n>0$, $W_{ms}(n) = n\log n + 4\log n + n\log n + 2W_{ms}(\frac{n}{2})$.
-We cannot apply the master method since $f(n) = 6n\log n$ is not polynomially larger than $n$.
-Instead we will use the substitution method.
-We guess $W_{ms}(n) = kn^2\log n + k_1$.
-If $n=0$, then $W_{ms}(n) = k_1$.
-If $n>0$, then $W_{ms}(n) = 6n\log n + 2W_{ms}(\frac{n}{2})$.
-We use the induction hypothesis to get $W_{ms}(n) = 6n\log n + 2k(\frac{n}{2})^2\log\frac{n}{2} + 2k_1$.
-We can simplify to $W_{ms}(n) = 6n\log n + k(\frac{n^2}{2})(\log n - \log 2) + 2k_1$.
+We cannot apply the master method since $f(n) = n\log n$ is not polynomially larger than $n$.
+However, if $f(n) = \Theta(n^{\log_a b} \log^k n)$, where $k \geq 0$, the recurrence has the solution $\Theta(n^{\log_b a}\log^{k+1} n)$.
+So since $f(n) = \Theta(n^{\log 2} \log^1 n)$, $W_{ms}(n) = \Theta(n\log^2n)$.
 
 
 The recursive calls can be made in parallel, so the span is
 \[ S_{ms}(n) = 
   \begin{cases}
     k_1 \text{  if } n=0\\
-    k + S_{merge}(\log n, \log n) + S_{merge}(1, 2\log n) + W_{reb}(n) + max(S_{ms}(\frac{n}{2}), S_{ms}(\frac{n}{2}))
+    k + S_{merge}(\log n, \log n) + S_{merge}(1, 2\log n) + S_{reb}(n) + max(S_{ms}(\frac{n}{2}), S_{ms}(\frac{n}{2}))
   \end{cases}
 \]
 For $n>0$, $S_{ms}(n) = k + (\log^2 n) + 2\log n + n + S_{ms}(\frac{n}{2})$.
