@@ -1,0 +1,79 @@
+\chapter{Hidden Markov Models}
+Hidden Markov Models, or HMMs, are a type of stochastic process well-suited to general-purpose time series modeling. HMMs are widely used in the field of speech recognition to model the audio patterns of spoken words and syllables. Due to their generality, HMMs have also seen use in many other areas, including genetics, neurobiology, signal processing, and image analysis \citep{pyle}. In this chapter, we explore the basic theory of HMMs and learn how to reestimate their parameters for the purpose of modeling a given time series. Our theory is drawn from \citet{rabinerpi89}'s tutorial on HMMS.
+\section{Discrete Markov Models}
+To understand HMMs, we first consider a simpler process, the Discrete Markov Model. A Discrete Markov Model $M$ consists of a set of $m$ states $Q = Q_1, Q_2, \dots Q_m$, a $m \times m$ matrix of transition probabilities $A$, and an initial state distribution $\pi = \pi_1, \pi_2, \dots \pi_m$. $A_ij$ is the probability of transitioning from state $Q_i$ to $Q_j$, and $\pi_i$ is the probability of choosing $Q_i$ as the first state. To generate a length $T$ time series from $M$, first randomly choose a state $S_1 = Q_i$ with probability $\pi_i$ and emit the symbol $S_1$. Next, randomly transition to another state $S_2 = Q_j$ with probability $A_{ij}$ and emit $S_2$. Randomly transition from $S_2$ to $S_3$, emit $S_3$, and continue in the same manner until a total of $T$ states have been visited. Note that, by our definition of $A$, for any adjacent pair of states $S_i, S_i+1$, $P(S_i+1|S_i, S_i-1, \dots S_1) = P(S_i+1|S_i)$; that is, the probability of the next state is only dependent on the current one. This property of DMMs (and HMMs) is called the Markov Property, and it is a key factor in the efficient estimation of $A$ and $\pi$.
+\section{Hidden Markov Models}
+DMMs are very limited because they can only emit symbols in $Q$. To model real-world time series, a more flexible model is needed. HMMs generalize DMMs by adding a layer of indirection when emitting a symbol. Let $B = B_1, B_2, \dots B_m$ be a list of proability distributions and $\Sigma$ be an alphabet. Upon visiting state $S_i$, instead of emitting symbol $S_i$, we now draw a symbol $v \in \Sigma$ from the distribution $B_i$ and emit $v$. The power of HMMs comes from the fact that $B_i$ can be \textit{any} distribution over $\Sigma$ --- discrete, Gaussian, Poisson, etc. A HMM thus has the ability to output a set of symbols larger than its set of states. Since each emitted symbol is now the result of two random choices --- transitioning to $S_i$ and drawing from $B_i$ --- a HMM is a doubly stochastic process. A HMM $\lambda$ is notated as a four-tuple $(A, B, pi, \Sigma)$. For compactness, $\Sigma$ is often omitted, leaving $(A, B, \pi)$.
+
+\section{The Forward Recursion}
+One of the fundamental problems of HMMs is, given a HMM $\lambda$ and time series $O$, what is $P(O|\lambda)$, the probability of $\lambda$ emitting $O$? To approach this problem, first consider the smaller task of finding $P(O, Q| \lambda)$, the probability of $\lambda$ emitting $O$ and traversing the state sequence $Q_1, Q_2, \dots Q_T$:
+\begin{align*}
+P(X|Q, \lambda) & = \prod_{t=1}^T P(O_t|Q_t = S_i, \lambda) \\
+				& = \prod_{t=1}^T B_i(O_t)
+\end{align*}
+Marginalizing over all possible state sequences, we derive $P(O|\lambda)$:
+\begin{align*}
+P(O|\lambda) & = \sum_{\textrm{all $Q$}} P(O|Q, \lambda)P(Q|\lambda) \\
+			 & = \frac{1}{M^T} \sum_{\textrm{all $Q$}} P(O|Q, \lambda)
+\end{align*}
+The problem with this na\"ive approach is that it requires $(2T*m^T)$ calculations to compute --- $2T$ per unique $Q$ iterated over $m^T$ possible $Q$. The exponential component makes it unfeasible even for relatively small m and Q.
+
+The forward algorithm improves on this complexity by leveraging the Markov Property to eliminate redundant calculations. Let $\alpha_t(i) = P(O_1, O_2, \dots O_t, Q_t = S_i | \lambda)$ be the joint probability of observing the partial series $O' = O_1, O_2, \dots O_t$ and being in state $S_i$ at time $t$. $\alpha_t(i)$ is called the forward variable, and it is defined inductively with respect to $t$:
+\begin{align*}
+	& \text{Base:} & \alpha_1(i) & = \pi_iB_i(O_t) & 1 \leq i \leq m\\
+	& \text{Induction:} & \alpha_{t+1}(j) & = \left[\sum_{i=1}^m \alpha_t(i)A_{ij}\right]B_j(O_{t+1}) & 1 \leq t \leq T-1, 1 \leq j \leq m \\
+	& \text{Termination:} & P(O|\lambda) & = \sum_{i=1}^m \alpha_T(i)
+\end{align*}
+In the base case, $\alpha_1(i)$ is the joint probability of choosing $S_i$ from the initial state distribution and drawing $O_t$ from $B_i$. In the induction step, the summand in the bracketed term is the joint probability of observing $O'$, being in $S_i$ at time $t$, then transitioning from $S_i$ to $S_j$. Marginalizing over all possible $S_i$, this becomes the joint probability of the same two events under an arbitrary state sequence. Multiplying by $B_j(O_{t+1})$, we add the event of emitting $B_j$. In the termination step, we marginalize $\alpha_T(i)$, the probability of observing $O$ and terminating in $S_i$, over all possible $S_i$ to derive $P(O|\lambda)$.
+
+The key insight in this definition is that for all values of $j$ in the induction step, the $\alpha_t(i)$ term is the same. In a dynamic programming algorithm, it can thus be computed once and re-used $m$ times at each $t$ value. This savings is made possible by the Markov Property. Since the transition to $S_{j}$ is conditionally independent of the partial sequence $S{i-1}, S_{i-2}, \dots S_{1}$, $\alpha_t(i)$ remains separate from the rest of the expression. Computed in ascending order of $t$, each term in the inductive series $\alpha_1(i), \alpha_2(i), \dots \alpha_T(i)$ now takes $O(m)$ calculations to compute, and the whole series thus $O(mT)$. Since this series must be computed for all $m$ states in the termination step, the total complexity is $O(m^2T)$.
+
+\section{The Baum-Welch Algorithm}
+We now consider a more difficult problem: given a HMM $\lambda$ and observation sequence $O$, how do we reestimate the parameters $(A, B, \pi)$ to maximize $P(O|\lambda)$? There is no known analytical method for finding a globally optimal parameter set. There are, however, iterative procedures capable of locally maximizing $P(O|\lambda)$. These methods include the EM (expectation-maximization) algorithm, the Baum-Welch Algorithm, and gradient-based hill climbing techniques. The EM algorithm is a general purpose procedure for reestimating the parameters of any statistical model. The Baum-Welch algorithm is a special case of the EM algorithm for HMMs. Since we are only concerned with reestimating HMMs, we will explore the Baum-Welch algorithm. Furthermore, we assume a single variable Gaussian for each state's emission distribution.
+
+To understand the Baum-Welch algorithm, we first define the backward variable $\beta_t(i) = P(O_{t+1}, O_{t+2}, \dots O_{T}|Q_t = S_i, \lambda)$, the probability
+of observing $O'' = O_{t+1}, \\ O_{t+2}, \dots O_{T}$ given $S_i$ at time $t$. $\beta_t(i)$ is defined inductively in a similar manner to $\alpha_t(i)$:
+\begin{align*}
+	& \text{Base:} & \beta_T(i) & = 1 & 1 \leq i \leq m \\
+	& \text{Induction:} & \beta_t(i) & = \sum_{j=1}^m A_{ij}B_j(O_{t+1})\beta_{t+1}(j) & t = T-1, T-2, \dots 1; 1 \leq i \leq m
+\end{align*}
+\citeauthor{rabinerpi89} claims that the base case in this definition is defined ``arbitrarily''. We propose a more satisfactory reason: since $O_{T+1}$ does not exist, $B_T(i)$ is the probability of observing no output after the HMM has stopped emitting symbols, which must necessarily be 1.
+
+The summand in the induction step notates the joint probability of transitioning from $S_i$ to $S_j$, drawing $O_{t+1}$ from $B_j$, and emitting $O''$ given $Q_t=S_j$ . Marginalizing over $j$ then yields $P(O''|Q_t=S_i, \lambda)$.
+
+With the forward and backward variables, we may now define the two central variables in the Baum-Welch algorithm, $\gamma_t(i)$ and $\xi_t(i, j)$. $\gamma_t(i) = P(Q_t = S_i | O, \lambda)$ is the probability of being in state $S_i$ at time $t$ given $O$. Using the forward and backward variables, this may be calculated as:
+\[\gamma_t(i) = \frac{\alpha_t(i)\beta_t(i)}{P(O|\lambda)}\]
+Intuitively, $\alpha_t(i)$ accounts for all possible $Q_1, Q_2, \dots Q_t=S_i$, and $\beta_t(i)$ all possible \\ $Q_{t+1}, Q_{t+2}, \dots Q_T$. Between the two variables, every state in $O$ varies except for $Q_t$. In this sense, we are essentially marginalizing over every possible state in the sequence besides $Q_t$. Note that $\alpha_t(i)\beta_t(i)$ gives us $P(O, Q_t=S_i|\lambda)$. Dividing by $P(O|\lambda)$ conditions this value on observing $O$, yielding the measure we desire.
+
+$\xi_t(i, j) = P(Q_t=S_i, Q_{t+1}=S_j|O, \lambda)$ is the probability of being in $S_i$ at time $t$, then transitioning to $S_j$. Using the forward and backward variables, $\xi_t(i, j)$ is calculated as:
+\[\xi_t(i, j) = \frac{\alpha_t(i)A_{ij}B_j(O_{t+1})\beta_{t+1}(j)}{P(O|\lambda)}\]
+In a similar manner to $\gamma_t(i)$, $\alpha_t(i)$ accounts for $O_1, O_2, \dots O_t$, $A_{ij}B_j(O_{t+1})$ for $O_{t+1}$, and $B_{t+1}(j)$ for $O_{t+2}, O_{t+2}, \dots O_T$. The denominator again conditions the numerator on observing $O$.
+
+With $\gamma_t(i)$ and $\xi_t(i, j)$, we may define reestimation formulas for $A$, $B$, and $\pi$:
+\begin{align*}
+	\bar{\pi}_i = & \text{Probability of state $i$ at time 1} = \gamma_1(i) \\
+	\bar{A}_{ij} = & \frac{\text{expected \# of transitions $S_i \rightarrow S_j$ }}{\text{expected \# of transitions away from $S_i$}} = \frac{\sum_{t=1}^{T-1}\xi_t(i,j)}{\sum_{t=1}^{T-1}\gamma_t(i)} \\
+	\bar{\mu}_i = & \frac{\sum_{t=1}^{T}\gamma_t(i)O_t}{\sum_{t=1}{T}\gamma_t(i)} \\
+	\bar{\sigma}_i = & \sqrt{\frac{\sum_{t=1}^{T}\gamma_t(i)(O_t-\mu_i)^2}{\sum_{t=1}{T}\gamma_t(i)}}
+\end{align*}
+$\pi_i$ is calculated directly using $\gamma_t(i)$. In the numerator of $\bar{A}_{ij}$, we sum the probability of transitioning from $S_i$ to $S_j$ at all applicable points in time. In the denominator, we interpret $\gamma_t(i)$ as the number of transitions from $S_i$, must in fact be the same as the number of times $S_i$ is visited. $\bar{\mu}_i$ is a weighted average in which each $O_t$ is weighted by the probability of visiting $S_i$ at time $t$. $\bar{\sigma}_i$ similary weights each term of the variance sum. By repeatedly applying these reestimation formulas to $\lambda$, $P(O|\lambda)$ may be optimized up to a local maximum.
+
+% \section{Training Over a Set of Sequences}
+% The above techniques have the limitation of training $\lambda$ on only one time series. Since we wish to train models on sets of time series, we must use generalized versions of these caclulations. Let $X$ be a set of time series. Consider the problem of finding $P(X|\lambda)$. If we assume that each $O \in X$ is emitted independently of the others, then $P(X|\lambda)$ is simply the product:
+% \[\prod_{O \in X} P(O|\lambda)\]
+% To reestimate parameters on $X$, we must generalize the formulas for $\bar{\pi}_i$, $\bar{A}_{ij}$, $\bar{\mu}_j$ and $\bar{\sigma}_j$. Let the sequences in $O$ have lengths $T_1, T_2, \dots T_2$. We generalize as follows:
+% \begin{align*}
+% 	\bar{\pi}_i = & \gamma_1(i) \\
+% 	\bar{A}_{ij} = & \frac{\sum_{t=1}^{T-1}\xi_t(i,j)}{\sum_{t=1}^{T-1}\gamma_t(i)} \\
+% 	\bar{\mu}_i = & \frac{\sum_{t=1}^{T}\gamma_t(i)O_t}{\sum_{t=1}{T}\gamma_t(i)} \\
+% 	\bar{\sigma}_i = & \sqrt{\frac{\sum_{t=1}^{T}\gamma_t(i)(O_t-\mu_i)^2}{\sum_{t=1}{T}\gamma_t(i)}}
+% \end{align*}
+
+
+
+
+
+
+
+
+

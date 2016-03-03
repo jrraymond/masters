@@ -1,0 +1,50 @@
+\documentclass[12pt,letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{float}
+\floatstyle{boxed} 
+\restylefloat{figure}
+\usepackage{framed}
+\usepackage[letterpaper]{geometry}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{natbib}
+\usepackage[parfill]{parskip}
+\usepackage[section]{placeins}
+\usepackage{upgreek}
+\usepackage{stmaryrd}
+
+\lstset{language=[Objective]Caml}
+\newcommand{\T}[1]{\texttt{#1}}
+
+
+\begin{document}
+\begin{flushright}
+Potential Translation\\
+Justin Raymond\\
+\today
+\end{flushright}
+
+\section{Introduction}
+
+\section{Potential Translation}
+
+\section{Proof}
+\subsection{Logical Relation}
+We define the relation between terms in the pure potential language and in the complexity language as follows.
+\begin{enumerate}
+  \item $e \sim_\tau e'$
+    \begin{itemize}
+      \item $e \sim_{unit} e'$ is always true.
+      \item $\|\langle e_0, e_1\rangle\| \sim_{\tau_0 \times \tau_1} |\langle e_0, e_1 \rangle|$ if and only if $\|e_0\| \sim_{\tau_0} |e_0|$ and $\|e_1\| \sim_{\tau_1} |e_1|$.
+      \item $\|\langle e_0, e_1\rangle\| \sim_{\tau_0 \times \tau_1} |\langle e_0, e_1 \rangle|$ if and only if $\|e_0\| \sim_{\tau_0} |e_0|$ and $\|e_1\| \sim_{\tau_1} |e_1|$.
+    \end{itemize}
+\end{enumerate}
+
+
+
+\end{document}

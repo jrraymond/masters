@@ -1,0 +1,684 @@
+\documentclass[12pt,letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{float}
+\floatstyle{boxed} 
+\restylefloat{figure}
+\usepackage{framed}
+\usepackage[letterpaper]{geometry}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{natbib}
+\usepackage[parfill]{parskip}
+\usepackage[section]{placeins}
+\usepackage{upgreek}
+\usepackage{stmaryrd}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+
+\newcommand{\T}[1]{\texttt{#1}}
+\lstset{basicstyle=\scriptsize\ttfamily,mathescape}
+
+\begin{document}
+\begin{flushright}
+Insertion Sort\\
+Justin Raymond\\
+\today
+\end{flushright}
+
+\section{Insertion Sort}
+Insertion sort is a quadratic time sorting algorithm which sorts a list by inserting an element from an unsorted segment of a container into a sorted segment of the container.
+Although the asymptotic complexity of insertion sort is less than the optimal $\mathcal{O}(nlog_2n)$, insertion sort does have redeeming attributes. 
+Insertion sort has small constant factors, making it more efficient on small datasets. 
+The standard Python sorting algorithm, timsort, is a hybrid sorting algorithm that uses mergesort and switches to insertion sort for small datasets (\citet{cpython}).
+Insertion sort may be done in-place (\citet{Cormen2001}).
+The running time of insertion sort is $\mathcal{O}(n^2)$.
+
+\begin{figure}[H]
+\caption{Insertion sort in the source language}
+\begin{lstlisting}
+data list = Nil of unit | Cons of int $\times$ list
+
+insert = $\lambda$x.$\lambda$xs.rec(xs, Nil$\mapsto$ Cons$\langle$x,Nil$\rangle$,
+                      Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle$.rec(x <= y, True $\mapsto$ Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle$,
+                                                 False $\mapsto$ Cons$\langle$y,force(r)$\rangle$))
+
+sort = $\lambda$xs.rec(xs, Nil$\mapsto$ Nil, Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle$.insert y force(r))
+\end{lstlisting}
+\end{figure}
+
+\subsection{Insert}
+\T{sort} relies on the function \T{insert} to insert the head of the list into the result of recursively sorted tail of the list.
+We will begin with a translation and interpretation of \T{insert}.
+
+\subsubsection{Translation}
+The translation of \T{insert} is broken into chunks to make it more managable.
+Figure \ref{fig:fxy} steps through the translation of the comparison function \T{<=} applied to variables \T{x} and \T{y}.
+
+\begin{figure}[H]
+\caption{Translation of \T{x <= y}.
+\label{fig:fxy}
+We assume \T{x} and \T{y} are variables.
+Consequently the cost of the translation of both is 0.
+We assume \T{<=} is a function with a constant cost of \T{2}.
+Since \T{<=} is a function of two arguments, the cost of \T{<=} is 0 unless \T{<=} is fully applied.
+}
+\begin{lstlisting}
+$\|$x <= y$\| = (2 + \|$x$\|_c + \|$y$\|_c) +_c \|$x$\|_p$ <= $\|$y$\|_p$
+  $= \langle 2 +_c ($x <= y$)\rangle$
+  $= \langle \langle 4, ($x <= y$)_p\rangle$
+\end{lstlisting}
+\end{figure}
+
+The translation \T{true} and \T{false} branches are given in figures \ref{fig:insert_true} and \ref{fig:insert_false} respectively.
+
+\begin{figure}[H]
+\caption{Translation of \T{True$\to$Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle$} in the inner \T{rec} of \T{insert}.
+In this case the element we are inserting into the list comes before the head of the list under the ordering given by \T{f}.
+}
+\label{fig:insert_true}
+\begin{lstlisting}
+  $=$ True$\mapsto 1 +_c \|$Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle\|$
+
+  $=$ True$\mapsto 1 +_c \langle \|\langle$x,Cons$\langle$y,ys$\rangle\rangle\|_c,$Cons$\|\langle$x,Cons$\langle$y,ys$\rangle\rangle\|_p\rangle$
+
+  $=$ True$\mapsto 1 +_c \langle \langle \|$x$\|_c + \|$Cons$\langle$y,ys$\rangle\|_c,\langle\|$x$\|_p,\|$Cons$\langle$y,ys$\rangle\|_p\rangle\rangle_c$,
+           Cons$\langle \|$x$\|_c + \|$Cons$\langle$y,ys$\rangle\|_c,\langle\|$x$\|_p,\|$Cons$\langle$y,ys$\rangle\|_p\rangle\rangle_p\rangle$
+
+  $=$ True$\mapsto 1 +_c \langle \|$x$\|_c + \|$Cons$\langle$y,ys$\rangle\|_c,$Cons$\langle\|$x$\|_p,\|$Cons$\langle$y,ys$\rangle\|_p\rangle\rangle$
+
+  $=$ True$\mapsto 1 +_c \langle \langle$0,x$\rangle_c + \langle\|\langle$y,ys$\rangle\|_c,$Cons$\|\langle$y,ys$\rangle\|_p\rangle_c$,
+          Cons$\langle\langle$0,x$\rangle_p,\langle\|\langle$y,ys$\rangle\|_c,$Cons$\|\langle$y,ys$\rangle\|_p\rangle_p\rangle\rangle$
+
+  $=$ True$\mapsto 1 +_c \langle 0 + \|\langle$y,ys$\rangle\|_c$,Cons$\langle$x,Cons$\|\langle$y,ys$\rangle\|_p\rangle\rangle$
+
+  $=$ True$\mapsto 1 +_c \langle \langle\|$y$\|_c + \|$ys$\|_c,\langle\|$y$\|_p,\|$ys$\|_p\rangle\rangle_c$,Cons$\langle$x,Cons$\langle\|$y$\|_c + \|$ys$\|_c,\langle\|$y$\|_p,\|$ys$\|_p\rangle\rangle_p\rangle\rangle$
+
+  $=$ True$\mapsto 1 +_c \langle\|$y$\|_c + \|$ys$\|_c$,Cons$\langle$x,Cons$\langle\|$y$\|_p,\|$ys$\|_p\rangle\rangle\rangle$
+
+  $=$ True$\mapsto 1 +_c \langle\langle$0,y$\rangle_c + \langle$0,ys$\rangle_c$,Cons$\langle$x,Cons$\langle\langle$0,y$\rangle_p,\langle$0,ys$\rangle_p\rangle\rangle\rangle$
+
+  $=$ True$\mapsto 1 +_c \langle0,$Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle\rangle$
+
+  $=$ True$\mapsto \langle 1, $Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle\rangle$
+\end{lstlisting}
+\end{figure}
+
+\begin{figure}[H]
+\caption{Translation of the \T{False} branch of the inner \T{rec} of \T{insert}.
+\label{fig:insert_false}
+\T{r} stands for the recursive call, and has type \T{susp list}.
+In this case the element we are inserting into the list comes after the head of the list under the ordering given by \T{f}.
+}
+\begin{lstlisting}
+$\|$False$\mapsto $Cons$\langle$y,force(r)$\rangle\|$
+  $=$ False$\mapsto 1 +_c \|$Cons$\langle$y,force(r)$\rangle\|$
+
+  $=$ False$\mapsto 1 +_c \langle \|\langle$y,force(r)$\rangle\|_c$,Cons$\|\langle$y,force(r)$\rangle\|_p\rangle$
+
+  $=$ False$\mapsto 1 +_c \langle \langle \|$y$\|_c + \|$force(r)$\|_c,\langle \|$y$\|_p,\|$force(r)$\|_p\rangle\rangle_c$,
+            Cons$\langle \|$y$\|_c + \|$force(r)$\|_c,\langle \|$y$\|_p,\|$force(r)$\|_p\rangle\rangle_p\rangle$
+
+  $=$ False$\mapsto 1 +_c  \langle\|$y$\|_c + \|$force(r)$\|_c$,Cons$\langle \|$y$\|_p,\|$force(r)$\|_p\rangle\rangle$
+
+  $=$ False$\mapsto 1 +_c  \langle\langle$0,y$\rangle_c + (\|$r$\|_c +_c \|$r$\|_p)_c,$Cons$\langle \langle$0,y$\rangle_p,(\|$r$\|_c +_c \|$r$\|_p)\rangle\rangle$
+
+  $=$ False$\mapsto 1 +_c  \langle0 + $r$_c,$Cons$\langle$y$,$r$_p\rangle\rangle$
+
+  $=$ False$\mapsto \langle1 + $r$_c,$Cons$\langle$y$,$r$_p\rangle\rangle$
+\end{lstlisting}
+\end{figure}
+
+Figure \ref{fig:insert_inner_rec} uses the translation of \T{f x y} and the \T{true} and \T{false} branches to construct the translation of the inner \T{rec} construct.
+
+\begin{figure}[H]
+\caption{Translation of the inner \T{rec} in \T{insert}.
+In the \T{True} case, we have found the place of \T{x} in the list and we so stop.
+In the \T{False} case, \T{x} comes after the head of list under the ordering given by \T{f} and we must recurse on the tail of the list.
+}
+\label{fig:insert_inner_rec}
+\begin{lstlisting}
+$\|$rec(f x y,True$\mapsto$Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle$,False$\mapsto$Cons$\langle$y,force(r)$\rangle$)$\|$
+  $= \|$f x y$\|_c +_c$rec($\|$f x y$\|_p$,True$\mapsto 1 +_c \|$Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle\|$,
+                          False$\mapsto 1 +_c \|$Cons$\langle$y,force(r)$\rangle\|$)
+
+  $= 2 + ((\|$f$\|_p$ x$)_p $ y$)_c +_c$rec($((\|$f$\|_p$ x$)_p $ y$)_p$,
+                        True$\mapsto 1 +_c \|$Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle\|$,
+                        False$\mapsto 1 +_c \|$Cons$\langle$y,force(r)$\rangle\|$)
+
+  $= 2 + ((\|$f$\|_p$ x$)_p $ y$)_c +_c$rec($((\|$f$\|_p$ x$)_p $ y$)_p$,
+                        True$\mapsto \langle 1, $Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle\rangle$
+                        False$\mapsto 1 +_c \|$Cons$\langle$y,force(r)$\rangle\|$)
+
+  $= 2 + ((\|$f$\|_p$ x$)_p $ y$)_c +_c$rec($((\|$f$\|_p$ x$)_p $ y$)_p$,
+                        True$\mapsto \langle 1, $Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle\rangle$
+                        False$\mapsto \langle1 + $r$_c,$Cons$\langle$y$,$r$_p\rangle\rangle$)
+
+\end{lstlisting}
+\end{figure}
+
+
+The \T{Nil} and \T{Cons} branches of the outer \T{rec} construct are given in figures \ref{fig:insert_nil} and \ref{fig:insert_cons}, respectively.
+
+\begin{figure}[H]
+\caption{Translation of the \T{Nil} branch of the outer \T{rec} in \T{insert}.
+The insertion of an element into an empty list results in a singleton list containing only the element.
+This branch is also reached when the ordering given by \T{f} dictates \T{x} comes after than everything in the list,
+  and should be placed at the back of the list.
+}
+\label{fig:insert_nil}
+\begin{lstlisting}
+$\|$Nil$\mapsto$Cons$\langle$x,Nil$\rangle\|$
+  $=$ Nil$\mapsto 1 +_c \|$Cons$\langle$x,Nil$\rangle\|$
+
+  $=$ Nil$\mapsto 1 +_c \langle\|\langle$x,Nil$\rangle\|_c$,Cons$\|\langle$x,Nil$\rangle\|_p\rangle$
+
+  $=$ Nil$\mapsto 1 +_c \langle\langle\|$x$\|_c + \|$Nil$\|_c,\langle\|$x$\|_p,\|$Nil$\|_p\rangle\rangle_c$,Cons$\langle\|$x$\|_c + \|$Nil$\|_c,\langle\|$x$\|_p,\|$Nil$\|_p\rangle\rangle_p\rangle$
+
+  $=$ Nil$\mapsto 1 +_c \langle\|$x$\|_c + \|$Nil$\|_c$,Cons$\langle\|$x$\|_p,\|$Nil$\|_p\rangle\rangle$
+
+  $=$ Nil$\mapsto 1 +_c \langle\langle$0,x$\rangle_c + \langle$0,Nil$\rangle_c$,Cons$\langle\langle$0,x$\rangle_p,\langle$0,Nil$\rangle_p\rangle\rangle$
+
+  $=$ Nil$\mapsto 1 +_c \langle0 + 0$,Cons$\langle$x,Nil$\rangle\rangle$
+
+  $=$ Nil$\mapsto \langle1$,Cons$\langle$x,Nil$\rangle\rangle$
+\end{lstlisting}
+\end{figure}
+
+\begin{figure}[H]
+\caption{Translation of the \T{Cons} branch of the outer \T{rec} in \T{insert}.
+In this branch we are recursing on a nonempty list.
+We check if \T{x} is comes before the head of the list under the ordering given by \T{f}, in which case we are done, 
+  otherwise we recurse on the tail of the list.
+}
+\label{fig:insert_cons}
+\begin{lstlisting}
+$\|$Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle$.rec(f x y, True $\mapsto$ Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle$,
+                             False $\mapsto$ Cons$\langle$y,force(r)$\rangle$)$\|$
+
+  $=$ Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle$.$1 +_c \|$rec(f x y, True $\mapsto$ Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle$,
+                             False $\mapsto$ Cons$\langle$y,force(r)$\rangle$)$\|$
+
+  $=$ Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle$.$1 +_c (2 + (($f x$)_p$ y$)_c) +_c$rec($(($f x$)_p$ y$)_p$,
+                                              True$\mapsto \langle 1, $Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle\rangle$
+                                              False$\mapsto \langle1 + $r$_c,$Cons$\langle$y$,$r$_p\rangle\rangle$)$)$
+
+  $=$ Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle$.$(3 + (($f x$)_p $ y$)_c) +_c$rec($(($f x$)_p$ y$)_p$,
+                                           True$\mapsto \langle 1, $Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle\rangle$
+                                           False$\mapsto \langle1 + $r$_c,$Cons$\langle$y$,$r$_p\rangle\rangle$)$)$
+\end{lstlisting}
+\end{figure}
+
+
+We put these together to give the translation of \T{insert}.
+
+\begin{figure}[H]
+\caption{Translation of \T{insert}}
+\label{fig:insert}
+\begin{lstlisting}
+$\|$insert$\|$ = $\|\lambda$f.$\lambda$x.$\lambda$xs.rec(xs, Nil$\mapsto$ Cons$\langle$x,Nil$\rangle$,
+                      Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle$.rec(f x y, True $\mapsto$ Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle$,
+                                                 False $\mapsto$ Cons$\langle$y,force(r)$\rangle$))$\|$
+
+  $= \langle$0,$\lambda$f.$\langle$0,$\lambda$x.$\langle0,\lambda$xs.$\|$rec(xs, Nil$\mapsto$ Cons$\langle$x,Nil$\rangle$,
+                          Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle$.rec(f x y, True $\mapsto$ Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle$,
+                                                     False $\mapsto$ Cons$\langle$y,force(r)$\rangle$))$\|\rangle\rangle\rangle$
+
+  $= \langle$0,$\lambda$f.$\langle$0,$\lambda$x.$\langle0,\lambda$xs.$\langle$0,xs$\rangle_c +_c $
+          rec($\langle$0,xs$\rangle_p$,
+              Nil$\mapsto \langle1$,Cons$\langle$x,Nil$\rangle\rangle$
+              Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle$.$(3 + ((\langle$0,f$\rangle_p$ x$)_p $ y$)_c) +_c$rec($((\langle$0,f$\rangle_p$ x$)_p $ y$)_p$,
+                                                   True$\mapsto \langle 1, $Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle\rangle$
+                                                   False$\mapsto \langle1 + $r$_c,$Cons$\langle$y$,$r$_p\rangle\rangle$)$)$
+
+  $= \langle$0,$\lambda$f.$\langle$0,$\lambda$x.$\langle0,\lambda$xs.
+          rec(xs,
+              Nil$\mapsto \langle1$,Cons$\langle$x,Nil$\rangle\rangle$
+              Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle$.$(3 + (($f x$)_p $ y$)_c) +_c$rec($($f x$)_p $ y$)_p$,
+                                                 True$\mapsto \langle 1, $Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle\rangle$
+                                                 False$\mapsto \langle1 + $r$_c,$Cons$\langle$y$,$r$_p\rangle\rangle$)$)$
+\end{lstlisting}
+\end{figure}
+
+
+Finally we give a translation of \T{insert f x xs} in figure \ref{fig:insert_applied} because this is the term we will interpret in a size-based semantics.
+
+\begin{figure}[H]
+  \caption{The translation of \T{insert f x xs}.
+  Unlike before, we do not assume that \T{f}, \T{x}, \T{xs} are variables.
+  They may be expressions with non-zero costs.}
+  \label{fig:insert_applied}
+  \begin{lstlisting}
+  $\|$insert f x xs$\| = (1 + \|$insert f x$\|_c + \|$xs$\|_c) +_c \|$insert f x$\|_p \|$xs$\|_p$
+
+     $= (1 + \|$insert f x$\|_c + \|$xs$\|_c) +_c \|$insert f x$\|_p  \|$xs$\|_p$
+
+     $= (2 + \|$insert f$\|_c + \|$x$\|_c + (\|$insert f$\|_p \|$x$\|_p)_c + \|$xs$\|_c) +_c \|$insert f$\|_p \|$x$\|_p \|$xs$\|_p$
+
+     $= (2 + \|$insert f$\|_c + \|$x$\|_c + \|$xs$\|_c) +_c \|$insert f$\|_p \|$x$\|_p \|$xs$\|_p$
+
+     $= (3 + \|$insert$\|_c + \|$f$\|_c+ (\|$insert$\|_p \|$f$\|_p \|$x$\|_p)_c + \|$x$\|_c  + \|$xs$\|_c) +_c \|$insert$\|_p \|$f$\|_p \|$x$\|_p \|$xs$\|_p$
+
+     $= (3 + \|$f$\|_c + \|$x$\|_c + \|$xs$\|_c) +_c \|$insert$\|_p \|$f$\|_p \|$x$\|_p \|$xs$\|_p$
+
+     $= (3 + \|$f$\|_c + \|$x$\|_c + \|$xs$\|_c) +_c $rec($\|$xs$\|_p$,
+              Nil$\mapsto \langle1$,Cons$\langle$x,Nil$\rangle\rangle$
+              Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle$.$(3 + ((\|$f$\|_p \|$x$\|_p)_p $ y$)_c) +_c$rec($(\|$f$\|_p \|$x$\|_p)_p $ y$)_p$,
+                                                 True$\mapsto \langle 1, $Cons$\langle \|$x$\|_p$,Cons$\langle$y,ys$\rangle\rangle\rangle$
+                                                 False$\mapsto \langle1 + $r$_c,$Cons$\langle$y$,$r$_p\rangle\rangle$)$)$
+  \end{lstlisting}
+\end{figure}
+
+
+The result is:
+\begin{lstlisting}
+$\|$insert f x xs$\|= (3 + \|$f$\|_c + \|$x$\|_c + \|$xs$\|_c)$
+        $+_c $rec($\|$xs$\|_p$,
+              Nil$\mapsto \langle1$,Cons$\langle$x,Nil$\rangle\rangle$
+              Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle$.$(3 + ((\|$f$\|_p \|$x$\|_p)_p $ y$)_c) +_c$rec($(\|$f$\|_p \|$x$\|_p)_p $ y$)_p$,
+                                                 True$\mapsto \langle 1, $Cons$\langle \|$x$\|_p$,Cons$\langle$y,ys$\rangle\rangle\rangle$
+                                                 False$\mapsto \langle1 + $r$_c,$Cons$\langle$y$,$r$_p\rangle\rangle$)$)$
+\end{lstlisting}
+
+
+
+\subsubsection{Interpretation}
+We well use an interpretation of lists as their lengths.
+Figure \ref{fig:interp_sizes} gives formalizes this interpretation.
+\begin{figure}[H]
+  \caption{Interpretation of lists as lengths}
+  \label{fig:interp_sizes}
+  \begin{align*}
+    \llbracket list \rrbracket &= \mathbb{N}^\infty \\
+    D^{list} &= \{\ast\} + \{1\} \times \mathbb{N}^\infty \\
+    size_{list} (Nil) &= 0 \\
+    size_{list} (Cons(1,n)) &= 1 + n
+  \end{align*}
+\end{figure}
+
+First we interpret the \T{rec}, which drives of the cost of \T{insert}.
+As in the translation, we break the interpretation up to make it more managable.
+We will write $map, \lambda$ and $+_c$ in the semantics, which stand for the semantic equivalents of \T{map}, $\lambda$ and $+_c$ in the syntax.
+The definitions of these semantic functions mirror the definitions of their syntactic equivalents.
+Figures \ref{fig:interp_sizes_inner_rec} and \ref{fig:interp_sizes_outer_rec} walk through the interpretation.
+
+\begin{figure}[H]
+  \caption{Interpretation of the inner \T{rec} of \T{insert} with lists abstracted to sizes}
+  \label{fig:interp_sizes_inner_rec}
+  \begin{lstlisting}
+    $\llbracket$rec($($f x$)_p $ y$)_p$,
+       True$\mapsto \langle 1, $Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle\rangle$
+       False$\mapsto \langle1 + $r$_c,$Cons$\langle$y$,$r$_p\rangle\rangle$)$)$ $\rrbracket \xi \{$f$ \mapsto f, $x$ \mapsto 1, $y$ \mapsto 1, $ys$ \mapsto n, $r$ \mapsto r\}$
+
+    $f_{True} (\langle\rangle) = \llbracket \langle$1,Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle\rangle\rrbracket \xi \{$f$ \mapsto f, $x$ \mapsto 1, $y$ \mapsto 1, $ys$ \mapsto n, $r$ \mapsto r\}$
+
+           $= (1,2 + n)$
+
+    $f_{False} (\langle\rangle) = \llbracket \langle1 + $r$_c,$Cons$\langle$y$,$r$_p\rangle\rangle$)$)$ $\rrbracket \xi \{$f$ \mapsto f, $x$ \mapsto 1, $y$ \mapsto 1, $ys$ \mapsto n, $r$ \mapsto r\}$
+
+           $= (1 + \pi_0 r, 1 + \pi_1 r)$
+    
+    $= \bigvee_{size(w) \leq \pi_1(\pi_1(f\ 1)\ 1)} case(w, (f_{True}, f_{False}))$
+
+    $= \bigvee_{size(w) \leq \pi_1(\pi_1(f\ 1)\ 1)} case(w, (\lambda \langle\rangle.(1,2+n), \lambda \langle\rangle.(1+\pi_0r,1+\pi_1r))$
+
+    $= (1,2+n) \vee (1+\pi_0r,1+\pi_1r)$
+  \end{lstlisting}
+\end{figure}
+
+\begin{figure}[H]
+  \caption{Interpretation of \T{rec} in \T{insert}.}
+  \label{fig:interp_sizes_outer_rec}
+  \begin{lstlisting}
+   $g(n) = \llbracket$rec(xs,
+        Nil$\mapsto \langle1$,Cons$\langle$x,Nil$\rangle\rangle$
+        Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle$.$(3 + (($f x$)_p $ y$)_c) +_c$rec($($f x$)_p $ y$)_p$,
+                                           True$\mapsto \langle 1, $Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle\rangle$
+                                           False$\mapsto \langle1 + $r$_c,$Cons$\langle$y$,$r$_p\rangle\rangle$)$)\rrbracket \xi \{$f$\mapsto f, $x$\mapsto 1,$xs$\mapsto n\}$
+
+       $f_{Nil}(\langle\rangle) = \llbracket \langle1$,Cons$\langle$x,Nil$\rangle\rangle \rrbracket \xi \{$f$\mapsto f, $x$\mapsto 1,$xs$\mapsto n\}$
+
+       $f_{Nil}(\langle\rangle) = (1,1)$
+
+       $f_{Cons}((1,m)) = \llbracket (3 + $((f x)$_p$ y)$_c) +_c $rec($\dots$)$ \rrbracket \xi \{$f$\mapsto f,  $x$\mapsto 1,$xs$\mapsto n\}$
+
+           $= (3 + \pi_0(\pi_1(f\ 1)\ 1)) +_c$
+                $\llbracket $rec($\dots$)$ \rrbracket \xi \{$f$\mapsto f, \dots ,\langle$y,$\langle$ys,r$\rangle\rangle\mapsto map^{1\times\mathbb{N}^\infty} (\lambda a.(a,\llbracket$rec($w, \dots$)$\rrbracket \xi \{w \mapsto a\}), (1,m))\}$
+
+           $= (3 + \pi_0(\pi_1(f\ 1)\ 1)) +_c$
+                $\llbracket $rec($\dots$)$ \rrbracket \xi \{$f$\mapsto f, \dots ,\langle$y,$\langle$ys,r$\rangle\rangle\mapsto (1,map^{\mathbb{N}^\infty} (\lambda a.(a,\llbracket$rec($w, \dots$)$\rrbracket \xi \{w \mapsto a\}),m))\}$
+
+           $= (3 + \pi_0(\pi_1(f\ 1)\ 1)) +_c$
+                $\llbracket $rec($\dots$)$ \rrbracket \xi \{$f$\mapsto f, \dots ,\langle$y,$\langle$ys,r$\rangle\rangle\mapsto (1,(m,\llbracket$rec($w, \dots$)$\rrbracket \xi \{w \mapsto m\}))\}$
+
+           $= (3 + \pi_0(\pi_1(f\ 1)\ 1)) +_c$
+                $\llbracket $rec($\dots$)$ \rrbracket \xi \{$f$\mapsto f, $x$\mapsto 1,$xs$\mapsto n, \langle$y,$\langle$ys,r$\rangle\rangle\mapsto (1,(m,g(m)))\}$
+
+           $= (3 + \pi_0(\pi_1(f\ 1)\ 1)) +_c ((1,2+m) \vee (1+\pi_0g(m)),1+\pi_1g(m)))$
+
+           $= (3 + \pi_0(\pi_1(f\ 1)\ 1) + (1 \vee (1+\pi_0g(m))), (2+m) \vee (1+\pi_1g(m))$
+
+           $= (4 + \pi_0(\pi_1(f\ 1)\ 1) + \pi_0g(m), (2+m) \vee (1+\pi_1g(m)))$
+
+       $g(n) = \bigvee_{size(z) \leq n} case(z, (f_{Nil},f_{Cons}))$
+  \end{lstlisting}
+\end{figure}
+
+The initial result is given in equation \ref{eq:insert_initial_recurrence}.
+\begin{align}
+  &f_{Nil}(\langle\rangle) = (1,1) \\ 
+  &f_{Cons}((1,m)) = (4 + \pi_0(\pi_1(f\ 1)\ 1) + \pi_0g(m), (2+m) \vee (1+\pi_1g(m))) \\ 
+  \label{eq:insert_initial_recurrence}
+  &g(n) = \bigvee_{size(z) \leq n} case(z, (f_{Nil},f_{Cons}))
+\end{align}
+
+This recurrence is difficult to work with.
+Specifically, we cannot apply traditional methods of solving it.
+We will manipulate it into a more usable form by eliminating the arbitrary maximum.
+Observe that for $n=0$, $g(n) = f_{Nil}(\langle\rangle) = (1,1)$.
+For $n>0$, 
+\begin{align*}
+  g(n) &= \bigvee_{size(z) \leq n} case(z, (f_{Nil},f_{Cons})) &&\\ 
+  &= g(n-1) \vee \bigvee_{size(z) = n} case(z, (f_{Nil},f_{Cons})) &&\\
+  &= g(n-1) \vee f_{Cons}(n) &&\\
+  &= g(n-1) \vee (4 + \pi_0(\pi_1(f\ 1)\ 1) + \pi_0g(n-1), (1+n) \vee (1+\pi_1g(n-1))) &&\text{$m=n-1$}\\ 
+  &= (4 + \pi_0(\pi_1(f\ 1)\ 1) + \pi_0g(n-1), (1+n) \vee (1+\pi_1g(n-1))) &&\text{lemma \ref{lem:insert_g_monotonicity}}\\ 
+  &= (4 + \pi_0(\pi_1(f\ 1)\ 1) + \pi_0g(n-1), 1+\pi_1g(n-1)) &&\text{lemma \ref{lem:insert_potential_inc}}
+\end{align*}
+\begin{lemma}
+  \label{lem:insert_g_monotonicity}
+  $g(n) > g(n-1)$
+\end{lemma}
+\begin{proof}
+  TODO
+\end{proof}
+
+\begin{lemma}
+\label{lem:insert_potential_inc}
+$\pi_1 g(n) > n$
+\end{lemma}
+\begin{proof}
+We prove this by induction on $n$.
+\begin{description}
+  \item[case $n=0$:] $\pi_1g(0) = 1$
+  \item[case $n>0$:]\hfill
+    \begin{align*}
+      \pi_1g(n) &= \pi_1(g(n-1) \vee (4 + \pi_0(\pi_1(f\ 1)\ 1) + \pi_0g(n-1),(1+n) \vee (1 + \pi_1 g(n-1)))) \\
+      &= \pi_1g(n-1) \vee (1+n) \vee (1 + \pi_1 g(n-1)) \\
+      &\geq n-1 \vee (1+n) \vee (1 + n - 1) \\
+      &\geq 1+n \\
+      &> n
+    \end{align*}
+\end{description}
+\end{proof}
+
+Equation \ref{eq:insert_recurrence} shows the extracted recurrence.
+Without the arbitrary maximum, it is much more obvious how to find a solution to the recurrence.
+The recurrence is from a potential to a complexity, consequently we can extract a recurrence for the cost,
+equation \ref{eq:insert_cost}, and a recurrence for the potential, equation \ref{eq:insert_potential}, simply by taking the projections of equation \ref{eq:insert_recurrence}.
+The extracted recurrences for the cost and potential can then be solved by the substitution method.
+\begin{equation}
+  \label{eq:insert_recurrence}
+  g(n) = \begin{cases}
+    (1,1) & n = 0 \\
+    (4 + \pi_0(\pi_1(f\ 1)\ 1) + \pi_0g(n-1), 1+\pi_1g(n-1)) & n > 0
+  \end{cases}
+\end{equation}
+
+The cost recurrence is given by $\pi_0 \circ g$.
+\begin{equation}
+\label{eq:insert_cost}
+c(n) = \begin{cases}
+  1 & n = 0 \\
+  4 + \pi_0(\pi_1(f\ 1)\ 1) + c(n-1) & n > 0
+\end{cases}
+\end{equation}
+
+This recurrence is quite simple to solve.
+The solution and proof of the solution are given in theorem \ref{thm:insert_cost}.
+\begin{theorem}
+\label{thm:insert_cost}
+  $c(n) = (4 + \pi_0(\pi_1(f\ 1)\ 1))n + 1$
+\end{theorem}
+\begin{proof}
+  We prove this by induction on $n$.
+  \begin{description}
+    \item[case $n=0$] $c(0) = \pi_0g(0) = 1$
+    \item[case $n>0$]
+      \begin{align*}
+        c(n) &= 4 + \pi_0(\pi_1(f\ 1)\ 1) + c(n-1) \\
+        &= 4 + \pi_0(\pi_1(f\ 1)\ 1) + (4 + \pi_0(\pi_1(f\ 1)\ 1))(n-1) + 1 \\
+        &= (4 + \pi_0(\pi_1(f\ 1)\ 1)) n + 1
+      \end{align*}
+  \end{description}
+\end{proof}
+The solution tells us the cost of the \T{rec} construct in insert is linear in the size of the list.
+The constant factor cannot be determined because we do not know the cost of applying $f$ to its arguments.
+
+The potential recurrence is given by $\pi_1 \circ g$.
+\begin{equation}
+  \label{eq:insert_potential}
+  p(n) = \begin{cases}
+    1 & n = 0 \\
+    1 + p(n-1) & n > 0
+  \end{cases}
+\end{equation}
+
+\begin{theorem}
+  $p(n) = 1 + n$
+\end{theorem}
+\begin{proof}
+  We prove this by induction on $n$.
+  \begin{description}
+    \item[case $n=0$] $p(0) = 1$
+    \item[case $n>0$] $p(n) = 1 + p(n - 1) = 1 + n$
+  \end{description}
+\end{proof}
+The solution of this recurrence tells us the size of the output in terms of the size of the input.
+As one would expect of \texttt{insert}, the size of the output is one larger than the size of the input.
+
+
+\subsection{Sort}
+
+
+
+\subsubsection{Translation}
+The translation of sort is shown in figure \ref{fig:sort}.
+The translation of the \T{Nil} and \T{Cons} branches in the \T{rec} are walked through in figures \ref{fig:sort_nil} and \ref{fig:sort_cons}, respectively.
+The translation of \T{sort} applied to its arguments is given in figure \ref{fig:sort_applied}.
+
+
+\subsubsection{Interpretation}
+The \T{rec} construct again drives the cost and potential of \T{sort}.
+The walkthrough of the interpretation of the \T{rec} is given in figure \ref{fig:sort_rec_interp}.
+Equation \ref{eq:sort_interp0_init} shows the initial recurrence extracted.
+\begin{equation}
+  \label{eq:sort_interp0_init}
+  g(n) = \bigvee_{size(z)\leq n} case(z,(\lambda(\langle\rangle).(1,0),\lambda(1,m).4 + \pi_0 g(m)) +_c insert\ f\ 1\ \pi_1g(m))
+\end{equation}
+
+We work the recurrence into a more recognisable form using some manipulation of the big max operator and some facts about $insert$.
+Observe for $n=0$, $g(n) = (1,0)$ and for $n>0$
+\begin{align*}
+  g(n) &= \bigvee_{size(z)\leq n} case(z,(\lambda(\langle\rangle).(1,0),\lambda(1,m).4 + \pi_0 g(m)) +_c insert\ f\ 1\ \pi_1g(m)) \\
+  &= g(n-1) \vee \bigvee_{size(z) = n} case(z,(\lambda(\langle\rangle).(1,0),\lambda(1,m).4 + \pi_0 g(m)) +_c insert\ f\ 1\ \pi_1g(m)) \\
+  &= g(n-1) \vee (4 + \pi_0 g(n-1)) +_c insert\ f\ 1\ \pi_1g(n-1) \\
+  &= g(n-1) \vee (4 + \pi_0 g(n-1) + \pi_0 (insert\ f\ 1\ \pi_1g(n-1)), \pi_1 (insert\ f\ 1\ \pi_1g(n-1))) \\
+  &\text{since $\pi_0 (insert\ f\ 1\ m) > 0$ and $\pi_1 (insert\ f\ 1\ m) = 1 + m$} \\
+  &= (4 + \pi_0 g(n-1) + \pi_0 (insert\ f\ 1\ \pi_1g(n-1)), \pi_1 (insert\ f\ 1\ \pi_1g(n-1)))
+\end{align*}
+
+So our simplified recurrence is
+\begin{equation}
+  \label{eq:sort_rec_final}
+  g(n) = \begin{cases}
+    (1,0) & n=0 \\
+    (4 + \pi_0 g(n-1) + \pi_0 (insert\ f\ 1\ \pi_1g(n-1)), \pi_1 (insert\ f\ 1\ \pi_1g(n-1))) & n > 0
+  \end{cases}
+\end{equation}
+
+From this we can extract recurrences for the cost and the potential simply by taking projections from $g$.
+We begin with the potential because we will require the solution to the potential recurrence to solve the cost recurrence.
+
+Let $p = \pi_1 \circ g$.
+\begin{equation}
+  \label{eq:sort_rec_potential}
+  p(n) = \begin{cases}
+    0 & n=0 \\
+    \pi_1 (insert\ f\ 1\ \pi_1g(n-1))) & n > 0
+  \end{cases}
+\end{equation}
+
+We prove the size of the potential of the output is same as the size of the input.
+In other words, \T{sort} does not change the size of the list.
+\begin{theorem}
+  \label{thm:sort_potential}
+  $p(n) = n$
+\end{theorem}
+\begin{proof}
+  We prove this by straightforward induction on $n$.
+  \begin{description}
+    \item[case $n=0$] $p(0) = 0$\hfill \\
+    \item[case $n>0$] $p(n) = \pi_1(insert\ f\ 1\ pi_g(n-1)) = \pi_1(insert\ f\ 1\ (n-1)) = n$
+  \end{description}
+\end{proof}
+
+Let $c = \pi_0 \circ g$.
+\begin{equation}
+  \label{eq:sort_rec_cost}
+  c(n) = \begin{cases}
+    1 & n=0 \\
+    4 + \pi_0 g(n-1) + \pi_0 (insert\ f\ 1\ \pi_1g(n-1) & n > 0
+  \end{cases}
+\end{equation}
+
+\begin{theorem}
+  \label{thm:sort_cost}
+\end{theorem}
+\begin{proof}
+  We prove this by straightforward induction on $n$.
+  \begin{description}
+    \item[case $n=0$:] $c(0) = 1$
+    \item[case $n>0$:]
+      \begin{align*}
+        c(n) &= 4 + \pi_0 g(n-1) + \pi_0(insert\ f\ 1\ \pi_1g(n-1)) \\
+        &= 4 + \pi_0 g(n-1) + \pi_0(insert\ f\ 1\ (n-1) \\
+        &= 4 + (4 + \pi_0(\pi_1(f\ 1)\ 1))(n-1) + 1) + \pi_0 g(n-1)
+      \end{align*}
+      TODO COMPLETE
+  \end{description}
+\end{proof}
+
+OTHER THINGS TODO:
+FIX FREE VARIABLES IN APPLICATION
+SMOOTH OUT THE INSERT F X XS SITUATION
+THE INTERPRETATION OF INSERT IS NOT QUITE CORRECT.
+
+
+
+\begin{figure}[H]
+  \caption{Translation of \T{Nil} branch of \T{sort}.}
+  \label{fig:sort_nil}
+  \begin{lstlisting}
+  $\|$Nil$\mapsto$Nil$\|$
+
+  $= $Nil$\mapsto 1 +_c \|$Nil$\|$
+
+  $= $Nil$\mapsto 1 +_c \langle$0,NiL$\rangle$
+
+  $= $Nil$\mapsto \langle$1,NiL$\rangle$
+  \end{lstlisting}
+\end{figure}
+
+\begin{figure}[H]
+  \caption{Translation of \T{Nil} branch of \T{sort}.}
+  \label{fig:sort_cons}
+  \begin{lstlisting}
+  $\|$Cons$\mapsto\langle$y,$\langle$ys,r$\rangle\rangle$.insert f y force(r)
+
+  $= $Cons$\mapsto 1 +_c \|$insert f y force(r)$\|$
+
+  $= $Cons$\mapsto\langle$y,$\langle$ys,r$\rangle\rangle. 1 +_c (\|$force(r)$\|_c) +_c \|$insert f y$\|_p \|$force(r)$\|_p$
+
+  $= $Cons$\mapsto\langle$y,$\langle$ys,r$\rangle\rangle. 1 +_c ((\|$r$\|_c +_c \|$r$\|_p)_c) +_c \|$insert f y$\|_p (\|$r$\|_c +_c \|$r$\|_p)_p$
+
+  $= $Cons$\mapsto\langle$y,$\langle$ys,r$\rangle\rangle. 1 +_c $r$_c +_c \|$insert f y$\|_p $r$_p$
+
+  $= $Cons$\mapsto\langle$y,$\langle$ys,r$\rangle\rangle. 1 +_c $r$_c +_c 3 +_c \|$insert$\|_p$ f y r$_p$
+
+  $= $Cons$\mapsto\langle$y,$\langle$ys,r$\rangle\rangle. 4 +_c $r$_c +_c \|$insert$\|_p$ f y r$_p$
+
+  \end{lstlisting}
+\end{figure}
+
+\begin{figure}[H]
+\caption{Translation of \T{sort}}
+\label{fig:sort}
+\begin{lstlisting}
+$\|$sort$\|$ = $\langle0,\lambda$f.$\langle0,\lambda$xs.$\|$rec(xs, Nil$\mapsto$ Nil,
+                        Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle$.insert f y force(r))$\|\rangle\rangle$
+
+      = $\langle0,\lambda$f.$\langle0,\lambda$xs.rec(xs, Nil$\mapsto \langle$1,Nil$\rangle$
+                        Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle.4 +_c $r$_c +_c \|$insert$\|_p$ f y r$_p$
+\end{lstlisting}
+\end{figure}
+
+\begin{figure}[H]
+\caption{Translation of \T{sort}}
+\label{fig:sort_applied}
+\begin{lstlisting}
+$\|$sort f xs$\| = (1 + \|$sort f$\|_c + \|$xs$\|_c) +_c \|$sort f$\|_p \|$xs$\|_p$
+
+          $ = (1 + (1 + \|$sort$\|_c + \|$f$\|_c + \|$xs$\|_c)) +_c \|$sort$\|_p \|$f$\|_p \|$xs$\|_p$
+
+          $ = (1 + (1 + 0 + 0 + 0)) +_c \|$sort$\|_p \|$f$\|_p \|$xs$\|_p$
+
+          $ = 2 +_c \|$sort$\|_p $f$\|_p \|$xs$\|_p$
+
+          $ = 2 +_c $rec($\|$xs$\|_p$, Nil$\mapsto \langle$1,Nil$\rangle$
+                        Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle.4 +_c $r$_c +_c \|$insert$\|_p$ f y r$_p$
+\end{lstlisting}
+\end{figure}
+
+
+\begin{figure}[H]
+  \caption{Interpretation of \T{rec} in \T{sort}.}
+  \label{fig:sort_rec_interp}
+  \begin{lstlisting}
+  $g(n) = \llbracket $rec($\|$xs$\|_p$, Nil$\mapsto \langle$1,Nil$\rangle$
+                Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle.4 +_c $r$_c +_c \|$insert$\|_p$ f y r$_p$)$\rrbracket \xi \{ xs \mapsto n\}$
+
+     $ = \llbracket $rec($\|$xs$\|_p$, Nil$\mapsto \langle$1,Nil$\rangle$
+                Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle.4 +_c $r$_c +_c \|$insert$\|_p$ f y r$_p$)$\rrbracket \xi \{ xs \mapsto n\}$
+
+     $ = \llbracket $rec($\|$xs$\|_p$, Nil$\mapsto \langle$1,Nil$\rangle$
+                Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle.4 +_c $r$_c +_c \|$insert$\|_p$ f y r$_p$)$\rrbracket \xi \{ xs \mapsto n\}$
+
+     $ = \bigvee_{size(z)\leq n} case(z,(f_{Nil},f_{Cons}))$
+
+  $f_{Nil}(\langle\rangle) = \llbracket \langle$1,Nil$\rangle \rrbracket \xi$
+     $ = f_{Nil}(\langle\rangle) = (1,0)$
+
+  $f_{Cons}((1,m)) = \llbracket \dots \rrbracket \xi \{\langle$y,$\langle$ys,r$\rangle\rangle\mapsto map^{1\times\mathbb{N}^\infty} (\lambda a.(a,\llbracket$rec($w, \dots$)$\rrbracket \xi \{w \mapsto a\}), (1,m)) \}$
+
+    $ = \llbracket \dots \rrbracket \xi \{\langle$y,$\langle$ys,r$\rangle\rangle\mapsto (map^1 (\lambda a.(\dots), 1),map^{\mathbb{N}^\infty} (\lambda a.(a,\llbracket$rec($w, \dots$)$\rrbracket \xi \{w \mapsto a\}), m)) \}$
+
+    $ = \llbracket \dots \rrbracket \xi \{\langle$y,$\langle$ys,r$\rangle\rangle\mapsto (1,(m,\llbracket$rec($w, \dots$)$\rrbracket \xi \{w \mapsto m\})) \}$
+
+    $ = \llbracket (4 + $r$_c) +_c \|$insert$\|_p$ f y r$_p \rrbracket \xi \{\langle$y,$\langle$ys,r$\rangle\rangle\mapsto (1,(m,g(m)) \}$
+
+    $ = (4 + \pi_0 g(m)) +_c insert\ f\ 1\ \pi_1g(m)$
+
+  $g(n) = \bigvee_{size(z)\leq n} case(z,(\lambda(\langle\rangle).(1,0),\lambda(1,m).4 + \pi_0 g(m)) +_c insert\ f\ 1\ \pi_1g(m)))$
+  \end{lstlisting}
+\end{figure}
+
+\bibliography{jrrbib}{}
+\bibliographystyle{plainnat}
+\end{document}

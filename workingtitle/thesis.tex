@@ -1,0 +1,50 @@
+\documentclass[11pt]{westhesis}
+\usepackage[utf8]{inputenc}
+\usepackage{natbib}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{bussproofs}
+\usepackage{framed}
+\usepackage{listings}
+\usepackage{upgreek}
+\usepackage{stmaryrd}
+
+% ND comments.
+\usepackage[normalem]{ulem}
+\setlength{\marginparwidth}{1.25in}
+\reversemarginpar
+\newcommand{\ndComment}[2][\relax]{\ifx#1\relax\else\uline{#1}\fi\marginpar{\renewcommand{\baselinestretch}{1.0}\tiny ND: {#2}}}
+\newcommand{\ndTypo}[1]{\ndComment[#1]{$\longrightarrow$}}
+\newcommand{\ndDel}[1]{\sout{#1}\ndComment{$\longrightarrow$}}
+
+\department{Mathematics and Computer Science}
+\submitdate{TDS}
+\advisor{Norman Danner}
+
+\title{Working Title}
+\author{Justin Raymond}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+ 
+
+\begin{document}
+\frontmatter
+\maketitle
+\makededication
+\makeack
+\makeabstract        %TODO
+\tableofcontents
+
+\mainmatter
+\include{ComplexityAnalysis}
+\include{Examples}
+\include{WorkAndSpan}
+\include{MutualRecurrence}
+
+\bibliographystyle{plainnat}
+\bibliography{bibliography}
+
+\end{document}

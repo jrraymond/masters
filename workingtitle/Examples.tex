@@ -1,0 +1,704 @@
+\chapter{Examples}
+
+% ---------------------------------------- FAST REVERSE ----------------------------------------
+\section*{Fast Reverse}
+\section*{Source Language}
+%\lstset{mathescape=true,basicstyle=\ttfamily}
+%\begin{lstlisting}
+%datatype list = Nil of unit | Cons of int $\times$ list
+%\end{lstlisting}
+%
+%The following function reverses a list on $\Theta(n)$ time.
+%\begin{framed}
+%  \begin{small}
+%\begin{lstlisting}
+%rev xs = $\lambda$xs.rec(xs, Nil $\mapsto$ $\lambda$a.a,
+%                 Cons $\mapsto$ $\langle$x,$\langle$xs,r$\rangle\rangle$.$\lambda$a.force(r) Cons$\langle$x,a$\rangle$) Nil
+%\end{lstlisting}
+%\end{small}
+%\end{framed}
+%If we write out the match explicitly using splits:
+%\begin{framed}
+%\begin{small}
+%\begin{lstlisting}
+%rev xs = $\lambda$xs.rec(xs,
+%               Nil $\mapsto$ $\lambda$a.a,
+%               Cons$\mapsto$b.split(b,x.c.split(c,xs'.r.
+%                        $\lambda$a.force(r) Cons$\langle$x,a$\rangle$))) Nil
+%\end{lstlisting}
+%\end{small}
+%\end{framed}
+%The specification of \texttt{rev} is \texttt{rev [$x_0,\dots,x_{n-1}$] = [$x_{n-1},\dots,x_0$]}.
+%The specification of the auxilary function \texttt{rec(xs,$\dots$)} is \texttt{rec($[x_0,\dots,x_{n-1}],\dots$) [$y_0,\dots,y_{m-1}$] = [$x_{n-1},\dots,x_0,y_0,\dots,y_{m-1}$]}.
+%
+%\section*{Complexity Language}
+%\subsection*{Translation of \texttt{rev} using matching}
+%The translation into the complexity language proceeds as follows.
+%First we apply the rule \texttt{$\|\lambda$x.e$\|$ = $\langle$0,$\lambda$x.$\|$e$\|\rangle$}
+%
+%\begin{lstlisting}
+%$\|$rev$\|$ = $\langle$0,$\lambda$xs.$\|$rec(xs, Nil $\mapsto$ $\lambda$a.a
+%                     , Cons $\mapsto$ $\langle$x,$\langle$xs,r$\rangle\rangle$.$\lambda$a.force(r) Cons$\langle$x,a$\rangle$) Nil$\|\rangle$
+%\end{lstlisting}
+%
+%The we apply the rule for function application, \texttt{$\|$e$_0$ e$_1\|$ = 1$+\|$e$_0\|_c+\|$e$_1\|_c+_c\|$e$_0\|_p\|$e$_1\|_p$}.
+%\begin{lstlisting}
+%$\|$rev$\|$ = $\langle$0,$\lambda$xs.(1$+\|$xs$\|_c + \|$rec($\dots$)$\|_c + \|$Nil$\|_c ) +_c \|$rec($\dots$)$\|_p\|$Nil$\|_p\rangle$
+%\end{lstlisting}
+%
+%We will focus on the translation of the \texttt{rec} construct.
+%We apply the rule \texttt{$\|$rec(xs,$\overline{C \mapsto x.e_C})\|$ = $\|xs\|_c +_c $ rec($\|$xs$\|_p$,$\overline{C \mapsto x.1 +_c \|e_C\|}$) }
+%\begin{lstlisting}
+%$\|$rec(xs,$\dots$)$\|$ = $\|$xs$\|_c +_c$ rec($\|$xs$\|_p$,
+%                Nil $\mapsto$ 1 $+_c$ $\|\lambda$a.a$\|$,
+%                Cons $\mapsto$ $\langle$x,$\langle$xs,r$\rangle\rangle$.1 $+_c$ $\|\lambda$a.force(r) Cons$\langle$x,a$\rangle\|$)
+%= $\langle$0,xs$\rangle_c +_c$ rec($\langle$0,xs$\rangle_p$,
+%                Nil $\mapsto$ 1 $+_c$ $\|\lambda$a.a$\|$,
+%                Cons $\mapsto$ $\langle$x,$\langle$xs,r$\rangle\rangle$.1 $+_c$ $\|\lambda$a.force(r) Cons$\langle$x,a$\rangle\|$)
+%= rec(xs,
+%      Nil $\mapsto$ 1 $+_c$ $\|\lambda$a.a$\|$,
+%      Cons $\mapsto$ $\langle$x,$\langle$xs,r$\rangle\rangle$.1 $+_c$ $\|\lambda$a.force(r) Cons$\langle$x,a$\rangle\|$)
+%\end{lstlisting}
+%
+%The translation of the \texttt{Nil} branch is simple.
+%\begin{lstlisting}
+%= 1 $+_c$ $\|\lambda$a.a$\|$
+%= 1 $+_c$ $\langle$0,$\lambda$a.$\|$a$\|\rangle$
+%= 1 $+_c$ $\langle$0,$\lambda$a.$\langle$0,a$\rangle\rangle$
+%= $\langle$1,$\lambda$a.$\langle$0,a$\rangle\rangle$
+%\end{lstlisting}
+%
+%The translation of the \texttt{Cons} branch is a slightly more involved.
+%\begin{lstlisting}
+%= 1 $+_c$ $\|\lambda$a.force(r) Cons$\langle$x,a$\rangle\|$)
+%
+%= 1 $+_c$ $\langle 0,\|\lambda$a.force(r) Cons$\langle$x,a$\rangle\|\rangle$
+%
+%= $\langle 1,\lambda$a.$\|$force(r) Cons$\langle$x,a$\rangle\|\rangle$
+%
+%= $\langle 1,\lambda$a.$(1 + \|$force(r)$\|_c + \|$Cons$\langle$x,a$\rangle\|_c) +_c \|$force(r)$\|_p$ $\|$Cons$\langle$x,a$\rangle\|_p\rangle$
+%
+%= $\langle 1,\lambda$a.$(1 + (\|$r$\|_c +_c \|$r$\|_p)_c + \|$Cons$\langle$x,a$\rangle\|_c) +_c (\|$r$\|_c +_c \|$r$\|_p)_p$ $\|$Cons$\langle$x,a$\rangle\|_p\rangle$
+%
+%= $\langle 1,\lambda$a.$(1 + $r$_c + \|$Cons$\langle$x,a$\rangle\|_c) +_c $ r$_p$ $\|$Cons$\langle$x,a$\rangle\|_p\rangle$
+%
+%= $\langle 1,\lambda$a.$(1 + $r$_c + (\langle\|\langle$x,a$\rangle\|_c$,Cons$\|\langle$x,a$\rangle\|_p\rangle)_c) +_c $ r$_p (\langle\|\langle$x,a$\rangle\|_c$,Cons$\|\langle$x,a$\rangle\|_p\rangle)_p\rangle$
+%
+%= $\langle 1,\lambda$a.$(1 + $r$_c + \|\langle$x,a$\rangle\|_c) +_c $ r$_p $Cons$\|\langle$x,a$\rangle\|_p\rangle$
+%
+%= $\langle 1,\lambda$a.$(1 + $r$_c + \langle\|$x$\|_c + \|$a$\|_c$,$\langle\|$x$\|_p$,$\|$a$\|_p\rangle\rangle_c) +_c $ r$_p $Cons$\langle\|$x$\|_c + \|$a$\|_c$,$\langle\|$x$\|_p$,$\|$a$\|_p\rangle\rangle_p\rangle$
+%
+%= $\langle 1,\lambda$a.$(1 + $r$_c + \|$x$\|_c + \|$a$\|_c) +_c $ r$_p $Cons$\langle\|$x$\|_p$,$\|$a$\|_p\rangle\rangle$
+%
+%= $\langle 1,\lambda$a.$(1 + $r$_c + \langle$0,x$\rangle_c + \langle$0,a$\rangle_c) +_c $ r$_p $Cons$\langle\langle$0,x$\rangle_p$,$\langle$0,a$\rangle_p\rangle\rangle$
+%
+%= $\langle 1,\lambda$a.$(1 + $r$_c + 0 + 0) +_c $ r$_p $Cons$\langle$x,a$\rangle\rangle$
+%
+%= $\langle 1,\lambda$a.$(1 + $r$_c) +_c $ r$_p $Cons$\langle$x,a$\rangle\rangle$
+%\end{lstlisting}
+%So the translation of the whole \texttt{rec} is:
+%\begin{lstlisting}
+%rec(xs, Nil$\mapsto \langle$1,$\lambda$a.$\langle$0,a$\rangle\rangle$, Cons$\mapsto\langle$x,$\langle$xs',r$\rangle\rangle$.$\langle 1,\lambda$a.$(1 + $r$_c) +_c $ r$_p $Cons$\langle$x,a$\rangle\rangle$)
+%\end{lstlisting}
+%We observe that in both cases, the cost of \texttt{rec} is $1$, so we can simplify \texttt{r$_c$} to $1$.
+%\begin{lstlisting}
+%rec(xs, Nil$\mapsto \langle$1,$\lambda$a.$\langle$0,a$\rangle\rangle$, Cons$\mapsto\langle$x,$\langle$xs',r$\rangle\rangle$.$\langle 1,\lambda$a.$2 +_c $ r$_p $Cons$\langle$x,a$\rangle\rangle$)
+%\end{lstlisting}
+%
+%We will pick up where we left off with out translation of \texttt{rev}.
+%\begin{lstlisting}
+%$\|$rev$\|$ = $\langle$0,$\lambda$xs.(1$+\|$xs$\|_c + \|$rec($\dots$)$\|_c + \|$Nil$\|_c ) +_c \|$rec($\dots$)$\|_p\|$Nil$\|_p\rangle$
+%\end{lstlisting}
+%First we will translate the variables.
+%\begin{lstlisting}
+%$\|$rev$\|$ = $\langle$0,$\lambda$xs.$(1+\langle$0,xs$\rangle_c + \|$rec($\dots$)$\|_c + \langle$0,Nil$\rangle_c ) +_c \|$rec($\dots$)$\|_p\langle$0,Nil$\rangle_p\rangle$
+%      = $\langle$0,$\lambda$xs.$(1 + 0 + \|$rec($\dots$)$\|_c + 0 ) +_c \|$rec($\dots$)$\|_p$Nil$\rangle$
+%\end{lstlisting}
+%We use our translation of \texttt{rec(xs,$\dots$)} and the fact that the cost of every call to \texttt{rec} is $1$ to get:
+%\begin{lstlisting}
+%$\|$rev$\|$ = $\langle$0,$\lambda$xs.$(1 + 0 + 1 + 0 ) +_c \|$rec($\dots$)$\|_p$Nil$\rangle$
+%      = $\langle$0,$\lambda$xs.$2 +_c$rec(xs, Nil$\mapsto \langle$1,$\lambda$a.$\langle$0,a$\rangle\rangle$,
+%                      Cons$\mapsto\langle$x,$\langle$xs',r$\rangle\rangle$.$\langle 1,\lambda$a.$2 +_c $ r$_p $Cons$\langle$x,a$\rangle\rangle$)$_p $Nil$\rangle$
+%\end{lstlisting}
+%
+%So our complete translation of the linear time reversal function is
+%\begin{framed}
+%\begin{small}
+%\begin{lstlisting}
+%$\|$rev$\|$ = $\langle$0,$\lambda$xs.$(1 + 0 + 1 + 0 ) +_c \|$rec($\dots$)$\|_p$Nil$\rangle$
+%  = $\langle$0,$\lambda$xs.$2 +_c$rec(xs, Nil$\mapsto \langle$1,$\lambda$a.$\langle$0,a$\rangle\rangle$,
+%                  Cons$\mapsto\langle$x,$\langle$xs',r$\rangle\rangle$.$\langle 1,\lambda$a.$2 +_c $ r$_p $Cons$\langle$x,a$\rangle\rangle$)$_p $Nil$\rangle$
+%\end{lstlisting}
+%\end{small}
+%\end{framed}
+%
+%The interpretation of \texttt{rev} is rather dull as the cost of \texttt{rev} is always null.
+%Instead of interpreting \texttt{rev}, we will interpret \texttt{rev xs}.
+%In preparation we will translate \texttt{rev xs}.
+%\begin{lstlisting}
+%$\|$rev xs$\|$ = $(1 + \|$rev$\|_c + \|$xs$\|_c) +_c \|$rev$\|_p\|$xs$\|_p$
+%          = $(1 + 0 + \langle$0,xs$\rangle_c) +_c \|$rev$\|_p\langle$0,xs$\rangle_p$
+%          = $(1 + 0 + 0) +_c \|$rev$\|_p$xs
+%          = $1 +_c \|$rev$\|_p$xs
+%          = $1 +_c (\lambda$xs.rec(xs, Nil$\mapsto \langle$1,$\lambda$a.$\langle$0,a$\rangle\rangle$,
+%                      Cons$\mapsto\langle$x,$\langle$xs',r$\rangle\rangle$.$\langle 1,\lambda$a.$2 +_c $ r$_p $Cons$\langle$x,a$\rangle\rangle$)$_p $Nil$)$ xs
+%          = $1 +_c $rec(xs, Nil$\mapsto \langle$1,$\lambda$a.$\langle$0,a$\rangle\rangle$,
+%                      Cons$\mapsto\langle$x,$\langle$xs',r$\rangle\rangle$.$\langle 1,\lambda$a.$2 +_c $ r$_p $Cons$\langle$x,a$\rangle\rangle$)$_p $Nil$)$
+%          = $1 +_c$rec(xs, Nil$\mapsto \langle$1,$\lambda$a.$\langle$0,a$\rangle\rangle$,
+%                  Cons$\mapsto\langle$x,$\langle$xs',r$\rangle\rangle$.$\langle 1,\lambda$a.$2 +_c $ r$_p $Cons$\langle$x,a$\rangle\rangle$)$_p $Nil
+%\end{lstlisting}
+%\begin{framed}
+%\begin{small}
+%\begin{lstlisting}
+%$\|$rev xs$\|$ = $1 +_c$rec(xs, Nil$\mapsto \langle$1,$\lambda$a.$\langle$0,a$\rangle\rangle$,
+%                  Cons$\mapsto\langle$x,$\langle$xs',r$\rangle\rangle$.$\langle 1,\lambda$a.$2 +_c $ r$_p $Cons$\langle$x,a$\rangle\rangle$)$_p $Nil
+%\end{lstlisting}
+%\end{small}
+%\end{framed}
+%
+%\subsection*{Interpretation}
+%
+%We intepret the size of an \texttt{list} to be the number of list constructors.
+%\begin{framed}
+%$\llbracket$ \texttt{list} $\rrbracket$ = $\mathbb{N}^\infty$\\
+%$D^{list} = \{\ast\} + \{1\} \times \mathbb{N}^\infty$\\
+%$size_{list}(\texttt{Nil}) = 1$\\
+%$size_{list}(\texttt{Cons(1,n)}) = 1 + n$\\
+%\end{framed}
+%
+%The interpretation of \texttt{rev xs} proceeds as follows.
+%\begin{lstlisting}
+%  $\llbracket \|$rev xs$\| \rrbracket = \llbracket 1 +_c $rec(xs,$\dots$)$_p$ Nil$ \rrbracket$
+%  = $\llbracket \langle 1 + ($rec(xs,$\dots$)$_p$ Nil$)_c, ($rec(xs,$\dots$)$_p$ Nil$)_p \rangle \rrbracket$
+%  = $\langle 1 + \llbracket ($rec(xs,$\dots$)$_p$ Nil$)_c \rrbracket, \llbracket ($rec(xs,$\dots$)$_p$ Nil$)_p \rrbracket \rangle$
+%\end{lstlisting}
+%
+%We will focus on the interpretation of the auxilary function \texttt{rec(xs,$\dots$)}.
+%
+%Let $g(n) = \llbracket \texttt{rec(xs,$\dots$)} \rrbracket \{xs \mapsto n\}$
+%
+%\[g(n) = \bigvee_{size\ ys \leq n} case(ys, Nil \mapsto \langle1,\lambda a.\langle 0,a\rangle\rangle, Cons \mapsto \langle 1,m \rangle.\langle 1, \lambda a. 2 +_c \pi_1g(m) (a+1)\rangle)\]
+%
+%For $n=0$, $g(0) = \langle 1,\lambda a.\langle 0,a\rangle\rangle$.
+%
+%For $n>0$,
+%\[g(n+1) = \bigvee_{size\ ys \leq n+1} case(ys, Nil \mapsto \langle1,\lambda a.\langle 0,a\rangle\rangle, Cons \mapsto \langle 1,m \rangle.\langle 1, \lambda a. 2 +_c \pi_1g(m) (a+1)\rangle)\]
+%
+%\[ g(n+1) = \bigvee_{size\ ys \leq n} case(ys, Nil \mapsto \langle1,\lambda a.\langle 0,a\rangle\rangle, Cons \mapsto \langle 1,m \rangle.\langle 1, \lambda a. 2 +_c \pi_1g(m) (a+1)\rangle) \]
+%\[ \vee \bigvee_{size\ ys = n+1} case(ys, Nil \mapsto \langle1,\lambda a.\langle 0,a\rangle\rangle, Cons \mapsto \langle 1,m \rangle.\langle 1, \lambda a. 2 +_c \pi_1g(m) (a+1)\rangle) \]
+% 
+%\[ g(n+1) = g(n) \vee \bigvee_{size\ ys = n+1} case(ys, Nil \mapsto \langle1,\lambda a.\langle 0,a\rangle\rangle, Cons \mapsto \langle 1,m \rangle.\langle 1, \lambda a. 2 +_c \pi_1g(m) (a+1)\rangle) \]
+%
+%\[ g(n+1) = g(n) \vee \langle 1, \lambda a. 2 +_c \pi_1g(n) (a+1)\rangle)\]
+%
+%We want to show that $g$ is monotonically increasing; $\forall n.g(n) \leq g(n+1)$.
+%By definition of $\leq$, $g(n) \leq g(n+1) \Leftrightarrow \pi_0 g(n) \leq \pi_0 g(n+1) \land \pi_1 g(n) \leq \pi_1 g(n+1)$.
+%First we will show $\forall n. \pi_0 g(n) = 1$, the immediate corollary of which is $\forall n. \pi_0 g(n) \leq \pi_0 g(n+1)$.
+%\begin{proof}
+%We prove this by induction on $n$.
+%  \begin{description}
+%    \item[Base case: $n=0$]\hfill \\
+%      By definition, $\pi_0 g(0) = 1$.
+%    \item[Induction step: $n>0$]\hfill \\
+%      By definition $\pi_0 g(n+1) = \pi_0 (g(n) \vee \langle 1, \lambda a. 2 +_c \pi_1g(n) (a+1)\rangle)$.
+%      We distribute the projection over the max: $\pi_0 g(n+1) = \pi_0 g(n) \vee 1$.
+%      By the induction hypothesis, $\pi_0 g(n) = 1$, so $\pi_0 g(n+1) = 1$.
+%  \end{description}
+%\end{proof}
+%Now we argue that $\pi_1g(n) \leq \pi_1 g(n+1)$.
+%First we prove the lemma $\forall n.\pi_1 g(n) a \leq \pi_1 g(n) (a+1)$.
+%\begin{proof}
+%  We prove this by induction on $n$.
+%  \begin{description}
+%    \item[$n=0$]\hfill \\
+%      $\pi_1 g(0) a = \langle 0,a\rangle \leq \pi_1 g(0) (a+1) = \langle 0,a+1 \rangle$.
+%    \item[$n>0$]\hfill \\
+%      We assume $\pi_1 g(n) a \leq \pi_1 g(n) (a+1)$.
+%      \[ \pi_1 g(n) a \leq \pi_1 g(n) (a+1) \]
+%      \[ \pi_1 g(n) a \vee 2 +_c g(n) a \leq \pi_1 g(n) (a+1) \vee 2 +_c g(n) (a+1) \]
+%      \[ \pi_1 g(n+1) a \leq \pi_1 g(n+1) (a+1) \]
+%  \end{description}
+%\end{proof}
+%
+%Now we show $\pi_1 g(n) \leq \pi_1 g(n+1)$.
+%\begin{proof}
+%  By reflexivity, $\pi_1 g(n) \leq \pi_1 g(n)$.
+%  By the lemma we just proved:
+%  \[ \pi_1 g(n) a \leq \pi_1 g(n) (a+1) \]
+%  \[ \pi_1 g(n) a \leq 2 +_c \pi_1 g(n) (a+1) \]
+%  %\[ \pi_1 g(n) a \leq \langle 2 + \pi_0 (\pi_1 g(n) (a+1)), \pi_1 (\pi_1 g(n) (a+1)) \rangle \]
+%  \[ \lambda a.\pi_1 g(n) a \leq \lambda a. 2 +_c \pi_1 g(n) (a+1) \]
+%\end{proof}
+%
+%So since for all $n$, $\pi_0 g(n) = 1$ and $\pi_1 g(n) \leq \lambda a. 2 +_c \pi_1 g(n) (a+1)$, we can say
+%
+%\[ g(n) \leq \langle 1, \lambda a. 2 +_c \pi_1g(n) (a+1)\rangle) \]
+%
+%So 
+%\[ g(n+1) = \langle 1, \lambda a. 2 +_c \pi_1g(n) (a+1)\rangle\]
+%
+%
+%To extract a recurrence from $g$, we apply $g$ to the interpretation of a list $a$.
+%
+%Let $h(n,a) = \pi_1 g(n) a$
+%
+%For $n=0$
+%\begin{align*}
+%h(0,a) &= \pi_1 g(0) a \\
+%&= (\lambda a.\langle 0,a\rangle) a \\
+%&= \langle 0, a\rangle
+%\end{align*}
+%For $n>0$
+%\begin{align*}
+%h(n,a) &= \pi_1 g(n) a \\ 
+%&= (\lambda a. 2 +_c \pi_1g(n-1) (a+1)) a \\
+%&= 2 +_c \pi_1 g(n-1) (a+1)) \\
+%&= 2 +_c h(n-1,a+1) \\
+%&= \langle 2 + \pi_0 h(n-1,a+1), \pi_1 h(n-1,a+1)\rangle
+%\end{align*}
+%
+%From this recurrence, we can extract a recurrence for the cost. Let $h_c = \pi_0 \circ h$.
+%
+%For $n=0$
+%\begin{align*}
+%h_c(0,a) &= \pi_0 h(0,a)\\
+%&= \pi_0 \langle 0, a\rangle\\
+%&= 0
+%\end{align*}
+%For $n>0$
+%\begin{align*}
+%h_c(n,a) &= \pi_0 \langle 2 + \pi_0 h(n-1,a+1), \pi_1 h(n-1,a+1)\rangle\\
+%&= 2 + \pi_0 h(n-1,a+1)\\
+%&= 2 + h_c(n-1,a+1)
+%\end{align*}
+%
+%We now have a recurrence for the cost of the auxilary function \texttt{rec(xs,$\dots$)}:
+%\begin{framed}
+%  \begin{equation}
+%    h_c(n,a) = \begin{cases}
+%      0 & n = 0 \\
+%      2 + h_c(n-1,a+1) & n > 0
+%    \end{cases}
+%  \end{equation}
+%\end{framed}
+%
+%\textbf{Theroem: $h_c(n,a) = 2n$}
+%\begin{proof}
+%  We prove this by induction on $n$.
+%  \begin{description}
+%    \item{Base case: $n=0$}\hfill \\
+%      \[ h_c(0,a) = 0 = 2\cdot0 \]
+%    \item{Induction case:}\hfill \\
+%      We assume $h_c(n,a+1) = 2n$.\[h_c(n+1,a) = 2 + h_c(n,a+1) = 2 + 2n = 2(n+1)\]
+%  \end{description}
+%\end{proof}  
+%
+%The solution to the recurrence for the cost of the auxilary function \texttt{rec(xs,$\dots$)} is:
+%\begin{framed}
+%  \[h_c(n,a) = 2n \]
+%\end{framed}
+%
+%
+%We can also extract a recurrence for the potential. Let $h_p = \pi_1 \circ h$.
+%
+%For $n=0$
+%\begin{align*}
+%h_p(0,a) &= \pi_1 h(0,a)\\
+%&= \pi_1 \langle 0, a\rangle\\
+%&= a
+%\end{align*}
+%For $n>0$
+%\begin{align*}
+%h_p(n,a) &= \pi_1 \langle 2 + \pi_0 h(n-1,a+1), \pi_1 h(n-1,a+1)\rangle\\
+%&= \pi_1 h(n-1,a+1)\\
+%&= h_p (n-1,a+1)
+%\end{align*}
+%
+%We now have a recurrence for the potential of the auxilary function in \texttt{rev xs}:
+%\begin{framed}
+%  \begin{equation}
+%    h_p(n,a) = \begin{cases}
+%      a & n = 0 \\
+%      h_p(n-1,a+1) & n > 0
+%    \end{cases}
+%  \end{equation}
+%\end{framed}
+%
+%\textbf{Theroem: $h_p(n,a) = n + a$}
+%\begin{proof}
+%  We prove this by induction on $n$.
+%  \begin{description}
+%    \item{Base case: $n=0$}\hfill \\
+%      \[ h_p(0,a) = a \]
+%    \item{Induction case:}\hfill \\
+%      \[h_p(n,a) = h_p(n-1,a+1) = n - 1 + a + 1 = n + a\]
+%  \end{description}
+%\end{proof}  
+%
+%So the solution to the recurrence for the potential of the auxilary function.
+%\begin{framed}
+%  \[h_p(n,a) = n + a \]
+%\end{framed}
+%
+%
+%We return to our interpretation of \texttt{rev xs}.
+%\begin{lstlisting}
+%  $\llbracket \|$rev xs$\| \rrbracket = \langle 1 + \llbracket ($rec(xs,$\dots$)$_p$ Nil$)_c \rrbracket, \llbracket ($rec(xs,$\dots$)$_p$ Nil$)_p \rrbracket \rangle$
+%  $= \langle 1 + \pi_0 (\llbracket ($rec(xs,$\dots$)$_p\rrbracket 0) , \pi_1 (\llbracket $rec(xs,$\dots$)$_p\rrbracket 0)\rangle$
+%  $= \langle 1 + \pi_0 (\pi_1 g(n)\ 0) , \pi_1 (\pi_1g(n)\ 0)\rangle \text{ where }n\text{ is the length of}$ xs
+%  $= \langle 1 + \pi_0 h(n,0) , \pi_1 h(n,0)\rangle$
+%  $= \langle 1 + h_c(n,0) , h_p(n,0)\rangle$
+%  $= \langle 1 + 2n , n\rangle$
+%\end{lstlisting}
+%
+%This result tells us the cost of applying \texttt{rev} to a list \texttt{xs} of length $n$ is $1+2n$, and the resulting list has size $n$.
+%So \texttt{rev} = $\Theta(n)$.
+%
+%
+%
+%
+%\subsection*{Translation of \texttt{rev} using \texttt{split}}
+%The linear time reversal function using splits instead of the matching syntactic sugar is written as follows:
+%\begin{small}
+%\begin{lstlisting}
+%rev xs = $\lambda$xs.rec(xs,
+%               Nil $\mapsto$ $\lambda$a.a,
+%               Cons$\mapsto$b.split(b,x.c.split(c,xs'.r.
+%                          $\lambda$a.force(r) Cons$\langle$x,a$\rangle$))) Nil
+%\end{lstlisting}
+%\end{small}
+%
+%Like before, we will begin by translating the \texttt{rec} construct.
+%\begin{lstlisting}
+%$\|$rec($\dots$)$\|$ = $\|$rec(xs, Nil $\mapsto$ $\lambda$a.a,
+%             Cons$\mapsto$b.split(b,x.c.split(c,xs'.r.
+%                          $\lambda$a.force(r) Cons$\langle$x,a$\rangle$)))$\|$
+%
+% = $\langle$0,xs$\rangle_c +_c$ rec($\langle$0,xs$\rangle_p$, Nil $\mapsto 1 +_c$ $\|\lambda$a.a$\|$,
+%                Cons$\mapsto$b$. 1 +_c$ $\|$split(b,x.c.split(c,xs'.r.
+%                          $\lambda$a.force(r) Cons$\langle$x,a$\rangle$))$\|$)
+%
+% = rec(xs, Nil $\mapsto 1 +_c$ $\|\lambda$a.a$\|$,
+%       Cons$\mapsto$b$. 1 +_c$ $\|$split(b,x.c.split(c,xs'.r.
+%                          $\lambda$a.force(r) Cons$\langle$x,a$\rangle$))$\|$)
+%\end{lstlisting}
+%
+%The translation of the \texttt{Nil} branch is simple.
+%\begin{lstlisting}
+%= 1 $+_c$ $\|\lambda$a.a$\|$
+%
+%= 1 $+_c$ $\langle$0,$\lambda$a.$\|$a$\|\rangle$
+%
+%= 1 $+_c$ $\langle$0,$\lambda$a.$\langle$0,a$\rangle\rangle$
+%
+%= $\langle$1,$\lambda$a.$\langle$0,a$\rangle\rangle$
+%\end{lstlisting}
+%
+%The translation of the \texttt{Cons} branch is a slightly more involved.
+%\begin{lstlisting}
+%= Cons$\mapsto$b.$ 1 +_c$ $\|$split(b,x.c.split(c,xs'.r.
+%        $\lambda$a.force(r) Cons$\langle$x,a$\rangle$))$\|$)
+%
+%= Cons$\mapsto$b.$ 1 +_c$ $\|$b$\|_c +_c \|$split(c,xs'.r.
+%        $\lambda$a.force(r) Cons$\langle$x,a$\rangle$)$\|[\pi_0 \|$b$\|_p/x,\pi_1 \|$b$\|_p/c]$
+%\end{lstlisting}
+%
+%The translation of the type of \texttt{b} will illuminate the translation of the \texttt{split}.
+%The type of \texttt{b} is \texttt{b$::$int$\times \langle$list$\times \langle$list$\to$list$\rangle\rangle$}.\\
+%The type of \texttt{$\|$b$\|$} is \texttt{$\langle$C$\times \langle$int$\times\langle$list$\times \langle$C$\times$list$\to\langle$C$\times$list$\rangle\rangle\rangle\rangle\rangle$}.
+%We can say that \texttt{$\pi_0\|$b$\|_p$} is the head of the list \texttt{xs},
+%\texttt{$\pi_0\pi_1\|$b$\|_p$} is the tail of the list \texttt{xs},
+%and \texttt{$\pi_1\pi_1\|$b$\|_p$} is the result of the recursive call.
+%
+%\begin{lstlisting}
+%= Cons$\mapsto$b.$ 1 +_c$ $\langle$0,$\|$b$\|_p\rangle_c +_c \|$split(c,xs'.r.
+%        $\lambda$a.force(r) Cons$\langle$x,a$\rangle\|[\pi_0 \|$b$\|_p/x,\pi_1 \|$b$\|_p/c]$
+%
+%= Cons$\mapsto$b.$ 1 +_c 0 +_c (\|$c$\|_c +_c$
+%        $(\|\lambda$a.force(r) Cons$\langle$x,a$\rangle\|)[\pi_0 \|$c$\|_p / xs',\pi_1 \|$c$\|_p / r])[\pi_0 \|$b$\|_p/x,\pi_1 \|$b$\|_p/c]$
+%
+%= Cons$\mapsto$b.$ 1 +_c (\|$c$\|_c +_c$
+%        $\langle0,\lambda$a.$\|$force(r) Cons$\langle$x,a$\rangle\|\rangle[\pi_0 \|$c$\|_p / xs',\pi_1 \|$c$\|_p / r])[\pi_0 \|$b$\|_p/x,\pi_1 \|$b$\|_p/c]$
+%\end{lstlisting}
+%
+%Let us focus on the translation of \texttt{$\|$force(r) Cons$\langle$x,a$\rangle\|$}.
+%\begin{lstlisting}
+%= $(1 + \|$force(r)$\|_c + \|$Cons$\langle$x,a$\|_c) +_c \|$force(r)$\|_p \|$Cons$\langle$x,a$\rangle\|_p$
+%
+%= $(1 + (\|$r$\|_c +_c \|$r$\|_p)_c + \|$Cons$\langle$x,a$\rangle\|_c) +_c (\|$r$\|_c +_c \|$r$\|_p)_p \|$Cons$\langle$x,a$\rangle\|_p$
+%
+%= $(1 + (\|$r$\|_c +_c \|$r$\|_p)_c + \|$Cons$\langle$x,a$\rangle\|_c) +_c (\|$r$\|_c +_c \|$r$\|_p)_p \|$Cons$\langle$x,a$\rangle\|_p$
+%
+%= $(1 + \|$r$\|_c + \|$Cons$\langle$x,a$\rangle\|_c) +_c \|$r$\|_p \|$Cons$\langle$x,a$\rangle\|_p$
+%
+%= $(1 + \|$r$\|_c + (\langle\|\langle$x,a$\rangle\|_c$,Cons$\|\langle$x,a$\rangle\|_p\rangle)_c) +_c \|$r$\|_p \langle\|\langle$x,a$\rangle\|_c$,Cons$\|\langle$x,a$\rangle\|_p\rangle_p$
+%
+%= $(1 + \|$r$\|_c + \|\langle$x,a$\rangle\|_c) +_c \|$r$\|_p $Cons$\|\langle$x,a$\rangle\|_p$
+%
+%= $(1 + \|$r$\|_c + \langle \|$x$\|_c + \|$a$\|_c$,$\langle \|$x$\|_p$,$\|$a$\|_p \rangle \rangle_c) +_c \|$r$\|_p $Cons$\langle \|$x$\|_c + \|$a$\|_c$,$\langle \|$x$\|_p$,$\|$a$\|_p \rangle \rangle_p$
+%
+%= $(1 + \|$r$\|_c + (\|$x$\|_c + \|$a$\|_c)) +_c \|$r$\|_p $Cons$\langle \|$x$\|_p$,$\|$a$\|_p \rangle$
+%
+%= $(1 + $r$_c + (\langle$0,x$\rangle_c + \langle$0,a$\rangle_c)) +_c \langle$0,r$\rangle_p $Cons$\langle \langle$0,x$\rangle_p$,$\langle$0,a$\rangle_p \rangle$
+%
+%= $(1 + $r$_c + 0 + 0) +_c $r$_p $Cons$\langle$x,a$\rangle$
+%
+%= $(1 + $r$_c) +_c $r$_p $Cons$\langle$x,a$\rangle$
+%\end{lstlisting}
+%
+%We can now use this in our translation of the \texttt{Cons} case.
+%\begin{lstlisting}
+%= Cons$\mapsto$b.$ 1 +_c (\|$c$\|_c +_c$
+%        $\langle0,\lambda$a.$(1 + $r$_c) +_c $r$_p $Cons$\langle$x,a$\rangle\rangle[\pi_0 \|$c$\|_p / xs',\pi_1 \|$c$\|_p / r])[\pi_0 \|$b$\|_p/x,\pi_1 \|$b$\|_p/c]$
+%
+%= Cons$\mapsto$b.$ 1 +_c (\|$c$\|_c +_c$
+%        $\langle0,\lambda$a.$(1 + (\pi_1\|$c$\|_p)_c) +_c (\pi_1\|$c$\|_p)_p $Cons$\langle$x,a$\rangle\rangle)[\pi_0 \|$b$\|_p/x,\pi_1 \|$b$\|_p/c]$
+%
+%= Cons$\mapsto$b.$ 1 +_c (\|\pi_1\|$b$\|_p\|_c +_c$
+%        $\langle0,\lambda$a.$(1 + (\pi_1\|\pi_1\|$b$\|_p\|_p)_c) +_c (\pi_1\|\pi_1\|$b$\|_p\|_p)_p $Cons$\langle\pi_1\|$b$\|_p$,a$\rangle\rangle)$
+%
+%= Cons$\mapsto$b.$ 1 +_c (\|\pi_1\langle$0,b$\rangle_p\|_c +_c$
+%        $\langle0,\lambda$a.$(1 + (\pi_1\|\pi_1\langle$0,b$\rangle_p\|_p)_c) +_c (\pi_1\|\pi_1\langle$0,b$\rangle_p\|_p)_p $Cons$\langle\pi_1\langle$0,b$\rangle_p$,a$\rangle\rangle)$
+%
+%= Cons$\mapsto$b.$ 1 +_c (\|\pi_1$b$\|_c +_c$
+%        $\langle0,\lambda$a.$(1 + (\pi_1\|\pi_1$b$\|_p)_c) +_c (\pi_1\|\pi_1$b$\|_p)_p $Cons$\langle\pi_1$b,a$\rangle\rangle)$
+%
+%= Cons$\mapsto$b.$ 1 +_c (\langle$0,$\pi_1$b$\rangle_c +_c$
+%        $\langle0,\lambda$a.$(1 + (\pi_1\langle$0,$\pi_1$b$\rangle_p)_c) +_c (\pi_1\langle$0,$\pi_1$b$\rangle_p)_p $Cons$\langle\pi_1$b,a$\rangle\rangle)$
+%
+%= Cons$\mapsto$b.$ 1 +_c \langle0,\lambda$a.$(1 + (\pi_1\pi_1$b$)_c) +_c (\pi_1\pi_1$b$)_p $Cons$\langle\pi_1$b,a$\rangle\rangle$
+%
+%= Cons$\mapsto$b.$ \langle1,\lambda$a.$(1 + (\pi_1\pi_1$b$)_c) +_c (\pi_1\pi_1$b$)_p $Cons$\langle\pi_1$b,a$\rangle\rangle$
+%\end{lstlisting}
+%
+%\begin{lstlisting}
+%$\|$rec(xs,$\dots$)$\|$ = rec(xs,Nil$\mapsto\langle$1,$\lambda$a.$\langle$0,a$\rangle\rangle$,
+%                  Cons$\mapsto$b.$ \langle1,\lambda$a.$(1 + (\pi_1\pi_1$b$)_c) +_c (\pi_1\pi_1$b$)_p $Cons$\langle\pi_1$b,a$\rangle\rangle$)
+%\end{lstlisting}
+%So our translation of \texttt{rev} is
+%\begin{lstlisting}
+%$\|$rev$\|$ = $\langle$0,$\lambda$xs.rec(xs,Nil$\mapsto \langle$1,$\lambda$a.$\langle$0,a$\rangle\rangle$,
+%                  Cons$\mapsto$b.$ \langle1,\lambda$a.$(1 + (\pi_1\pi_1$b$)_c) +_c (\pi_1\pi_1$b$)_p $Cons$\langle\pi_1$b,a$\rangle\rangle$)$\rangle$
+%\end{lstlisting}
+%
+%We observe that in both cases of the \texttt{rec}, the cost of the recursive call is 1, so we can replace \texttt{$\pi_1\pi_1$b$_c$} with 1.
+%\begin{lstlisting}
+%$\|$rev$\|$ = $\langle$0,$\lambda$xs.rec(xs,Nil$\mapsto \langle$1,$\lambda$a.$\langle$0,a$\rangle\rangle$,
+%                  Cons$\mapsto$b.$ \langle1,\lambda$a.$(2 +_c (\pi_1\pi_1$b$)_p $Cons$\langle\pi_1$b,a$\rangle\rangle$)$\rangle$
+%\end{lstlisting}
+%
+%We are interested in the interpretation of \texttt{rev xs}.
+%\begin{lstlisting}
+%$\|$rev xs$\|$ = $(1 + \|$rev$\|_c \|$xs$\|_c) +_c \|$rev$\|_p \|$xs$\|_p$
+%
+%         = $(1 + \langle$0,$\lambda$xs.rec($\dots$)$\rangle_c + \langle$0,xs$\rangle_c) +_c \|$rev$\|_p \langle$0,xs$\rangle_p$
+%
+%         = $(1 + 0 + 0) +_c (\lambda$xs.rec(xs,Nil$\mapsto \langle$1,$\lambda$a.$\langle$0,a$\rangle\rangle$,
+%                    Cons$\mapsto$b.$ \langle1,\lambda$a.$(2 +_c (\pi_1\pi_1$b$)_p $Cons$\langle\pi_1$b,a$\rangle\rangle$)$)_p$xs
+%
+%         = $1 +_c $rec(xs,Nil$\mapsto \langle$1,$\lambda$a.$\langle$0,a$\rangle\rangle$,
+%                  Cons$\mapsto$b.$ \langle1,\lambda$a.$(2 +_c (\pi_1\pi_1$b$)_p $Cons$\langle\pi_1$b,a$\rangle\rangle$)
+%\end{lstlisting}
+%
+%\subsection*{Interpretation}
+%
+%We intepret the size of an \texttt{list} to be the number of list constructors.
+%\begin{framed}
+%$\llbracket$ \texttt{list} $\rrbracket$ = $\mathbb{N}^\infty$\\
+%$D^{list} = \{\ast\} + \{1\} \times \mathbb{N}^\infty$\\
+%$size_{list}(\texttt{Nil}) = 1$\\
+%$size_{list}(\texttt{Cons(1,n)}) = 1 + n$\\
+%\end{framed}
+%
+%The interpretation of \texttt{rev xs} proceeds as follows.
+%\begin{lstlisting}
+%  $\llbracket \|$rev xs$\| \rrbracket = \llbracket 1 +_c $rec(xs,$\dots$)$_p$ Nil$ \rrbracket$
+%  = $\llbracket \langle 1 + ($rec(xs,$\dots$)$_p$ Nil$)_c, ($rec(xs,$\dots$)$_p$ Nil$)_p \rangle \rrbracket$
+%  = $\langle 1 + \llbracket ($rec(xs,$\dots$)$_p$ Nil$)_c \rrbracket, \llbracket ($rec(xs,$\dots$)$_p$ Nil$)_p \rrbracket \rangle$
+%\end{lstlisting}
+%
+%We will focus on the interpretation of the auxilary function \texttt{rec(xs,$\dots$)}.
+%
+%Let $g(n) = \llbracket \texttt{rec(xs,$\dots$)} \rrbracket \{xs \mapsto n\}$
+%
+%\[g(n) = \bigvee_{size\ ys \leq n} case(ys, Nil \mapsto \langle1,\lambda a.\langle 0,a\rangle\rangle, Cons \mapsto \langle 1,m \rangle.\langle 1, \lambda a. 2 +_c \pi_1g(m) (a+1)\rangle)\]
+%
+%For $n=0$, $g(0) = \langle 1,\lambda a.\langle 0,a\rangle\rangle$.
+%
+%For $n>0$,
+%\[g(n+1) = \bigvee_{size\ ys \leq n+1} case(ys, Nil \mapsto \langle1,\lambda a.\langle 0,a\rangle\rangle, Cons \mapsto \langle 1,m \rangle.\langle 1, \lambda a. 2 +_c \pi_1g(m) (a+1)\rangle)\]
+%
+%\[ g(n+1) = \bigvee_{size\ ys \leq n} case(ys, Nil \mapsto \langle1,\lambda a.\langle 0,a\rangle\rangle, Cons \mapsto \langle 1,m \rangle.\langle 1, \lambda a. 2 +_c \pi_1g(m) (a+1)\rangle) \]
+%\[ \vee \bigvee_{size\ ys = n+1} case(ys, Nil \mapsto \langle1,\lambda a.\langle 0,a\rangle\rangle, Cons \mapsto \langle 1,m \rangle.\langle 1, \lambda a. 2 +_c \pi_1g(m) (a+1)\rangle) \]
+% 
+%\[ g(n+1) = g(n) \vee \bigvee_{size\ ys = n+1} case(ys, Nil \mapsto \langle1,\lambda a.\langle 0,a\rangle\rangle, Cons \mapsto \langle 1,m \rangle.\langle 1, \lambda a. 2 +_c \pi_1g(m) (a+1)\rangle) \]
+%
+%\[ g(n+1) = g(n) \vee \langle 1, \lambda a. 2 +_c \pi_1g(n) (a+1)\rangle)\]
+%
+%We want to show that $g$ is monotonically increasing; $\forall n.g(n) \leq g(n+1)$.
+%By definition of $\leq$, $g(n) \leq g(n+1) \Leftrightarrow \pi_0 g(n) \leq \pi_0 g(n+1) \land \pi_1 g(n) \leq \pi_1 g(n+1)$.
+%First we will show $\forall n. \pi_0 g(n) = 1$, the immediate corollary of which is $\forall n. \pi_0 g(n) \leq \pi_0 g(n+1)$.
+%\begin{proof}
+%We prove this by induction on $n$.
+%  \begin{description}
+%    \item[Base case: $n=0$]\hfill \\
+%      By definition, $\pi_0 g(0) = 1$.
+%    \item[Induction step: $n>0$]\hfill \\
+%      By definition $\pi_0 g(n+1) = \pi_0 (g(n) \vee \langle 1, \lambda a. 2 +_c \pi_1g(n) (a+1)\rangle)$.
+%      We distribute the projection over the max: $\pi_0 g(n+1) = \pi_0 g(n) \vee 1$.
+%      By the induction hypothesis, $\pi_0 g(n) = 1$, so $\pi_0 g(n+1) = 1$.
+%  \end{description}
+%\end{proof}
+%Now we argue that $\pi_1g(n) \leq \pi_1 g(n+1)$.
+%First we prove the lemma $\forall n.\pi_1 g(n) a \leq \pi_1 g(n) (a+1)$.
+%\begin{proof}
+%  We prove this by induction on $n$.
+%  \begin{description}
+%    \item[$n=0$]\hfill \\
+%      $\pi_1 g(0) a = \langle 0,a\rangle \leq \pi_1 g(0) (a+1) = \langle 0,a+1 \rangle$.
+%    \item[$n>0$]\hfill \\
+%      We assume $\pi_1 g(n) a \leq \pi_1 g(n) (a+1)$.
+%      \[ \pi_1 g(n) a \leq \pi_1 g(n) (a+1) \]
+%      \[ \pi_1 g(n) a \vee 2 +_c g(n) a \leq \pi_1 g(n) (a+1) \vee 2 +_c g(n) (a+1) \]
+%      \[ \pi_1 g(n+1) a \leq \pi_1 g(n+1) (a+1) \]
+%  \end{description}
+%\end{proof}
+%
+%Now we show $\pi_1 g(n) \leq \pi_1 g(n+1)$.
+%\begin{proof}
+%  By reflexivity, $\pi_1 g(n) \leq \pi_1 g(n)$.
+%  By the lemma we just proved:
+%  \[ \pi_1 g(n) a \leq \pi_1 g(n) (a+1) \]
+%  \[ \pi_1 g(n) a \leq 2 +_c \pi_1 g(n) (a+1) \]
+%  %\[ \pi_1 g(n) a \leq \langle 2 + \pi_0 (\pi_1 g(n) (a+1)), \pi_1 (\pi_1 g(n) (a+1)) \rangle \]
+%  \[ \lambda a.\pi_1 g(n) a \leq \lambda a. 2 +_c \pi_1 g(n) (a+1) \]
+%\end{proof}
+%
+%So since for all $n$, $\pi_0 g(n) = 1$ and $\pi_1 g(n) \leq \lambda a. 2 +_c \pi_1 g(n) (a+1)$, we can say
+%
+%\[ g(n) \leq \langle 1, \lambda a. 2 +_c \pi_1g(n) (a+1)\rangle) \]
+%
+%So 
+%\[ g(n+1) = \langle 1, \lambda a. 2 +_c \pi_1g(n) (a+1)\rangle\]
+%
+%
+%To extract a recurrence from $g$, we apply $g$ to the interpretation of a list $a$.
+%
+%Let $h(n,a) = \pi_1 g(n) a$
+%
+%For $n=0$
+%\begin{align*}
+%h(0,a) &= \pi_1 g(0) a \\
+%&= (\lambda a.\langle 0,a\rangle) a \\
+%&= \langle 0, a\rangle
+%\end{align*}
+%For $n>0$
+%\begin{align*}
+%h(n,a) &= \pi_1 g(n) a \\ 
+%&= (\lambda a. 2 +_c \pi_1g(n-1) (a+1)) a \\
+%&= 2 +_c \pi_1 g(n-1) (a+1)) \\
+%&= 2 +_c h(n-1,a+1) \\
+%&= \langle 2 + \pi_0 h(n-1,a+1), \pi_1 h(n-1,a+1)\rangle
+%\end{align*}
+%
+%From this recurrence, we can extract a recurrence for the cost. Let $h_c = \pi_0 \circ h$.
+%
+%For $n=0$
+%\begin{align*}
+%h_c(0,a) &= \pi_0 h(0,a)\\
+%&= \pi_0 \langle 0, a\rangle\\
+%&= 0
+%\end{align*}
+%For $n>0$
+%\begin{align*}
+%h_c(n,a) &= \pi_0 \langle 2 + \pi_0 h(n-1,a+1), \pi_1 h(n-1,a+1)\rangle\\
+%&= 2 + \pi_0 h(n-1,a+1)\\
+%&= 2 + h_c(n-1,a+1)
+%\end{align*}
+%
+%We now have a recurrence for the cost of the auxilary function \texttt{rec(xs,$\dots$)}:
+%\begin{framed}
+%  \begin{equation}
+%    h_c(n,a) = \begin{cases}
+%      0 & n = 0 \\
+%      2 + h_c(n-1,a+1) & n > 0
+%    \end{cases}
+%  \end{equation}
+%\end{framed}
+%
+%\textbf{Theroem: $h_c(n,a) = 2n$}
+%\begin{proof}
+%  We prove this by induction on $n$.
+%  \begin{description}
+%    \item{Base case: $n=0$}\hfill \\
+%      \[ h_c(0,a) = 0 = 2\cdot0 \]
+%    \item{Induction case:}\hfill \\
+%      We assume $h_c(n,a+1) = 2n$.\[h_c(n+1,a) = 2 + h_c(n,a+1) = 2 + 2n = 2(n+1)\]
+%  \end{description}
+%\end{proof}  
+%
+%The solution to the recurrence for the cost of the auxilary function \texttt{rec(xs,$\dots$)} is:
+%\begin{framed}
+%  \[h_c(n,a) = 2n \]
+%\end{framed}
+%
+%
+%We can also extract a recurrence for the potential. Let $h_p = \pi_1 \circ h$.
+%
+%For $n=0$
+%\begin{align*}
+%h_p(0,a) &= \pi_1 h(0,a)\\
+%&= \pi_1 \langle 0, a\rangle\\
+%&= a
+%\end{align*}
+%For $n>0$
+%\begin{align*}
+%h_p(n,a) &= \pi_1 \langle 2 + \pi_0 h(n-1,a+1), \pi_1 h(n-1,a+1)\rangle\\
+%&= \pi_1 h(n-1,a+1)\\
+%&= h_p (n-1,a+1)
+%\end{align*}
+%
+%We now have a recurrence for the potential of the auxilary function in \texttt{rev xs}:
+%\begin{framed}
+%  \begin{equation}
+%    h_p(n,a) = \begin{cases}
+%      a & n = 0 \\
+%      h_p(n-1,a+1) & n > 0
+%    \end{cases}
+%  \end{equation}
+%\end{framed}
+%
+%\textbf{Theroem: $h_p(n,a) = n + a$}
+%\begin{proof}
+%  We prove this by induction on $n$.
+%  \begin{description}
+%    \item{Base case: $n=0$}\hfill \\
+%      \[ h_p(0,a) = a \]
+%    \item{Induction case:}\hfill \\
+%      \[h_p(n,a) = h_p(n-1,a+1) = n - 1 + a + 1 = n + a\]
+%  \end{description}
+%\end{proof}  
+%
+%So the solution to the recurrence for the potential of the auxilary function.
+%\begin{framed}
+%  \[h_p(n,a) = n + a \]
+%\end{framed}
+%
+%
+%We return to our interpretation of \texttt{rev xs}.
+%\begin{lstlisting}
+%  $\llbracket \|$rev xs$\| \rrbracket = \langle 1 + \llbracket ($rec(xs,$\dots$)$_p$ Nil$)_c \rrbracket, \llbracket ($rec(xs,$\dots$)$_p$ Nil$)_p \rrbracket \rangle$
+%  $= \langle 1 + \pi_0 (\llbracket ($rec(xs,$\dots$)$_p\rrbracket 0) , \pi_1 (\llbracket $rec(xs,$\dots$)$_p\rrbracket 0)\rangle$
+%  $= \langle 1 + \pi_0 (\pi_1 g(n)\ 0) , \pi_1 (\pi_1g(n)\ 0)\rangle \text{ where }n\text{ is the length of}$ xs
+%  $= \langle 1 + \pi_0 h(n,0) , \pi_1 h(n,0)\rangle$
+%  $= \langle 1 + h_c(n,0) , h_p(n,0)\rangle$
+%  $= \langle 1 + 2n , n\rangle$
+%\end{lstlisting}
+%
+%
+%This result tells us the cost of applying \texttt{rev} to a list \texttt{xs} of length $n$ is $1+2n$, and the resulting list has size $n$.
+%So \texttt{rev} = $\Theta(n)$.
+
+% ----------------------------------------      INSERTION SORT       ----------------------------------------
+
+% ---------------------------------------- PARAMETRIC INSERTION SORT ----------------------------------------

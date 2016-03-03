@@ -1,0 +1,24 @@
+\documentclass[12pt]{article}
+
+\title{Using Hidden Markov Model Clustering to Simulate Client Behavior in the Tor Network}
+\author{Julian Applebaum}
+
+
+\author{Julian Applebaum}
+\begin{document}
+\maketitle
+
+\begin{itemize}
+\item{\textbf{Research Objective}: Tor Network simulators like Shadow and Experimentor currently use rather crude techniques for simulating client behavior. This research aims to create a more robust simulation by training Hidden Markov Models on cell timing data collected from a guard node. Using clustering techniques designed specifically for time series data, we hope to accurately capture multiple, distinct types of client behavior.}
+\item{\textbf{Procedure}: We will begin by collecting cell timing data via a customized version of Tor installed on Marlow. Once this data is collected, we will construct and compare five different models of cell timing patterns:
+	\begin{itemize}
+		\item{Random noise: This will serve as our ``base'' model. It should perform very poorly.}
+		\item{Shadow simulation: Shadow simulates behavior by crudely approximating the behavior of web browsers and bulk downloaders. }
+		\item{k-means + HMM: Cluster timing sequences with the k-means algorithm, then train a HMM on each cluster. This approach is drawn from Will Boyd's senior thesis.}
+		\item{Smyth HMM Clustering: Cluster timing sequences using Smyth's HMM clustering algorithm. Use the resulting composite HMM as our model.}
+		\item{Oates HMM Clustering (DTW+HMM). Cluster timing sequences with Dynamic Time Warping and HMMs. Use the resulting HMMs as our model.}
+	\end{itemize}
+Via techniques TBD, we will compare the validity of these five models. Our hypothesis is that the HMM clustering techniques will outperform the other, less sophisticated models. In particular, we believe the Smyth and Oates algorithms will be superior due to their specific focus on modeling clustered time series data.
+}
+\end{itemize}
+\end{document}

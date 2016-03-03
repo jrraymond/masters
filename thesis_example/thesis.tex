@@ -1,0 +1,49 @@
+\documentclass[11pt]{westhesis}
+
+\usepackage{natbib}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mdwlist}
+\usepackage{graphicx}
+\usepackage[font=small,labelfont=bf]{caption}
+
+\input comp321-listings
+\lstset{style=pseudocode}
+
+\DeclareGraphicsExtensions{.pdf,.png}
+
+% ND comments.
+\usepackage[normalem]{ulem}
+\setlength{\marginparwidth}{1.25in}
+\reversemarginpar
+\newcommand{\ndComment}[2][\relax]{\ifx#1\relax\else\uline{#1}\fi\marginpar{\renewcommand{\baselinestretch}{1.0}\tiny ND: {#2}}}
+\newcommand{\ndTypo}[1]{\ndComment[#1]{$\longrightarrow$}}
+\newcommand{\ndDel}[1]{\sout{#1}\ndComment{$\longrightarrow$}}
+
+\department{Mathematics and Computer Science}
+\submitdate{May, 2013}
+\advisor{Norman Danner}
+
+\title{A Model of Outbound Client Traffic on The Tor Anonymity Network}
+\author{Julian Applebaum}
+
+\begin{document}
+\frontmatter
+\maketitle
+%\makededication
+%\makeack
+%\makeabstract
+\tableofcontents
+
+\mainmatter
+\include{Tor}
+\include{TorModels}
+\include{HMMs}
+\include{Exploratory}
+\include{Clustering}
+\include{DataAnalysis}
+
+\bibliographystyle{plainnat}
+\bibliography{bibliography}
+
+\end{document}

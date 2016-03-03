@@ -1,0 +1,40 @@
+\chapter{Exploratory Data Analysis Techniques}
+In the data mining process, exploratory analysis is one of the most important steps a researcher must take. Exploratory analysis is the informal process of manipulating and visualizing data in search of intuitive patterns. Despite its informality, exploratory analysis is important because it helps us better understand the data we are trying to model. \citet{pyle} explains,
+\begin{quote}
+The most formidable pattern recognition apparatus known to humankind is easily accessible to any data miner -- the human brain and mind. So powerful is the human mind that it will perceive patterns even when none exist. The question is how to enable this formidable apparatus to go to work most effectively in data mining.
+\end{quote}
+ Exploratory analysis is an effective answer to \citeauthor{pyle}'s question. With the correct statistics and visualizations, we may form hypotheses about the data that inform the structure of our model.
+
+\section{Distribution Analysis}
+The dataset we will be analyzing is a set of single variable, natural-valued time series. For each series $O$, $O_t$ is the number of relay cells observed in time window $t$. Since the difference between two cell counts is meaningful, $O$'s observations are \textit{interval data}. For a single series, \citet{warner} suggests first examining the distribution of $O$'s observations. The distribution tells us what kinds of observations $O$ contains, how often they occur, and whether they tend to clump around one or more values. Note that since distribution analysis does not assume ordered data, it tells us nothing about how $O$ changes over time. In spite of this shortcoming, the observation distribution is still a useful, though incomplete characterization of a time series.
+
+ The maximum, minimum, mean, median and standard deviation are commonly used \textit{descriptive statistics} for summarizing a distribution. Below, we address each of these as they pertain to an individual Tor circuit's time series.
+
+\begin{itemize}
+	\item Maximum cells/second. This helps us assess the activity level of a circuit. A time series with a high maximum implies that at at least one point in time, the client was sending a large amount of outbound data.
+	\item Minimum cells/second. Due to the bursty nature of web traffic, this is not a useful statistic for our research. Even a highly active circuit is likely to have idle sections at 0 cells/second.
+	\item Mean cells/second ($\mu$). The mean is a measure of central tendency. For normally distributed observations, it tells us where the bulk of the corresponding Gaussian curve's mass lies. $\mu$ must be interpreted very cautiously because, due to their burstiness, our observations are far from normal. $\mu$ still serves as a useful proxy of the overall activity level present in a circuit. A value near 0 is evidence of an idle client, while a higher $\mu$ suggests at least one period of active communication.
+	\item Median cells/second. The median is a \textit{robust} measure of central tendency. It is robust because value is not influenced by outliers, and its meaning is the same regardless of the observations' distribution. For a length $n$ time series $O$, the median is found by sorting $O's$ observations in ascending order of value. If $n$ is odd, then the media is the $\lceil n/2 	\rceil$-th value. If $n$ is even, it is the mean of the $n/2$-th and $n/2 + 1$-th values.
+	\item Standard deviation of cells/second ($\sigma$). The standard deviation $\sigma$ is a measure of dispersion, telling us how much a set of observations tend to differ from their mean value. For normally distributed observations, it characterizes the shape of the corresponding Gaussian. A high standard deviation produces a low, flat curve, while a low one produces a sharp peak at $mu$. For a time series $O$, $\sigma$ is defined as the square root of $O$'s variance:
+	\[\sigma=\sqrt{\frac{1}{n}\sum\limits_{x \in X} (x-\mu)^2} \]
+	A series with $\mu$ and $\sigma$ near zero rarely, if ever, peaks above 0,  suggesting an idle circuit. A high $\sigma$ suggests a ``peaky'' series corresponding to bursts of data above the mean rate.
+\end{itemize}
+
+  To visualize a distribution, we use a frequency histogram. A frequency histogram is a bar chart in which each each bar represents the number of observations falling within a fixed range of values. A frequency histogram is constructed by binning $O$'s' observations by their value into a set of evenly sized intervals. Each interval $[j, k]$ is then plotted as a bar on the graph with height equal to the number of items in $[j, k]$.
+
+\section{Temporal Analysis}
+Distribution analysis is a general purpose method that applies to any type of interval data. To address $O$'s temporal dynamics, however, time series--specific methods are needed.
+
+One of the most useful visualizations of a time series is the time plot. Time is placed on the $x$-axis, observation values on the $y$-axis, and a line is drawn through the points. A time plot allows us to visually search for peaks, trends, and patterns in an individual series. An example time plot is show in the top half of ~\ref{fig:autocorrex}.
+
+To test for the existence of recurring patterns in $O$, we may used the lagged autocorrelation. To understand the lagged autocorrelation, first consider the sample Pearson correlation $r$ between two length $n$ series $O$ and $O'$:
+\[r_{XY} = \frac{\sum\limits_{i=1}^{n}(O_i-\mu_X)(O'_i-\mu_Y)}
+		   {(n-1)\sigma_O\sigma_O'}\]
+$r$ assesses the strength of linear association between $O$ and $O'$. It ranges from -1 to 1. A value of 1, or perfect positive correlation, indicates a very strong linear relationship between $O$ and $O'$. A value of -1, or perfect negative correlation, indicates an equally strong but negated linear relationship. 0 indicates the lack of any linear relationship. \citet{cohen} notes $|r| \geq .7$ is generally evidence of strong relationship. He also notes that visual inspection of $O$'s time plot is necessary to confirm inferences drawn from $r$.
+
+Given a time series $O$, let $O'_k$ be the result of lagging $O$ by $k$ time units, such that $O'_t = O{t-k}$. The lag $k$ autocorrelation of $X$ is $r_{OO'_k}$, the Pearson correlation of $O$ and $O'_k$. The value of $r_{OO'_k}$ tells us how strongly $X(t)$ is predicted by $X(t-k)$. $|r| \geq .7$ suggests a repeating pattern in the size $k$ time window. The top graph in Figure ~\ref{fig:autocorrex} shows an example time series displaying highly cyclic behavior. The bottom graph called a correlogram, and it plots the series' autocorrelation at varying $k$ values. Note how in the bottom graph, the autocorrelation peaks when $k$ is a multiple of 4. This provides strong evidence that the series has a repetitive component in the 4 unit time window.
+\begin{figure}
+	\centerline{\includegraphics[scale=0.3]{figures/autocorr-example.png}}
+	\caption{An example time series (top) and its correlogram (bottom).}
+	\label{fig:autocorrex}
+\end{figure}
