@@ -28,6 +28,11 @@
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{corollary}{Corollary}[theorem]
 \newtheorem{lemma}[theorem]{Lemma}
+
+\newcommand{\T}[1]{\texttt{#1}}
+\lstset{basicstyle=\scriptsize\ttfamily,mathescape}
+
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
  
 
 \begin{document}
@@ -41,10 +46,13 @@
 \mainmatter
 \include{ComplexityAnalysis}
 \include{Examples}
+\include{FastReverse}
+\include{Reverse}
+\include{ParametricInsertionSort}
+\include{InsertionSort}
 \include{WorkAndSpan}
 \include{MutualRecurrence}
 
-\bibliographystyle{plainnat}
 \bibliography{bibliography}
-
+\bibliographystyle{plainnat}
 \end{document}

@@ -1,6 +1,6 @@
 \chapter{Mutual Recurrence}
 
-\section*{}
+\section{Motivation}
 The interpretation of a recursive function can be seperated into a recurrence for 
 the cost and a recurrence for the potential. The recurrence for the cost depends on
 the recurrence for the potential. However, the recurrence for the potential does not 
@@ -11,7 +11,7 @@ keep track of the cost.
 We then show by logical relations that the potential of the complexity translation is
 related to the pure potential relation.
 
-\section*{Pure Potential Translation}
+\section{Pure Potential Translation}
 Our pure potential translation is defined below. The translation of an expression is
 essientially the expression itself, without suspensions.
 \begin{align*}
@@ -29,12 +29,12 @@ essientially the expression itself, without suspensions.
   |let(e_0, x.e_1)| &= |e_1|[|e_0|/x]
 \end{align*}
 
-\section*{Logical Relation}
+\section{Logical Relation}
 We define our logical relation below.
 
 \begin{align*}
   E &\sim_{\texttt{\tiny{Unit}}} E' \text{always}  \\
-  E &\sim_{\tau_0 \times \tau_1} E' \Leftrightarrow \forall k, k' \langle k, \pi_0 E_p\rangle \sim_{\tau_0} \pi_0 E', \langle k', \pi_1 E_p\rangle \sim_{\tau_1} \pi_1 E' \\
+  E &\sim_{\tau_0 \times \tau_1} E' \Leftrightarrow \forall k. \langle k, \pi_0 E_p\rangle \sim_{\tau_0} \pi_0 E', \forall k. \langle k, \pi_1 E_p\rangle \sim_{\tau_1} \pi_1 E' \\
   E &\sim_{\texttt{\tiny{susp }} \tau} E' \Leftrightarrow E_p \sim_\tau E' \\
   E &\sim_{\sigma \to \tau} E' \Leftrightarrow \forall E_0 \sim_\sigma E'_0. E_p E_{0p} \sim_\tau E' E'_0 \\
   E &\sim_\delta E' \Leftrightarrow \exists k, k', C, V, V'. V \sim_{\phi[\delta]} V', E \downarrow \langle k, C V_p \rangle, E' \downarrow C V'
@@ -44,12 +44,12 @@ The relation is defined on closed terms, but we extend it to open terms.
 Let $\Theta$ and $\Theta'$ be any substitutions such that $\forall x : \|\tau\|, \forall k, \langle k, \Theta(x) \rangle \sim_\tau \Theta'(x)$.
 If $E\ \Theta \sim_\tau E'\ \Theta'$, then $E \sim_\tau E'$.
 
-\section*{Proof}
+\section{Proof}
 
 We require some lemmas.
 
 The first states we can always ignore the cost of related terms.
-\begin{lemma}
+\begin{lemma}[Ignore Cost]
   \label{lem:ignorecost}
 \[
   E \sim_\tau E' \Leftrightarrow \forall k, \langle k, E_p \rangle \sim_\tau E'
@@ -84,7 +84,7 @@ The first states we can always ignore the cost of related terms.
 \end{proof}
 
 The next lemma states that if two terms step to related terms, then those terms are related.
-\begin{lemma}
+\begin{lemma}[Related Step Back]
   \label{lem:relatedstepback}
   \[
     E \to F, E' \to F', F \sim_\sigma F' \implies E \sim_\sigma E'
@@ -126,7 +126,7 @@ The next lemma states that if two terms step to related terms, then those terms 
 The next lemma states that related terms step to related terms
 
 \begin{lemma}
-  \label{lem:relatedstep}
+  \label{lem:relatedstep}[Related Step]
   \[ E \to F, E' \to F', E \sim_\sigma E' \implies F \sim_\sigma F' \]
 \end{lemma}
 
@@ -167,7 +167,7 @@ The next lemma states that related terms step to related terms
 
 The next lemma states that if the arguments to $map$ are related, then $map$ preserves the relatedness.
 \begin{lemma}
-  \label{lem:relatedmap}
+  \label{lem:relatedmap}[Related Map]
   \[ E \sim_{\tau_1} E', E_0 \sim_{\tau_0} E_0' \implies \forall k. \langle k, map^\Phi(x, E_p, E_{0p})\rangle \sim_{\Phi[\tau_1]} map^\Phi(x, E', E_0') \]
 \end{lemma}
 \begin{proof}
@@ -214,8 +214,47 @@ The next lemma states that if the arguments to $map$ are related, then $map$ pre
   So $map^{T \to \Phi}(x. E_p, E_{0p}) \sim map^{T \to \Phi}(x. E', E_0')$.
 \end{proof}
 
+Our last lemma is about the relatedness of $rec$ terms.
+\begin{lemma}[Related Rec]
+  \label{lem:relatedrec}
+  \[ E \sim_\delta E', \forall C, E_C \sim_\tau E_C' \implies rec(E_p, \overline{C \mapsto x.E_c}) \sim_\tau rec(E', \overline{C \mapsto x.E_c'}) \]
+\end{lemma}
+\begin{proof}
+  Recall the rule for evaluating $rec$ in the complexity language:
+  \begin{prooftree}
+    \AxiomC{$E \downarrow C V_0$}
+    \AxiomC{$map^\Phi(y,\langle y, rec(y, \overline{C \mapsto x.E_C})\rangle, V_0) \downarrow V_1$}
+    \AxiomC{$E_C[V_1/x] \downarrow V$}
+    \TrinaryInfC{$rec(E, \overline{C \mapsto x.E_C}) \downarrow V$}
+  \end{prooftree}
+  By definition of $\sim_\delta$, $\exists k, C, V_0, V_0'$ such that $E \downarrow \langle k, C V_{0p} \rangle, E' \downarrow C V_0'$, and $V_0 \sim_\delta V_0'$.
+  Our proof proceeds by induction on the number of constructors in $C V_{0p}$.
+  If $\Phi = T$, then $map^\Phi(y, \langle y, rec(y, \overline{C \mapsto x.E_C})\rangle, V_{0p}) = \langle y, rec(y, \overline{C \mapsto x.E_C})\rangle[V_{0p}/y] = \langle V_{0p}, rec(V_{0p}, \overline{C \mapsto x.E_C}) \rangle$.
+  Similarly for the pure potential, $map^\Phi(y, \langle y, rec(y, \overline{C \mapsto x.E_C'})\rangle, V_{0p}') = \langle y, rec(y, \overline{C \mapsto x.E_C'})\rangle [V_0'/y] = \langle V_0', rec(V_0', \overline{C \mapsto x.E_C'}) \rangle$.
+  By the induction hypothesis, $rec(V_{0p}, \overline{C \mapsto x.E_C}) \sim_\tau rec(V_0', \overline{C \mapsto x.E_C'})$.
+  By definition of $\sim_{\texttt{susp }\tau}$, for any $k$, $\langle k, rec(V_{0p}, \overline{C \mapsto x.E_C}) \rangle \sim_{\texttt{susp }\tau} rec(V_0', \overline{C \mapsto x.E_C'})$.
+  So by definition of $\sim_{\tau_0 \times \tau_1}$, $\langle 0, \langle V_{0p}, rec(V_{0p}, C \mapsto x.E_C) \rangle\rangle \sim_{\phi[\delta \times \texttt{susp }\tau]} \langle V_0', rec(V_0', \overline{C \mapsto x.E_C'})\rangle$.
+  So by \ref{lem:relatedmap}, $\forall k. \langle k, map^\Phi(y, \langle y, rec(y, \overline{C \mapsto x.E_C})\rangle, V_{0p}) \sim_{\phi[\delta \times \texttt{susp }\tau]} map^\Phi(y, \langle y, rec(y, \overline{C \mapsto x.E_C'}) \rangle, V_0')$.
+  Let $\langle 0, map^\Phi(y, \langle y, rec(y, \overline{C \mapsto x.E_C})\rangle, V_{0p}) \downarrow V_1$.
+  Let $map^\Phi(y, \langle y, rec(y, \overline{C \mapsto x.E_C'}) \rangle, V_0') \downarrow V_1'$.
+  By \ref{lem:relatedstep}, $V_1 \sim_{\phi[\delta \times \texttt{susp }\tau]} V_1'$.
+
+  If $\Phi = t$, then $map^\Phi(y, \langle y, rec(y, \overline{C \mapsto x.E_C})\rangle, V_{0p}) = V_{0p}$.
+  Similarly, $map^\Phi(y, \langle y, rec(y, \overline{C \mapsto x.E_C'})\rangle V_0') = V_0'$.
+  So in this case $V_0 = V_1$ and $V_0' = V_1'$.
+  We have already established $V_0 \sim_\tau V_0'$.
+
+  So in both cases $V_1 \sim_{\phi[\delta \times \texttt{susp }\tau]} V_1'$.
+
+  By definition of the relation $E_C[V_{1p}/x] \sim_\tau E_C'[V_1'/x]$.
+  Let $E_C[V_{1p}/x] \downarrow V_2$ and $E_C'[V_1'/x] \downarrow V_2'$.
+  By \ref{lem:relatedstep}, $V_2 \sim_\tau V_2'$.
+  So by \ref{lem:relatedstepback}, $rec(E_p, \overline{C \mapsto x.E_C}) \sim_\tau rec(E', \overline{C \mapsto x.E_C'})$.
+\end{proof}
+
+
 Our theorem is that for all well-typed terms in the source language, the complexity translation of the term is related to the pure potential translation of that term.
-\begin{theorem}
+\begin{theorem}[Distinct Recurrence]
   \[ \gamma \vdash e : \tau \implies \|e\| \sim_\tau |e| \]
 \end{theorem}
 \begin{proof}
@@ -284,15 +323,36 @@ Our theorem is that for all well-typed terms in the source language, the complex
   So $\|force(e)\| \sim_\tau |force(e)|$.
 
   Case \AxiomC{$\gamma \vdash e_0 : \sigma$}\AxiomC{$\gamma, x : \sigma \vdash e_1 : \tau$}\BinaryInfC{$\gamma \vdash let(e_0, x.e_1) : \tau$}\DisplayProof
+  By the induction hypothesis $\|e_0\| \sim_\sigma |e_0|$ and $\|e_1\| \sim_\tau |e_1|$.
+  So $\|e_1\|[\|e_0\|_p/x] \sim_\tau |e_1|[|e_0|/x]$.
+  By \ref{lem:ignorecost}, $\forall k, \langle k, \|e_1\|_p[\|e_0\|_p/x] \rangle \sim_\tau |e_1|[|e_0|/x]$.
+  The complexity translation is $\|let(e_0, x.e_1)\| = \|e_0\|_c +_c \|e_1\|[\|e_0\|_p/x]$.
+  The pure potential translation is $|let(e_0, x.e_1)| = |e_1|[|e_0|/x]$.
+  So $\|let(e_0, x.e_1)\|  \sim_\tau |let(e_0, x.e_1)|$.
 
   Case \AxiomC{$\gamma, x : \tau_0 \vdash v_1 : \tau_1$}\AxiomC{$\gamma \vdash v_0 : \phi[\tau_0]$}\BinaryInfC{$\gamma \vdash map^\phi(x.v_1, v_0) : \phi[\tau_1]$}\DisplayProof
-  TODO
+  By the induction hypothesis $\|v_1\| \sim_{\tau_1} |v_1|$ and $\|v_0\| \sim_{\phi[\tau_0]} |v_0|$.
+  By \ref{lem:relatedmap}, $\forall k, \langle k, map^\Phi(x.\|v_1\|_p, \|v_0\|_p)\rangle \sim_{\phi[\tau_1]} map^\Phi(x.|v_1|, |v_0|)$.
+  The complexity translation is $\|map^\phi(x.v_1, v_0)\| = \langle 0, map^\Phi(x.\|v_0\|_p, \|v_1\|_p)\rangle$.
+  The pure potential translation is $|map^\phi(x.v_1, v_0| = map^\Phi(x, |v_0|, |v_1|)$.
+  So we have $\|map^\phi(x.v_1, v_0)\| \sim_{\phi[\tau_1]} |map^\phi(x.v_1, v_0|$.
 
   Case \AxiomC{$\gamma \vdash e_0 : \delta$}\AxiomC{$\forall C (\gamma, x: \phi_C[\delta \times susp\ \tau] \vdash e_c : \tau$}\BinaryInfC{$\gamma \vdash rec^\delta(e_0, \overline{C \mapsto x.e_C}) : \tau$}\DisplayProof
-  TODO
+  By the induction hypothesis $\|e_0\| \sim_\delta |e_0|$ and $\forall C, \|e_c\| \sim_\tau |e_c|$.
+  By \ref{lem:ignorecost}, $\forall k, \langle k \|e_C\| \sim_\tau |e_c$, so $1 +_c \|e_C\| \sim_\tau |e_c|$.
+  So by \ref{lem:relatedrec}, $rec(\|e_0\|_p, \overline{C \mapsto x.1 +_c \|e_C\|}) \sim_\tau rec(|e_0|, \overline{C \mapsto x.1 +_c |e_C|})$.
+  So by \ref{lem:ignorecost}, $\|e_0\|_c +_c rec(\|e_0\|_p, \overline{C \mapsto x.1 +_c \|e_C\|}) \sim_\tau rec(|e_0|, \overline{C \mapsto x.1 +_c |e_C|})$
 
   Case \AxiomC{$\gamma \vdash e : \phi[\delta]$}\UnaryInfC{$\gamma \vdash C e : \delta$}\DisplayProof
-  TODO
+  By the induction hypothesis, $\|e\| \sim_{\phi[\delta]} |e|$.
+  There exists $V, V'$ such that $\|e\| \downarrow V$ and $|e| \downarrow V'$.
+  By \ref{lem:relatedstep} $V \sim_{\phi[\delta]} V'$.
+  Since $\|e\| \downarrow V$, $\langle k, C\ \|e\| \rangle \downarrow \langle k, C\ V_p$.
+  Similarly, since $|e| \downarrow V'$, $C |e| \downarrow C V'$.
+  So by definition we have $\langle k, C\ \|e\|\rangle \sim_\delta C |e|$.
+  The complexity translation is $\|C e\| = \langle \|e\|, C\|e\|_p\rangle$.
+  The pure potential translation is $|C e| = C |e|$.
+  Therefore by \ref{lem:ignorecost}, $\|C e\| \sim_\delta |C e|$.
 
 \end{proof}
 

@@ -1,3 +1,106 @@
 \chapter{Work and Span}
-\section*{Work and span}
-Work and span.
+
+\section{Work and span}
+Work and span is a method of calculating the cost of programs that may be run on multiple machines.
+The work of a program corresponds to the total number of steps needed to run.
+The span of a program is the steps in the critical path.
+The critical path is the largest number of steps that must be executed sequentially.
+The length of the critical path determines how much a program can be parallelized.
+If the span is equal to the work, than every step in the computation depends on the previous step, and the program cannot be parallelized.
+
+Instead of calculating the cost of program, we will construct a cost graph.
+The cost graph represents dependencies between computations in a program.
+The work and span can be extracted from the call graph.
+The call graph is used to determine execution strategies.
+
+A call graph is defined as follows.
+
+\[ \mathcal{C} ::= 0 | 1 | \mathcal{C} \oplus \mathcal{C} | \mathcal{C} \otimes \mathcal{C} \]
+
+The operator $\oplus$ connects to cost graphs who must be computed sequentially.
+The operator $\otimes$ connects cost graphs which may be computed in independently in parallel.
+
+We alter the operational semantics of the source language slightly to reflect that the cost of evaluating an expression is a cost graph instead of an integer.
+Figure \ref{fig:ws_srclang_oper_sem} shows the new operational semantics.
+For tuples, the subexpressions may be evaluated in parallel, so the cost of evaluating a tuple is the cost graphs of the subexpressions connected by $\otimes$.
+For \T{split}, the second subexpression depends on the result of the first subexpression, so the cost of evaluating the \T{split} is the cost graphs of the subexpression connected by $\oplus$.
+
+
+\begin{figure}
+\label{fig:ws_srclang_oper_sem}
+\caption{Source language operational semantics}
+\AxiomC{$e_0 \downarrow^{n_0} v_0$}
+\AxiomC{$e_1 \downarrow^{n_1} v_1$}
+\BinaryInfC{$\langle e_0, e_1 \rangle \downarrow^{n_0 \otimes n_1} \langle v_0, v_1 \rangle$}
+\DisplayProof
+
+\AxiomC{$e_0 \downarrow^{n_0} \langle v_0, v_1 \rangle$}
+\AxiomC{$e_1[v_0/x_0, v_1/x_1] \downarrow^{n_1} v$}
+\BinaryInfC{$split(e_0, x_0.x_1.e_1) \downarrow^{n_0 \oplus n_1} v$}
+\DisplayProof
+
+\AxiomC{$e_0 \downarrow^{n_0} \lambda x.e_0'$}
+\AxiomC{$e_1 \downarrow^{n_1} v_1$}
+\AxiomC{$e_0'[v_1/x] \downarrow^n v$}
+\TrinaryInfC{$e_0\ e_1 \downarrow^{(n_0 \otimes n_1) \oplus n \oplus 1} v$}
+\DisplayProof
+
+\AxiomC{}
+\UnaryInfC{$delay(e) \downarrow^0 delay(e)$}
+\DisplayProof
+
+\AxiomC{$e \downarrow^{n_0} delay(e_0)$}
+\AxiomC{$e_0 \downarrow^{n_1} v$}
+\BinaryInfC{$force(e) \downarrow^{n_0 \oplus n_1} v$}
+\DisplayProof
+
+\AxiomC{$e \downarrow^n v$}
+\UnaryInfC{$C e \downarrow^n C v$}
+\DisplayProof
+
+\AxiomC{$e \downarrow^{n_0} C v_0$}
+\AxiomC{$map^{\phi_C}(y.\langle y, delay(rec(y, \overline{C \mapsto x.e_C}))\rangle, v_0) \downarrow^{n_1} v_1$}
+\AxiomC{$e_C[v_1/x] \downarrow^{n_2} v$}
+\TrinaryInfC{$rec(e, \overline{C \mapsto x.e_C}) \downarrow^{1 \oplus n_0 \oplus n_1 \oplus n_2} v$}
+\DisplayProof
+
+\AxiomC{}
+\UnaryInfC{$map^t(x.v, v_0) \downarrow^0 v[v_0/x]$}
+\DisplayProof
+
+\AxiomC{}
+\UnaryInfC{$map^\tau(x.v, v_0) \downarrow^0 v_0$}
+\DisplayProof
+
+\AxiomC{$map^{\phi_0}(x.v, v_0) \downarrow^{n_0} v_0'$}
+\AxiomC{$map^{\phi_1}(x.v, v_1) \downarrow^{n_1} v_1'$}
+\BinaryInfC{$map^{\phi_0 \times \phi_1}(x.v, \langle v_0, v_1 \rangle) \downarrow^{n_0 \otimes n_1} \langle v_0', v_1'\rangle$}
+\DisplayProof
+
+\AxiomC{}
+\UnaryInfC{$map^{\tau \to \phi}(x.v, \lambda y.e) \downarrow^0 \lambda y.let(e, z.map^\phi(x.v, z))$}
+\DisplayProof
+
+\AxiomC{$e_0 \downarrow^{n_0} v_0$}
+\AxiomC{$e_1[v_0/x] \downarrow^{n_1} v$}
+\BinaryInfC{$let(e_0, x.e_1) \downarrow^{n_0 \oplus n_1} v$}
+\DisplayProof
+\end{figure}
+
+
+\section{Bounding Relation}
+TODO
+
+
+\section{Parallel List Map}
+TODO
+
+
+\section{Parallel Tree Map}
+A program which is embarrasingly parallel is tree map.
+When a function $f$ is mapped over a tree $t$, each application of $f$ to the label at each node can be done independently.
+Furthermore, the tree data structure itself is dividable by construction.
+Dividing the work requires only destruction of the node constructor to yield the left and right subtrees.
+
+\subsection*{Source Language}
+Recall the definition of the tree data type and the function map.

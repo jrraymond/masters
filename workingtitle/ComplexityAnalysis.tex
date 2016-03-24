@@ -1,3 +1,81 @@
 \chapter{Complexity Analysis}
-\section*{Introduction}
-This is the introduction.
+
+\section{Introduction}
+\paragraph{}
+The efficiency of programs is categorized by how the resource usage of a program increases with the input size in the limit.
+This is often called the asymptotic efficiency or complexity of a program.
+Asymptotic efficiency abstracts away the details of efficiency, allowing programs to be compared without knowledge of specific hardware architecture or the size and shape of the programs input (\citet{Cormen2001}).
+However, traditional complexity analysis is only first-order; the asymptotic efficiency of a program can only be expressed in terms of its input.
+For example it is not possible to describe the asymptotic efficiency of the function \texttt{map:(a -> b) -> [b] -> [a]}, which applies a function to every element in a list, in terms of the complexity of the function mapped over the list.
+Traditional complexity analysis can only show the asymptotic efficiency of \texttt{map} is bounded by the length of the list.
+\paragraph{}
+This thesis will build on work by Danner, in which the complexity of an expression is composed of a cost and a potential.
+
+\subsection*{Previous Work}
+\paragraph{}
+\citet{Danner2007}, building on the work of others, introduced the idea that the complexity of an expression consists of a cost, representing an upper bound on the time it takes to evaluate the expression, and a potential, representing the cost of future uses of the expression.
+The notion of a potential is key because it allows the analysis of higher-order expressions. 
+The complexity of a higher order function such as \texttt{map} depends on the potential of its argument function.
+They developed a type system for ATR, a call-by-value version of PCF, that consists of a part restricting the sizes of values of expressions and a part restricting the cost of evaluating a expression.
+Programs written in ATR are constrained by the type system as to run in less than type-2 polynomial time.
+\citet{Danner2009} extended this work to express more forms of recursion, in particular those required by insertion sort and selection sort.
+
+\paragraph{}
+\citet{Danner2013} utilized the notion of thinking of the complexity of an expression as a pair of a cost and a potential to statically analyze the complexity of a higher-order functional language with structural list recursion.
+The expressions in the higher-order functional language with structural list recursion, referred to as the source language, are mapped to expressions in a complexity language by a translation function.
+The translated expression describes an upper bound on the complexity of the original programs.
+
+\paragraph{}
+\citet{Danner2015} built on this work to formalize the extraction of recurrences from a higher-order functional language with structural recursion on arbitrary inductive data types.
+Arbitrary inductive data types are handled semantically using programmer-specified sizes of data types.
+Sizes must be programmer-specified because the structure of a data type does not always determine the interpretation of the size of a data type.
+Also, there exist different reasonable interpretations of size, and some may be preferable to others depending on what is being analyzed.
+For example, if the size of a list is interpreted as the length of the list, then the complexity \texttt{map$\langle$f,xs$\rangle$} will be order length of \texttt{xs}.
+If the size of a list is interpreted as a pair of the length and its largest element, then the complexity will depend on the length of \texttt{xs}, the potential of \texttt{f}, and the largest element.
+
+
+\subsection*{Proposed Work}
+
+\paragraph{}
+This thesis will focus on building a catalog of examples of the extraction of recurrences from functional programs using the approach by \citet{Danner2015}. The examples will help compare this approach with other methods, such as those by \citet{Avanzini2015} and \citet{HoffHof2010}, highlighting the strengths and weakness of this approach compared with others. The examples include fold, reversing a list and parametric insertion sort.
+
+\paragraph{}
+We will categorize the recurrences extracted from the example programs to develop a sense of the forms of recurrences produced by the method.
+
+\paragraph{}
+We will develop techniques to massage recurrences into usable forms in the size-based denotational semantics and in the syntax of the complexity language.
+The recurrences produced by the complexity translation are difficult to understand.
+For example, a program to reverse a list may be written in the source language as
+
+\begin{lstlisting}[mathescape=true,breaklines=true]
+rev(xs) =
+  rec(xs
+     , Nil $\mapsto$ Nil
+     , Cons $\mapsto \langle$x,$\langle$xs',r$\rangle \rangle$.
+               rec(force(r), Nil $\mapsto$ Cons($\langle$x, Nil$\rangle$)
+                           , Cons $\mapsto \langle$y,$\langle$ys,rys$\rangle \rangle$.
+                                      Cons($\langle$y,force(rys)$\rangle$)))
+\end{lstlisting}
+
+and the translated program in the complexity language is
+
+\begin{lstlisting}[mathescape=true,breaklines=true]
+$\|$xs$\|_c$ +$_c$
+   rec($\|$xs$\|_p$
+      , Nil $\mapsto$ $\langle$1, Nil$\rangle$
+      , Cons $\mapsto \langle$x,$\langle$xs',r$\rangle \rangle$.1 + r$_c$ +$_c$
+              rec(r$_p$
+                 , Nil$\mapsto$ $\langle$1,Nil$\rangle$
+                 , Cons$\mapsto \langle$y,$\langle$ys,rys$\rangle \rangle$.
+                      $\langle$1 + rys$_c$,Cons($\langle$y$_p$,rys$_p\rangle$)$\rangle$))
+\end{lstlisting}
+
+After interpreting this in a size based semantics that abstracts lists to lengths, the recurrence may be written as the much more manageable
+\[ g(n) = 1 + n + g(n-1) \]
+Developing a catalog of examples will familiarize us with techniques of simplifying the recurrences and we may be able to formalize the process.
+
+\paragraph*{}
+A more distant goal is to develop techniques to produce closed form solutions for the extracted recurrences.
+There are two ways to approach this.
+The first is to develop a library of tactics in Coq for transforming the recurrences.
+The second approach is use the techniques of \citet{Albert2011}, who has developed a framework for generating closed-form upper bounds on recurrences.

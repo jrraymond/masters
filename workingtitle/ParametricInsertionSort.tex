@@ -1,40 +1,6 @@
-\documentclass[12pt,letterpaper]{article}
-\usepackage[utf8]{inputenc}
-\usepackage[english]{babel}
-\usepackage{amsmath}
-\usepackage{amsfonts}
-\usepackage{amssymb}
-\usepackage{amsthm}
-\usepackage{float}
-\floatstyle{boxed} 
-\restylefloat{figure}
-\usepackage{framed}
-\usepackage[letterpaper]{geometry}
-\usepackage{graphicx}
-\usepackage{listings}
-\usepackage[parfill]{parskip}
-\usepackage[section]{placeins}
-\usepackage{upgreek}
-\usepackage{stmaryrd}
-
-\newtheorem{theorem}{Theorem}[section]
-\newtheorem{corollary}{Corollary}[theorem]
-\newtheorem{lemma}[theorem]{Lemma}
-
-\newcommand{\T}[1]{\texttt{#1}}
-\lstset{basicstyle=\scriptsize\ttfamily,mathescape}
-
-\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
-
-
-\begin{document}
-\begin{flushright}
-Parametric Insertion Sort\\
-Justin Raymond\\
-\today
-\end{flushright}
-
 \section{Parametric Insertion Sort}
+
+\subsection{Parametric Insertion Sort}
 Parametric insertion sort is a higher order algorithm which sorts a list using a comparison function which is passed to it as an argument.
 The running time of insertion sort is $\mathcal{O}(n^2)$.
 This characterization of the complexity of parametric insertion sort does not capture role of the comparison function in the running time.
@@ -54,7 +20,7 @@ sort = $\lambda$f.$\lambda$xs.rec(xs, Nil$\mapsto$ Nil, Cons$\mapsto \langle$y,$
 \end{lstlisting}
 \end{figure}
 
-\subsection{Insert}
+\subsubsection{Insert}
 The function \T{sort} relies on the function \T{insert} to insert the head of the list into the result of recursively sorted tail of the list.
 We will begin with a translation and interpretation of \T{insert}.
 
@@ -478,7 +444,7 @@ Using lemmas \ref{lem:insert_rec_cost} and \ref{lem:insert_rec_potential}, we ca
 \end{equation}
 
 
-\subsection{Sort}
+\subsubsection{Sort}
 
 \subsubsection{Translation}
 The translation of sort is shown in figure \ref{fig:sort}.
@@ -652,5 +618,3 @@ We may solve the recurrence for the cost of \T{sort}.
 As expected the cost of \T{sort} is $\mathcal{O}(n^2)$ where $n$ is the length of the list.
 It is clear from the analysis how the cost of the comparison function determines the running time of \T{sort}.
 We can see that the comparison function is called order $n^2$ times.
-
-\end{document}
