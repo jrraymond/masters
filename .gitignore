@@ -21,3 +21,14 @@
 *.mtc1
 *.out
 *.synctex.gz
+*.pdf
+
+*.swo
+*.swp
+
+*.bak
+*.fdb_latexmk
+
+
+westhesis/
+thesis_example/
