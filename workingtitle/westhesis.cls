@@ -5,42 +5,19 @@
 %% The original source files were:
 %%
 %% westhesis.dtx  (with options: `class')
-%%   westhesis Document Class (N. Danner)
+%%   WesThesis Document Class (N. Danner)
 
-%% westhesis:  Document class for Wesleyan University theses.
-%% N. Danner (ndanner@wesleyan.edu)
-%% Copyright 1999--2011
+%% westhesis:  Document class for IU Thesis.
+%% N. Danner (ndanner@indiana.edu)
+%% Copyright 1999
 
-%% The following RCS info is from the iuthesis class upon which westhesis
-%% is based.
-%%
 %% RCS Info:
-%%      iuthesis.dtx,v 1.2.0.23 1999/06/04 14:30:00 ndanger Exp
-
-
-\def\fileversion{1.0}
-\def\filedate{March 2011}
+%%      westhesis.dtx,v 1.2.0.23 1999/06/04 14:30:00 ndanger Exp
 
 
 
-
-
-
-
-
-\iffalse
-
-
-
-
-
-%%\item[ma] For a Master of Arts dissertation.
-
-%%\item[ms] For a Master of Science dissertation.
-
-%%\item[three] Use this if you only have three people on your committee
-%%(including your advisor).
-\fi
+\def\fileversion{1.2.0.23}
+\def\filedate{1999/06/04 14:30:00}
 
 
 
@@ -68,32 +45,36 @@
 
 
 
-\iffalse
-\fi
-\iffalse
-\fi
-
-\iffalse
-\fi
 
 
 
 
 
-\iffalse
-\fi
-
-
-
-\iffalse
-\fi
 
 
 
 
 
-\iffalse
-\fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -104,78 +85,84 @@
 \NeedsTeXFormat{LaTeX2e}[1996/12/01] \ProvidesClass{westhesis}
 \message{<< Class 'westhesis', v\fileversion, \filedate (N. Danner) >>}
 
-\newif\ifWT@debugging \WT@debuggingtrue \WT@debuggingfalse
-\def\WT@dbgmsg#1{\ifWT@debugging\message{#1}\fi}
-\def\WT@optionmsg#1{\message{  westhesis option: #1}}
+\newif\ifIUT@debugging \IUT@debuggingtrue \IUT@debuggingfalse
+\def\IUT@dbgmsg#1{\ifIUT@debugging\message{#1}\fi}
+\def\IUT@optionmsg#1{\message{  westhesis option: #1}}
 
-\def\WTdraftmsg#1{}
-\let\draftmsg\WTdraftmsg
-\def\WT@showdraftfoot{}
+\def\IUTdraftmsg#1{}
+\let\draftmsg\IUTdraftmsg
+\def\IUT@showdraftfoot{}
 \DeclareOption{draft}{
-  \WT@optionmsg{draft}
-  \def\WTdraftmsg#1{\gdef\WT@showdraftfoot{#1}}
-  \let\draftmsg\WTdraftmsg
-  \def\WT@showdraftfoot{DRAFT: \today}
+  \IUT@optionmsg{draft}
+  \def\IUTdraftmsg#1{\gdef\IUT@showdraftfoot{#1}}
+  \let\draftmsg\IUTdraftmsg
+  \def\IUT@showdraftfoot{DRAFT: \today}
   \PassOptionsToClass{draft}{amsbook}
 }
 
 \DeclareOption{final}{
-  \WT@optionmsg{final}
-  \def\WTdraftmsg#1{}
-  \let\draftmsg\WTdraftmsg
-  \def\WT@showdraftfoot{}
+  \IUT@optionmsg{final}
+  \def\IUTdraftmsg#1{}
+  \let\draftmsg\IUTdraftmsg
+  \def\IUT@showdraftfoot{}
   \PassOptionsToClass{final}{amsbook}
 }
 
-\newcount\WT@abstype
-\newcount\WT@nmlabstract\WT@nmlabstract=0
-\newcount\WT@umiabstract\WT@umiabstract=1
-\newcount\WT@ugsabstract\WT@ugsabstract=2
-\WT@abstype=\WT@nmlabstract
+\newcount\IUT@abstype
+\newcount\IUT@nmlabstract\IUT@nmlabstract=0
+\newcount\IUT@umiabstract\IUT@umiabstract=1
+\newcount\IUT@ugsabstract\IUT@ugsabstract=2
+\IUT@abstype=\IUT@nmlabstract
 \DeclareOption{umiabstract}{
-  \WT@optionmsg{umiabstract}
-  \WT@abstype=\WT@umiabstract
+  \IUT@optionmsg{umiabstract}
+  \IUT@abstype=\IUT@umiabstract
   \AtEndOfClass{\raggedbottom}
 }
-\newif\ifWT@ugsabs
-\WT@ugsabsfalse
+\newif\ifIUT@ugsabs
+\IUT@ugsabsfalse
 \DeclareOption{ugsabstract}{
-  \WT@optionmsg{ugsabstract}
-  \WT@abstype=\WT@ugsabstract
+  \IUT@optionmsg{ugsabstract}
+  \IUT@abstype=\IUT@ugsabstract
   \AtEndOfClass{\raggedbottom}
 }
 
-\newif\ifWT@abstractsigs
+\newif\ifIUT@abstractsigs
 \DeclareOption{abstractsigs}{
-  \WT@optionmsg{abstractsigs}
-  \WT@abstractsigstrue
+  \IUT@optionmsg{abstractsigs}
+  \IUT@abstractsigstrue
 }
 \DeclareOption{noabstractsigs}{
-  \WT@optionmsg{noabstractsigs}
-  \WT@abstractsigsfalse
+  \IUT@optionmsg{noabstractsigs}
+  \IUT@abstractsigsfalse
 }
 
-\newif\ifWT@noabstract
-\WT@noabstractfalse
+\newif\ifIUT@noabstract
+\IUT@noabstractfalse
 \DeclareOption{noabstract}{
-  \WT@optionmsg{noabstract}
-  \WT@noabstracttrue
+  \IUT@optionmsg{noabstract}
+  \IUT@noabstracttrue
 }
 
+\DeclareOption{ms}{
+  \AtEndOfClass{\degree{Master of Science}}
+}
+\DeclareOption{ma}{
+  \AtEndOfClass{\degree{Master of Arts}}
+}
 
-\newif\ifWT@three
-\DeclareOption{three}{\WT@threetrue}
+\newif\ifIUT@three
+\DeclareOption{three}{\IUT@threetrue}
 
 \DeclareOption{single}{
-  \AtEndOfClass{\def\WT@blstretch{1}}
+  \AtEndOfClass{\def\IUT@blstretch{1}}
 }
 
 \DeclareOption{debug}{
-  \WT@debuggingtrue
+  \IUT@debuggingtrue
 }
 
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{amsbook}}
-\ExecuteOptions{noabstractsigs,draft}
+\ExecuteOptions{abstractsigs,draft}
 \ProcessOptions
 
 \PassOptionsToClass{oneside}{amsbook}
@@ -199,7 +186,7 @@
       \normalfont\scriptsize\hfil\rightmark{}{}\hfil \llap{\thepage}
     }
     \def\@oddfoot{
-      \normalfont\ttfamily\scriptsize\rlap{\WT@showdraftfoot\hfill}\hfill
+      \normalfont\ttfamily\scriptsize\rlap{\IUT@showdraftfoot\hfill}\hfill
     }
     \global\let\@evenfoot\@oddfoot
     \global\let\@mkboth\markboth
@@ -216,7 +203,7 @@
       \normalfont\scriptsize\hfil\rightmark{}{}\hfil \llap{\thepage}
     }
     \def\@oddfoot{
-      \normalfont\ttfamily\scriptsize\rlap{\WT@showdraftfoot\hfill}\hfill
+      \normalfont\ttfamily\scriptsize\rlap{\IUT@showdraftfoot\hfill}\hfill
     }
     \global\let\@evenfoot\@oddfoot
     \global\let\@mkboth\markboth
@@ -234,7 +221,7 @@
       \normalfont\scriptsize\rlap{\leftmark{}{}}\hfill\llap{\rightmark{}{}}
     }
     \def\@oddfoot{
-      \normalfont\scriptsize\rlap{\ttfamily\WT@showdraftfoot\hfill}%
+      \normalfont\scriptsize\rlap{\ttfamily\IUT@showdraftfoot\hfill}%
       \hfil\thepage\hfil
     }
     \global\let\@evenfoot\@oddfoot
@@ -243,11 +230,11 @@
     \gdef\chaptermark{%
       \@secmark\markboth\chapterrunhead\chaptername}%
     \gdef\sectionmark{
-      \@secmark\markright\WT@sectionrunhead{}}
+      \@secmark\markright\IUT@sectionrunhead{}}
   }
 }
 
-\def\WT@sectionrunhead#1#2#3{%
+\def\IUT@sectionrunhead#1#2#3{%
   \def\@tempa{#3}%
     \ifx\@empty\@tempa\else%
     \@ifnotempty{#2}{\uppercase{#1 #2}\@ifnotempty{#3}{. }}%
@@ -258,14 +245,13 @@
 \def\ps@plain{\ps@empty
   \def\@oddfoot{
     \normalfont\scriptsize
-    \rlap{\ttfamily\WT@showdraftfoot}\hfil\thepage\hfil
+    \rlap{\ttfamily\IUT@showdraftfoot}\hfil\thepage\hfil
   }
   \let\@evenfoot\@oddfoot
 }
 
 \renewcommand{\author}[1]{\gdef\@author{#1}}\let\@author\relax
-\renewcommand{\title}[1]{\gdef\@title{#1}}
-\let\@title\relax
+\renewcommand{\title}[1]{\gdef\@title{#1}\uppercasenonmath\@title}\let\@title\relax
 
 \def\submitdate#1{\gdef\@submitdate{#1}}\let\@submitdate\relax
 \def\department#1{\gdef\@department{#1}}\let\@department\relax
@@ -301,7 +287,7 @@
 \newenvironment{acknowledgements}{%
   \global\let\acknowledgements\relax%
   \bgroup
-  \renewcommand{\baselinestretch}{\WT@blstretch}
+  \renewcommand{\baselinestretch}{\IUT@blstretch}
   \normalsize
   \global\setbox\acknowledgebox\vbox\bgroup
   \trivlist%
@@ -314,7 +300,7 @@
 \renewenvironment{abstract}{%
   \global\let\abstract\relax%
   \bgroup%
-  \renewcommand{\baselinestretch}{\WT@blstretch}%
+  \renewcommand{\baselinestretch}{\IUT@blstretch}%
   \normalsize%
   \global\setbox\abstractbox\vbox\bgroup
   \trivlist\item[]\ignorespaces
@@ -325,57 +311,51 @@
   \global\let\endabstract\relax
 }
 
-%% If \option{ugsabstract} or \option{umiabstract}
-%% has been specified, then the abstract should be typeset with no page numbers.
-%% If \option{umiabstract} or \option{ugsabstract}
-%% has been specified, print the advisor's name or the signature lines,
-%% respectively.  This could be done with an |\ifcase|, but seems less
-%% transparent when re-reading the code.
-\def\WT@defineabstract{
+\def\IUT@defineabstract{
   \gdef\makeabstract{
     \typeout{Abstract}
     \bgroup
     \normalfont
-    \ifnum\WT@abstype>0%
-      \WT@dbgmsg{makeabstract: Setting abstract pagestyle empty}%
+    \ifnum\IUT@abstype>0%
+      \IUT@dbgmsg{makeabstract: Setting abstract pagestyle empty}%
       \pagestyle{empty}\thispagestyle{empty}%
     \else%
-      \WT@dbgmsg{makeabstract: Setting abstract pagestlye plain}%
+      \IUT@dbgmsg{makeabstract: Setting abstract pagestlye plain}%
     \fi%
-    \ifnum\WT@abstype>0%
-      \WT@dbgmsg{makeabstract: Setting title}%
+    \ifnum\IUT@abstype>0%
+      \IUT@dbgmsg{makeabstract: Setting title}%
       \begin{center}%
       \check@val\@author \\[.5\baselineskip]
       \check@val\@title
       \end{center}%
       \vskip\baselineskip
-      \WT@dbgmsg{makeabstract: Done}%
+      \IUT@dbgmsg{makeabstract: Done}%
     \else%
-      \WT@dbgmsg{makeabstract: Setting title}%
+      \IUT@dbgmsg{makeabstract: Setting title}%
       \@makeschapterhead{Abstract}
     \fi%
-    \WT@dbgmsg{makeabstract: Setting abstract}%
+    \IUT@dbgmsg{makeabstract: Setting abstract}%
     \unvbox\abstractbox
-    \ifnum\WT@abstype=\WT@umiabstract%
-      \WT@dbgmsg{makeabstract (umi): advisor's name}%
+    \ifnum\IUT@abstype=\IUT@umiabstract%
+      \IUT@dbgmsg{makeabstract (umi): advisor's name}%
       \vskip\baselineskip%
       \hbox to\hsize{\hfill\check@val\@principaladvisor, Ph.D.}%
     \fi
-    \ifnum\WT@abstype=\WT@ugsabstract%
-      \WT@dbgmsg{makeabstract (ugs): signature lines}%
-      \ifWT@abstractsigs%
+    \ifnum\IUT@abstype=\IUT@ugsabstract%
+      \IUT@dbgmsg{makeabstract (ugs): signature lines}%
+      \ifIUT@abstractsigs%
       \vbox{
 \hbox to\textwidth{%
-  \WT@sig[2.5in]{\check@val\@principaladvisor, Ph.D.}\hfill%
-  \WT@sig[2.5in]{\check@val\@thirdreader, Ph.D.}%
+  \IUT@sig[2.5in]{\check@val\@principaladvisor, Ph.D.}\hfill%
+  \IUT@sig[2.5in]{\check@val\@thirdreader, Ph.D.}%
 }%
 \hbox to\textwidth{%
-  \WT@sig[2.5in]{\check@val\@secondreader, Ph.D.}\hfill%
-  \ifWT@three\else\WT@sig[2.5in]{\check@val\@fourthreader, Ph.D.}\fi%
+  \IUT@sig[2.5in]{\check@val\@secondreader, Ph.D.}\hfill%
+  \ifIUT@three\else\IUT@sig[2.5in]{\check@val\@fourthreader, Ph.D.}\fi%
 }%
 \ifx\@fifthreader\relax\else%
   \hbox to\textwidth{%
-    \hfill\WT@sig[2.5in]{\check@val\@fifthreader, Ph.D.}%
+    \hfill\IUT@sig[2.5in]{\check@val\@fifthreader, Ph.D.}%
   }%
 \fi%
       }
@@ -383,7 +363,7 @@
     \fi
     \newpage
     \egroup
-    \ifnum\WT@abstype>0
+    \ifnum\IUT@abstype>0
       \def\end@fterabstract{\end{document}}
     \else
       \def\end@fterabstract{}
@@ -392,57 +372,63 @@
   }
 }
 
-\ifWT@noabstract
-  \ifnum\WT@abstype>0\WT@defineabstract\else\def\makeabstract{}\fi
+\ifIUT@noabstract
+  \ifnum\IUT@abstype>0\IUT@defineabstract\else\def\makeabstract{}\fi
 \else
-  \WT@defineabstract
+  \IUT@defineabstract
 \fi
 
-\ifnum\WT@abstype>1
-  \WT@dbgmsg{Setting maketitle noop}
+\ifnum\IUT@abstype>1
+  \IUT@dbgmsg{Setting maketitle noop}
   \def\maketitle{}
 \else
   \def\maketitle{
     \bgroup
-\thispagestyle{empty}
-\noindent Wesleyan University\hfill The Honors College
-\vskip.5ex\hrule
-\vskip3in
-\bgroup
-\Large
-\begin{center}\check@val\@title\end{center}
-\egroup
-\vskip.25in
-\bgroup
-\large
+\renewcommand{\baselinestretch}{1.66}
+    \thispagestyle{empty}
+    \hrule\noindent
 \begin{center}
-by \\[\baselineskip]
-\check@val\@author
+    \textbf{Wesleyan~$\blacklozenge$~University}
 \end{center}
-\egroup
-\vfill
-\bgroup
-\large
-\begin{center}
-A thesis submitted to the\\
-faculty of Wesleyan University\\
-in partial fulfillment of the requirements for the\\
-Degree of Bachelor of Arts\\
-with Departmental Honors in \check@val\@department
-\end{center}
-\vskip\baselineskip
-\vskip.5ex
-\noindent Middletown, Connecticut\hfill\check@val\@submitdate
-\vskip.5ex
-\hrule
-\egroup
-\egroup
-\newpage
+    \hrule
+    \hbox{}\vskip1in
+    \bgroup
+    \LARGE\bfseries
+    \begin{center}
+    \check@val\@title
+    \end{center}
+    \egroup
+    \vfill
+    \bgroup
+    \Large
+    \begin{center}
+By \\
+    \check@val\@author \\
+Faculty Advisor: \check@val\@principaladvisor
+    \end{center}
+    \egroup
+    \vskip1in
+    \begin{center}
+\renewcommand{\baselinestretch}{1.0}
+\small
+A Dissertation submitted to the Faculty of Wesleyan University in partial fulfillment of the \\
+requirements for the degree of \check@val\@degree
+    \end{center}
+    \vskip.25in
+    \hrule
+\vskip1ex\noindent
+\textbf{Middletown, Connecticut}
+\hfill
+\textbf{\check@val\@submitdate}
+\vskip1ex
+    \hrule
+    \egroup
+    \newpage
   }
 \fi
 
-\ifnum\WT@abstype>0
-  \WT@dbgmsg{Setting frontmatter commands noops}
+\ifnum\IUT@abstype>0
+  \IUT@dbgmsg{Setting frontmatter commands noops}
   \def\signaturepage{}
   \def\copyrightpage{}
   \newcommand{\makededication}[1][]{}
@@ -456,14 +442,14 @@ with Departmental Honors in \check@val\@department
     fulfillment of the requirements for the degree of \check@val\@degree.
     \egroup
     \vskip.5in
-    \hbox to\textwidth{\hfill\WT@sig{\check@val\@principaladvisor, Ph.D.}}%
-    \hbox to\textwidth{\hfill\WT@sig{\check@val\@secondreader, Ph.D.}}%
-    \hbox to\textwidth{\hfill\WT@sig{\check@val\@thirdreader, Ph.D.}}%
-    \ifWT@three\else%
-      \hbox to\textwidth{\hfill\WT@sig{\check@val\@fourthreader, Ph.D.}}%
+    \hbox to\textwidth{\hfill\IUT@sig{\check@val\@principaladvisor, Ph.D.}}%
+    \hbox to\textwidth{\hfill\IUT@sig{\check@val\@secondreader, Ph.D.}}%
+    \hbox to\textwidth{\hfill\IUT@sig{\check@val\@thirdreader, Ph.D.}}%
+    \ifIUT@three\else%
+      \hbox to\textwidth{\hfill\IUT@sig{\check@val\@fourthreader, Ph.D.}}%
     \fi%
     \ifx\@fifthreader\relax\else%
-      \hbox to\textwidth{\hfill\WT@sig{\check@val\@fifthreader, Ph.D.}}%
+      \hbox to\textwidth{\hfill\IUT@sig{\check@val\@fifthreader, Ph.D.}}%
     \fi
     \vfill
     \noindent\check@val\@submitdate
@@ -503,7 +489,7 @@ with Departmental Honors in \check@val\@department
 
 \fi
 
-\newcommand{\WT@sig}[2][3in]{
+\newcommand{\IUT@sig}[2][3in]{
    \vbox{%
     \hrule width 0pt height 1in depth 0pt%
     \hrule width #1 height .4pt depth 0pt%
@@ -512,23 +498,35 @@ with Departmental Honors in \check@val\@department
    }
 }
 
+\long\def\@caption#1[#2]#3{%
+  \par
+  \addcontentsline{\csname ext@#1\endcsname}{#1}%
+    {\protect\numberline{\thechapter.\csname the#1\endcsname}{\ignorespaces #2}}%
+  \begingroup
+    \@parboxrestore
+    \if@minipage
+      \@setminipage
+    \fi
+    \normalsize
+    \@makecaption{\csname fnum@#1\endcsname}{\ignorespaces #3}\par
+  \endgroup}
 \def\tableofcontents{
   \bgroup
-  \renewcommand{\baselinestretch}{\WT@blstretch}
+  \renewcommand{\baselinestretch}{\IUT@blstretch}
   \normalfont
   \@starttoc{toc}\contentsname
   \egroup
 }
 \def\listoffigures{
   \bgroup
-  \renewcommand{\baselinestretch}{\WT@blstretch}
+  \renewcommand{\baselinestretch}{\IUT@blstretch}
   \normalfont
   \@starttoc{lof}\listfigurename
   \egroup
 }
 \def\listoftables{
   \bgroup
-  \renewcommand{\baselinestretch}{\WT@blstretch}
+  \renewcommand{\baselinestretch}{\IUT@blstretch}
   \normalfont
   \@starttoc{lot}\listtablename
   \egroup
@@ -540,7 +538,7 @@ with Departmental Honors in \check@val\@department
   \cleardoublepage
   \pagenumbering{arabic}
   \pagestyle{headings}
-  \renewcommand{\baselinestretch}{\WT@blstretch}
+  \renewcommand{\baselinestretch}{\IUT@blstretch}
   \normalfont
 }
 
@@ -565,11 +563,11 @@ with Departmental Honors in \check@val\@department
 
 \renewcommand{\seename}{see}
 
-\def\WT@blstretch{1.67}
-\ifnum\@mainsize=10\def\WT@blstretch{1.67}\fi
-\ifnum\@mainsize=11\def\WT@blstretch{1.62}\fi
-\ifnum\@mainsize=12\def\WT@blstretch{1.66}\fi
-\WT@dbgmsg{Baseline stretch: \WT@blstretch}
+\def\IUT@blstretch{1.67}
+\ifnum\@mainsize=10\def\IUT@blstretch{1.67}\fi
+\ifnum\@mainsize=11\def\IUT@blstretch{1.62}\fi
+\ifnum\@mainsize=12\def\IUT@blstretch{1.66}\fi
+\IUT@dbgmsg{Baseline stretch: \IUT@blstretch}
 
 \pagestyle{chapter}
 \pagenumbering{arabic}

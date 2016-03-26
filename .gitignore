@@ -28,6 +28,7 @@
 
 *.bak
 *.fdb_latexmk
+*.fls
 
 
 westhesis/

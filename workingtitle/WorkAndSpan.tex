@@ -9,16 +9,35 @@ The length of the critical path determines how much a program can be parallelize
 If the span is equal to the work, than every step in the computation depends on the previous step, and the program cannot be parallelized.
 
 Instead of calculating the cost of program, we will construct a cost graph.
-The cost graph represents dependencies between computations in a program.
-The work and span can be extracted from the call graph.
-The call graph is used to determine execution strategies.
+The cost graph represents dependencies between computations in a program and may be used to determine optimal execution strategies.
 
-A call graph is defined as follows.
+A cost graph is defined as follows.
 
 \[ \mathcal{C} ::= 0 | 1 | \mathcal{C} \oplus \mathcal{C} | \mathcal{C} \otimes \mathcal{C} \]
 
-The operator $\oplus$ connects to cost graphs who must be computed sequentially.
-The operator $\otimes$ connects cost graphs which may be computed in independently in parallel.
+The operator $\oplus$ connects to cost graphs who must be combined sequentially.
+The operator $\otimes$ connects cost graphs which may be combined in parallel.
+
+The work of a cost graph is defined as 
+\begin{equation*}
+  work(c) = \begin{cases}
+    0 &\text{if } c = 0 \\
+    1 &\text{if } c = 1 \\
+    work(c_0) + work(c_1) &\text{if } c = c_0 \otimes c_1 \\
+    work(c_0) + work(c_1) &\text{if } c = c_0 \oplus c_1
+  \end{cases}
+\end{equation*}
+
+The span of a cost graph is defined as
+\begin{equation*}
+  span(c) = \begin{cases}
+    0 &\text{if } c = 0 \\
+    1 &\text{if } c = 1 \\
+    max(span(c_0), span(c_1)) &\text{if } c = c_0 \otimes c_1 \\
+    span(c_0) + span(c_1) &\text{if } c = c_0 \oplus c_1
+  \end{cases}
+\end{equation*}
+
 
 We alter the operational semantics of the source language slightly to reflect that the cost of evaluating an expression is a cost graph instead of an integer.
 Figure \ref{fig:ws_srclang_oper_sem} shows the new operational semantics.
@@ -88,12 +107,159 @@ For \T{split}, the second subexpression depends on the result of the first subex
 \end{figure}
 
 
+The complexity translation is given in figure \ref{fig:ws_complexity_translation}.
+The operator $E_0 \oplus_c E_1$ is syntactic sugar for $\langle E_0 \oplus E_{1c}, E_{1p} \rangle$.
+The translation is similar to the original translation except we replace the use of $+$ and $+_c$ with $\oplus$ and $\oplus_c$.
+In the tuple case and function application case we use $\otimes$ since the arguments do not depend on each other and may be computed in parallel.
+
+
+\begin{figure}
+  \label{fig:ws_complexity_translation}
+  \caption{Work and span translation from source language to compleity language}
+  \begin{align*}
+    \|x\| &= \langle 0, x \rangle \\
+    \|\langle\rangle\| &= \langle 0, \langle \rangle \rangle \\
+    \|\langle e_0, e_1 \rangle \| &= \langle \|e_0\|_c \otimes \|e_1\|_c, \langle \|e_0\|_p, \|e_1\|_p\rangle\rangle \\
+    \|split(e_0, x_0.x_1.e_1)\| &= \|e_0\|_c \oplus_c \|e_1\|[\pi_0\|e_0\|_p/x_0, \pi_1\|e_1\|_p/x_1] \\
+    \|\lambda x.e\| &= \langle 0, \lambda x.\|e\| \rangle \\
+    \|e_0\ e_1\| &= 1 \oplus (\|e_0\|_c \otimes \|e_1\|_c) \oplus_c \|e_0\|_p\ \|e_1\|_p \\
+    \|delay(e)\| &= \langle 0, \|e\|\rangle \\
+    \|force(e)\| &= \|e\|_c \oplus_c \|e\|_p \\
+    \|C_i^\delta e\| &= \langle \|e\|_c, C_i^\delta \|e\|_p \rangle \\
+    \|rec^\delta(e, \overline{C \mapsto x.e_C})\| &= \|e\|_c \oplus_c rec^\delta(\|e\|_p, \overline{C \mapsto x.1 \oplus_c \|e_C\|}) \\
+    \|map^\phi(x.v_0, v_1)\| &= \langle 0, map^{\langle\langle \phi \rangle \rangle} (x. \|v_0\|_p, \|v_1\|_p)\rangle \\
+    \|let(e_0, x.e_1)\| &= \|e_0\|_c \oplus_c \|e_1\|[\|e_0\|_p/x]
+  \end{align*}
+\end{figure}
+
 \section{Bounding Relation}
 TODO
 
 
 \section{Parallel List Map}
-TODO
+If we revisit \T{map} using the work and span translation, we will get a different result.
+
+
+We use the data type \T{intlist}.
+\begin{equation*}
+  \T{datatype intlist} = \T{Nil of }\langle\rangle \T{ | Cons of int $\times$ intlist}
+\end{equation*}
+
+The definition of \T{map} is the same.
+\begin{equation*}
+  \T{map} = \lambda f. \lambda xs . \T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \T{Cons} \mapsto \langle y \langle ys, y \rangle\rangle. \T{Cons}\langle f\ y, \T{force}(r)\rangle)
+\end{equation*}
+
+The derivation of the complexity expression is given in figure \ref{fig:ws_map_complexity_translation}.
+The complexity language translation is
+\begin{equation*}
+\begin{split}
+  \T{map}\ f\ xs = 1 \oplus_c \T{rec}(xs_p,& \T{Nil}\mapsto \langle 1, \T{Nil}\rangle,\\
+  &\T{Cons} \mapsto \langle y, \langle ys, r \rangle \rangle. \langle 1 \oplus ((1 \oplus (f\ y)_c) \otimes r_c), \T{Cons} \langle (f\ y)_p, r_p \rangle \rangle)
+\end{split}
+\end{equation*}
+
+\begin{figure}
+  \label{fig:ws_map_complexity_translation}
+  \caption{Work and span complexity translation of map, \T{f} and \T{xs} are free variables.}
+  \begin{flalign*}
+    &1 \oplus_c \T{rec}(xs_p, \T{Nil}\mapsto 1 \oplus_c \|\T{Nil}\|, \T{Cons} \mapsto \langle y, \langle ys, r \rangle \rangle. 1 \oplus_c \|\T{Cons}\langle f\ y, \T{force}(r)\rangle \|) \\
+    &1 \oplus_c \T{rec}(xs_p, \T{Nil}\mapsto 1 \oplus_c \langle 0, \T{Nil}\rangle, \T{Cons} \mapsto \langle y, \langle ys, r \rangle \rangle. 1 \oplus_c \|\T{Cons}\langle f\ y, \T{force}(r)\rangle \|)\\
+    &\|\T{Cons}\langle f\ y, \T{force}(r)\rangle \| = \langle \|\langle f\ y, \T{force}(r)\rangle\|_c, \T{Cons} \| \langle f\ y, \T{force}(r)\rangle \|_p\rangle \\
+    &\|\langle f\ y, \T{force}(r)\rangle\| = \langle \|f\ y\|_c \otimes \|\T{force}(r)\|_c, \langle \|f\ y\|_p, \|\T{force}(r)\|_p\rangle\rangle \\
+    &\|f\ y\| = (1 \oplus \|f\|_c \otimes \|y\|_c) \oplus_c \|f\|_p \|y\|_p = 1 \oplus_c f\ y \\
+    &\|\T{force}(r)\| = \|r\|_c \oplus_c \|r\|_p = \langle 0, r \rangle_c \oplus_c \langle 0, r \rangle_p = r \\
+    &\|\langle f\ y, \T{force}(r)\rangle\| = \langle (1 \oplus (f\ y)_c) \otimes r_c, \langle (f\ y)_p, r_p \rangle \rangle \\
+    &\|\T{Cons}\langle f\ y, \T{force}(r)\rangle \| = \langle (1 \oplus (f\ y)_c) \otimes r_c, \T{Cons} \langle (f\ y)_p, r_p \rangle \rangle \\
+    &1 \oplus_c \T{rec}(xs_p, \T{Nil}\mapsto \langle 1, \T{Nil}\rangle, \T{Cons} \mapsto \langle y, \langle ys, r \rangle \rangle. \langle 1 \oplus ((1 \oplus (f\ y)_c) \otimes r_c), \T{Cons} \langle (f\ y)_p, r_p \rangle \rangle)
+    \end{flalign*}
+\end{figure}
+
+We interpret lists as a pair of their largest element and length.
+\begin{align*}
+  \llbracket \T{intlist} \rrbracket &= \mathbb{Z} \times \mathbb{Z} \\
+  D^\T{intlist} &= \{*\} + (\llbracket \T{int} \rrbracket \times \llbracket \T{intlist} \rrbracket) \\
+  size_\T{intlist}(*) &= (0, 0) \\
+  size_\T{intlist}((x, (m, n))) &= (\T{max}(x, m), 1 + n)
+\end{align*}
+
+The interpretation of the recurser is given in \ref{fig:ws_map_interpretation}.
+The result is 
+\begin{equation*}
+  g(f, (m, n)) = \begin{cases}
+    (1, (0, 0)) &n \equiv 0 \\
+    (1 \oplus (1 \oplus (f\ m)_c \otimes g(f, (m, n-1))_c), ((f\ m)_p, g(f, (m, n-1))_p)) &n > 0
+  \end{cases}
+\end{equation*}
+
+\begin{figure}
+  \label{fig:ws_map_interpretation}
+  \caption{Interpretation of \T{map}}
+  For $m, n = (0, 0)$, \\
+  $g(f, (0, 0)) = \llbracket \T{rec}(xs, \T{Nil} \mapsto \langle 1, \T{Nil}\rangle,$\\
+    $\T{Cons} \mapsto \langle y, \langle ys, r \rangle \rangle . \langle 1 \oplus (1 \oplus (f\ x)_c \otimes r_c), \T{Cons}\langle (f\ y)_p, r_p\rangle\rangle) \rrbracket$\\
+    $\{ xs \mapsto (m, n), f \mapsto f\}$\\
+    $= \llbracket \langle 1, \T{Nil} \rangle \rrbracket \{ xs \mapsto (m, n), f \mapsto f \}$\\
+    $= (1, (0, 0))$\\
+  For $n > 0$, \\
+  $g(f, (m, n)) = \llbracket \T{rec}(xs, \T{Nil} \mapsto \langle 1, \T{Nil}\rangle,$\\
+      $\T{Cons} \mapsto \langle y, \langle ys, r \rangle \rangle . \langle 1 \oplus (1 \oplus (f\ x)_c \otimes r_c), \T{Cons}\langle (f\ y)_p, r_p\rangle\rangle) \rrbracket$\\
+      $\{xs \mapsto (m, n), f \mapsto f\}$
+  $= \llbracket \langle 1 \oplus (1 \oplus (f\ x)_c \otimes r_c), \T{Cons}\langle (f\ y)_p, r_p\rangle\rangle) \rrbracket$\\
+  $\{xs \mapsto (m, n), f \mapsto f, y \mapsto m, ys \mapsto n-1, r \mapsto \llbracket \T{rec}(xs, \dots ) \rrbracket \{xs \mapsto (m, n-1) \dots \} \}$
+  $= \llbracket \langle 1 \oplus (1 \oplus (f\ x)_c \otimes r_c), \T{Cons}\langle (f\ y)_p, r_p\rangle\rangle) \rrbracket$\\
+  $\{xs \mapsto (m, n), f \mapsto f, y \mapsto m, ys \mapsto n-1, r \mapsto g(f, (m, n-1))  \}$
+  $= (1 \oplus (1 \oplus (f\ m)_c \otimes g(f, (m, n-1))_c), ((f\ m)_p, g(f, (m, n-1))_p))$
+\end{figure}
+
+We prove by induction bounds on the work and span of the cost of $g$.
+
+\begin{theorem}
+$work(g_c(f, (m, n))) = 1 + (2 + work((f\ m)_c))*n$
+\end{theorem}
+
+\begin{proof}
+  \begin{description}
+    \item[case $n=0$]\mbox{}\\[-1.5\baselineskip]
+      \begin{align*}
+        work(g_c(f, (m, 0))) = work((1, (0, 0))_c) = 1 
+      \end{align*}
+    \item[case $n>0$]\mbox{}\\[-1.5\baselineskip]
+      \begin{align*}
+        work(g_c(f, (m, n))) &= work((1 \oplus (1 \oplus (f\ m)_c) \otimes g_c(f, (m, n-1)), ((f\ m)_p, \pi_1 g_p(f, (m, n-1))))_c) \\
+                             &= work((1 \oplus (1 \oplus (f\ m)_c) \otimes g_c(f, (m, n-1)))) \\
+                             &= work((1 \oplus (1 \oplus (f\ m)_c) \otimes g_c(f, (m, n-1)))) \\
+                             &= work(1) + work((1 \oplus (f\ m)_c) \otimes g_c(f, (m, n-1))) \\
+                             &= 1 + work(1 \oplus (f\ m)_c) + work(g_c(f, (m, n-1)) \\
+                             &= 1 + 1 + work((f\ m)_c) + 1 + (2 + work((f\ m)_c))*(n-1) \\
+                             &= 2 + work((f\ m)_c) + 1 + (2 + work((f\ m)_c))*n - 2 - work((f\ m)_c \\
+                             &= 1 + (2 + work((f\ m)_c))*n
+      \end{align*}
+  \end{description}
+\end{proof}
+
+\begin{theorem}
+  $span(g_c(f, (m, n))) = 1 + span((f\ m)_c) + n$
+\end{theorem}
+\begin{proof}
+  \begin{description}
+    \item[case $n=0$]\mbox{}\\[-1.5\baselineskip]
+      \begin{align*}
+        span(g_c(f, (m, 0))) = span((1, (0, 0))_c) = 1
+      \end{align*}
+    \item[case $n=0$]\mbox{}\\[-1.5\baselineskip]
+      \begin{align*}
+        span(g_c(f, (m, n))) &= span((1 \oplus (1 \oplus (f\ m)_c) \otimes g_c(f, (m, n-1)), ((f\ m)_p, \pi_1 g_p(f, (m, n-1))))_c) \\
+                             &= span((1 \oplus (1 \oplus (f\ m)_c) \otimes g_c(f, (m, n-1)))) \\
+                             &= span(1) + span(1 \oplus (f\ m)_c) \otimes g_c(f, (m, n-1)))) \\
+                             &= 1 + max(span(1 \oplus (f\ m)_c), span(g_c(f, (m, n-1)))) \\
+                             &= 1 + max(span(1) + span(f\ m)_c), 1 + span((f\ m)_c) + n - 1) \\
+                             &= 1 + max(1 + span((f\ m)_c), 1 + span((f\ m)_c) + n - 1) \\
+                             &= 1 + 1 + span((f\ m)_c) + n - 1 \\
+                             &= 1 + span((f\ m)_c) + n
+      \end{align*}
+  \end{description}
+\end{proof}
 
 
 \section{Parallel Tree Map}
