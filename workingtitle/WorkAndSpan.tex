@@ -140,126 +140,205 @@ TODO
 If we revisit \T{map} using the work and span translation, we will get a different result.
 
 
-We use the data type \T{intlist}.
+We use the same data type \T{list} and \T{map} function as in sequential list map.
 \begin{equation*}
-  \T{datatype intlist} = \T{Nil of }\langle\rangle \T{ | Cons of int $\times$ intlist}
+  \T{datatype list} = \T{Nil of Unit | Cons of int $\times$ list}
 \end{equation*}
 
-The definition of \T{map} is the same.
 \begin{equation*}
   \T{map} = \lambda f. \lambda xs . \T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \T{Cons} \mapsto \langle y \langle ys, y \rangle\rangle. \T{Cons}\langle f\ y, \T{force}(r)\rangle)
 \end{equation*}
 
 The derivation of the complexity expression is given in figure \ref{fig:ws_map_complexity_translation}.
+\begin{figure}
+  \label{fig:ws_map_complexity_translation}
+  \caption{Work and span complexity translation of \T{map f xs}.}
+  \[\begin{split}
+    &\|\T{map f xs}\| = \\
+    &  (3 \oplus f_c \otimes xs_c) \oplus_c \T{rec}(xs_p, \T{Nil}\mapsto 1 \oplus_c \|\T{Nil}\|, \\
+    &\quadten\qquad \T{Cons} \mapsto \langle y, \langle ys, r \rangle \rangle. 1 \oplus_c \|\T{Cons}\langle f\ y, \T{force}(r)\rangle \|) \\
+    %Nil branch
+    &\quad 1 \oplus_c \|\T{Nil}\| = 1 \oplus_c \langle 0, Nil \rangle = \langle 1, Nil \rangle \\
+    %Cons branch
+    &\quad\|\T{Cons}\langle f\ y, \T{force}(r)\rangle \| = \langle \|\langle f\ y, \T{force}(r)\rangle\|_c, \T{Cons} \| \langle f\ y, \T{force}(r)\rangle \|_p\rangle \\
+    &\qquad \|\langle f\ y, \T{force}(r)\rangle\| = \langle \|f\ y\|_c \otimes \|\T{force}(r)\|_c, \langle \|f\ y\|_p, \|\T{force}(r)\|_p\rangle\rangle \\
+    %f y
+    &\quadthree \|f\ y\| = (1 \oplus \|f\|_c \otimes \|y\|_c) \oplus_c \|f\|_p \|y\|_p \\
+    &\quadfour = (1 \oplus \langle 0, f_p \rangle_c \otimes \langle 0, y \rangle_c) \oplus_c \langle 0, f_p \rangle_p \langle 0, y \rangle_p \\
+    &\quadfour = 1 \oplus_c f_p\ y \\
+    &\quadfour = \langle 1 \oplus (f_p y)_c, (f_p\ y)_p \rangle \\
+    %force r
+    &\quadthree \|\T{force}(r)\| = \|r\|_c \oplus_c \|r\|_p \\
+    &\quadfour = \langle 0, r \rangle_c \oplus_c \langle 0, r \rangle_p \\
+    &\quadfour = r \\
+    %<...>
+    &\qquad \|\langle f\ y, \T{force}(r)\rangle\| = \langle (1 \oplus (f_p\ y)_c) \otimes r_c, \langle (f_p\ y)_p, r_p \rangle \rangle \\
+    %Cons<..>
+    &\quad\|\T{Cons}\langle f\ y, \T{force}(r)\rangle \| = \langle (1 \oplus (f_p\ y)_c) \otimes r_c, \T{Cons} \langle (f_p\ y)_p, r_p \rangle \rangle \\
+    %rec
+    &\|\T{map f xs}\| = (3 \oplus f_c \otimes xs_c) \oplus_c \\
+    &\quad \T{rec}(xs_p, \T{Nil}\mapsto \langle 1, \T{Nil}\rangle, \\
+    &\quadfour \T{Cons} \mapsto \langle y, \langle ys, r \rangle \rangle. \langle 1 \oplus ((1 \oplus (f_p\ y)_c) \otimes r_c), \T{Cons} \langle (f_p\ y)_p, r_p \rangle \rangle)
+  \end{split}\]
+\end{figure}
+
 The complexity language translation is
 \begin{equation*}
 \begin{split}
-  \T{map}\ f\ xs = 1 \oplus_c \T{rec}(xs_p,& \T{Nil}\mapsto \langle 1, \T{Nil}\rangle,\\
-  &\T{Cons} \mapsto \langle y, \langle ys, r \rangle \rangle. \langle 1 \oplus ((1 \oplus (f\ y)_c) \otimes r_c), \T{Cons} \langle (f\ y)_p, r_p \rangle \rangle)
+    &\|\T{map f xs}\| = (3 \oplus f_c \otimes xs_c) \oplus_c \\
+    &\quad \T{rec}(xs_p, \T{Nil}\mapsto \langle 1, \T{Nil}\rangle, \\
+    &\quadfour \T{Cons} \mapsto \langle y, \langle ys, r \rangle \rangle. \langle 1 \oplus ((1 \oplus (f_p\ y)_c) \otimes r_c), \T{Cons} \langle (f_p\ y)_p, r_p \rangle \rangle)
 \end{split}
 \end{equation*}
 
-\begin{figure}
-  \label{fig:ws_map_complexity_translation}
-  \caption{Work and span complexity translation of map, \T{f} and \T{xs} are free variables.}
-  \begin{flalign*}
-    &1 \oplus_c \T{rec}(xs_p, \T{Nil}\mapsto 1 \oplus_c \|\T{Nil}\|, \T{Cons} \mapsto \langle y, \langle ys, r \rangle \rangle. 1 \oplus_c \|\T{Cons}\langle f\ y, \T{force}(r)\rangle \|) \\
-    &1 \oplus_c \T{rec}(xs_p, \T{Nil}\mapsto 1 \oplus_c \langle 0, \T{Nil}\rangle, \T{Cons} \mapsto \langle y, \langle ys, r \rangle \rangle. 1 \oplus_c \|\T{Cons}\langle f\ y, \T{force}(r)\rangle \|)\\
-    &\|\T{Cons}\langle f\ y, \T{force}(r)\rangle \| = \langle \|\langle f\ y, \T{force}(r)\rangle\|_c, \T{Cons} \| \langle f\ y, \T{force}(r)\rangle \|_p\rangle \\
-    &\|\langle f\ y, \T{force}(r)\rangle\| = \langle \|f\ y\|_c \otimes \|\T{force}(r)\|_c, \langle \|f\ y\|_p, \|\T{force}(r)\|_p\rangle\rangle \\
-    &\|f\ y\| = (1 \oplus \|f\|_c \otimes \|y\|_c) \oplus_c \|f\|_p \|y\|_p = 1 \oplus_c f\ y \\
-    &\|\T{force}(r)\| = \|r\|_c \oplus_c \|r\|_p = \langle 0, r \rangle_c \oplus_c \langle 0, r \rangle_p = r \\
-    &\|\langle f\ y, \T{force}(r)\rangle\| = \langle (1 \oplus (f\ y)_c) \otimes r_c, \langle (f\ y)_p, r_p \rangle \rangle \\
-    &\|\T{Cons}\langle f\ y, \T{force}(r)\rangle \| = \langle (1 \oplus (f\ y)_c) \otimes r_c, \T{Cons} \langle (f\ y)_p, r_p \rangle \rangle \\
-    &1 \oplus_c \T{rec}(xs_p, \T{Nil}\mapsto \langle 1, \T{Nil}\rangle, \T{Cons} \mapsto \langle y, \langle ys, r \rangle \rangle. \langle 1 \oplus ((1 \oplus (f\ y)_c) \otimes r_c), \T{Cons} \langle (f\ y)_p, r_p \rangle \rangle)
-    \end{flalign*}
-\end{figure}
 
 We interpret lists as a pair of their largest element and length.
 \begin{align*}
-  \llbracket \T{intlist} \rrbracket &= \mathbb{Z} \times \mathbb{Z} \\
-  D^\T{intlist} &= \{*\} + (\llbracket \T{int} \rrbracket \times \llbracket \T{intlist} \rrbracket) \\
-  size_\T{intlist}(*) &= (0, 0) \\
-  size_\T{intlist}((x, (m, n))) &= (\T{max}(x, m), 1 + n)
+  \llbracket \T{list} \rrbracket &= \mathbb{Z} \times \mathbb{N} \\
+  D^\T{list} &= \{*\} + (\llbracket \mathbb{Z} \rrbracket \times \llbracket \T{list} \rrbracket) \\
+  size_\T{list}(*) &= (0, 0) \\
+  size_\T{list}((x, (m, n))) &= (max(x, m), 1 + n)
 \end{align*}
 
-The interpretation of the recurser is given in \ref{fig:ws_map_interpretation}.
-The result is 
-\begin{equation*}
-  g(f, (m, n)) = \begin{cases}
-    (1, (0, 0)) &n \equiv 0 \\
-    (1 \oplus (1 \oplus (f\ m)_c \otimes g(f, (m, n-1))_c), ((f\ m)_p, g(f, (m, n-1))_p)) &n > 0
-  \end{cases}
-\end{equation*}
+The interpretation of the recurser is given in figure \ref{fig:ws_map_interpretation}.
 
 \begin{figure}
   \label{fig:ws_map_interpretation}
-  \caption{Interpretation of \T{map}}
-  For $m, n = (0, 0)$, \\
-  $g(f, (0, 0)) = \llbracket \T{rec}(xs, \T{Nil} \mapsto \langle 1, \T{Nil}\rangle,$\\
-    $\T{Cons} \mapsto \langle y, \langle ys, r \rangle \rangle . \langle 1 \oplus (1 \oplus (f\ x)_c \otimes r_c), \T{Cons}\langle (f\ y)_p, r_p\rangle\rangle) \rrbracket$\\
-    $\{ xs \mapsto (m, n), f \mapsto f\}$\\
-    $= \llbracket \langle 1, \T{Nil} \rangle \rrbracket \{ xs \mapsto (m, n), f \mapsto f \}$\\
-    $= (1, (0, 0))$\\
-  For $n > 0$, \\
-  $g(f, (m, n)) = \llbracket \T{rec}(xs, \T{Nil} \mapsto \langle 1, \T{Nil}\rangle,$\\
-      $\T{Cons} \mapsto \langle y, \langle ys, r \rangle \rangle . \langle 1 \oplus (1 \oplus (f\ x)_c \otimes r_c), \T{Cons}\langle (f\ y)_p, r_p\rangle\rangle) \rrbracket$\\
-      $\{xs \mapsto (m, n), f \mapsto f\}$
-  $= \llbracket \langle 1 \oplus (1 \oplus (f\ x)_c \otimes r_c), \T{Cons}\langle (f\ y)_p, r_p\rangle\rangle) \rrbracket$\\
-  $\{xs \mapsto (m, n), f \mapsto f, y \mapsto m, ys \mapsto n-1, r \mapsto \llbracket \T{rec}(xs, \dots ) \rrbracket \{xs \mapsto (m, n-1) \dots \} \}$
-  $= \llbracket \langle 1 \oplus (1 \oplus (f\ x)_c \otimes r_c), \T{Cons}\langle (f\ y)_p, r_p\rangle\rangle) \rrbracket$\\
-  $\{xs \mapsto (m, n), f \mapsto f, y \mapsto m, ys \mapsto n-1, r \mapsto g(f, (m, n-1))  \}$
-  $= (1 \oplus (1 \oplus (f\ m)_c \otimes g(f, (m, n-1))_c), ((f\ m)_p, g(f, (m, n-1))_p))$
+  \caption{Interpretation of recurser in \T{map}}
+  \[\begin{split}
+      &\quad \text{Let } \eta = \{ xs \mapsto (0, (m, n)), f \mapsto (0, f)\}\\
+      &\quad g(f, (m, n)) = \llbracket \T{rec}(xs_p, \T{Nil} \mapsto \langle 1, \T{Nil}\rangle,\\
+      &\quadten \T{Cons} \mapsto \langle y, \langle ys, r \rangle \rangle . \langle 1 \oplus (1 \oplus (f_p\ y)_c \otimes r_c), \T{Cons}\langle (f_p\ y)_p, r_p\rangle\rangle) \rrbracket \eta\\
+      &\qquad = \bigvee\limits_{(m_1, n_1) \leq (m, n)} case((m_1, n_1), \T{Nil} \mapsto \llbracket \langle 1, \T{Nil} \rangle \rrbracket \eta, \\
+      &\quadten \T{N} \mapsto \langle y, \langle ys, r \rangle \rangle . \llbracket \langle 1 \oplus ((1 \oplus (f_p\ y)_c) \otimes r_c), \T{Cons} \langle (f_p\ y)_p, r_p \rangle \rangle \rrbracket \eta_c) \\
+      &\qquad \text{where } \eta_c = \{xs \mapsto (0, (m, n)), f \mapsto (0, f), y \mapsto m, ys \mapsto (0, (m, n)), \\
+      &\quadeight r \mapsto g(f, (m, n-1)))\} \\
+      %Nil branch
+      &\quadthree \text{\T{Nil} branch} \\
+      &\quadthree \llbracket \langle 1, \T{Nil} \rangle \rrbracket \eta = (\llbracket 1 \rrbracket \eta , \llbracket \T{Nil} \rrbracket \eta) = (1, (0, 0)) \\
+      %Cons branch
+      &\quadthree \text{\T{Cons} branch} \\
+      &\quadthree  \llbracket \langle 1 \oplus ((1 \oplus (f_p\ m)_c) \otimes r_c), \T{Cons} \langle (f_p\ m)_p, r_p \rangle \rangle \rrbracket \eta_c \\
+      &\quadfour = (1 \oplus ((1 \oplus (f\ m)_c) \otimes g_c(f, (m, n-1))), ((f\ m)_p, \pi_1 g_p(f, (m, n-1)))) \\
+      %putting branches together
+      &\quad g(f, (m, n)) = \\
+      &\qquad \bigvee\limits_{(m_1, n_1) \leq (m, n)} case((m_1, n_1), \T{Nil} \mapsto (1, (0, 0)), \\
+      &\quadfour \T{Cons} \mapsto (1 \oplus ((1 \oplus (f\ m)_c) \otimes g_c(f, (m, n-1))), ((f\ m)_p, \pi_1 g_p(f, (m, n-1))))) 
+  \end{split}\]
 \end{figure}
+
+The result is 
+\begin{equation*}
+  \begin{split}
+  &g(f, (m, n)) = \\
+  &\quad \bigvee\limits_{(m_1, n_1) \leq (m, n)} case((m_1, n_1), \T{Nil} \mapsto (1, (0, 0)), \\
+  &\quadfour \T{Cons} \mapsto (1 \oplus ((1 \oplus (f\ y)_c) \otimes g_c(f, (m, n-1))), ((f\ y)_p, \pi_1 g_p(f, (m, n-1))))) 
+  \end{split}
+\end{equation*}
+
+%In figure \ref{fig:ws_map_massage}, we massage the recurrence into a simpler form by eliminating the big max and the $case$.
+%\begin{figure}
+%  \label{fig:ws_map_massage}
+%  \caption{Simplification of the interpretation of \T{map}}
+%  \[\begin{split}
+%  &g(f, (m, n)) = \\
+%  &\quad \bigvee\limits_{(m_1, n_1) \leq (m, n)} case((m_1, n_1), \T{Nil} \mapsto (1, (0, 0)), \\
+%  &\quadfive \T{Cons} \mapsto (1 \oplus ((1 \oplus (f\ y)_c) \otimes g_c(f, (m, n-1))), ((f\ y)_p, \pi_1 g_p(f, (m, n-1)))))  \\
+%      %base case
+%  &\text{For } n = 0 \\
+%  &\quad g(f, (m, 0) = \\
+%  &\qquad (1, (0, 0)) \vee \bigvee\limits_{1 + n_1 } \\
+%  &\quadsix \T{Cons} \mapsto (1 \oplus ((1 \oplus (f\ y)_c) \otimes g_c(f, (m, -1))), ((f\ y)_p, \pi_1 g_p(f, (m, -1)))))  \\
+%  &\qquad = (1, (0, 0)) \\
+%      %inductive case
+%  &\text{For } n > 0 \\
+%  &fubar
+%  \end{split} \]
+%\end{figure}
+%
+%The result is
+%\begin{equation*}
+%  g(f, (m, n)) = \begin{cases}
+%    (1, (0, 0)) &n \equiv 0 \\
+%    (1 \oplus (1 \oplus (f\ m)_c \otimes g(f, (m, n-1))_c), ((f\ m)_p, g(f, (m, n-1))_p)) &n > 0
+%  \end{cases}
+%\end{equation*}
+
+We compile the recurrence down to the work and the span to make it easier to manipulate.
+The costs change from cost graphs to a tuple of the work and the span.
+\begin{equation*}
+  \begin{split}
+  &g(f, (m, n)) = \\
+  &\quad \bigvee\limits_{(m_1, n_1) \leq (m, n)} case((m_1, n_1), \\
+  &\quadfive\quadfour \T{Nil} \mapsto ((1, 1), (0, 0)), \\
+  &\quadfive\quadfour \T{Cons} \mapsto ((2 + \pi_0(f\ y)_c + \pi_0 g_c(f, (m, n-1)), \\
+  &\quadfive\quadten                     1 + max(1 + \pi_1(f\ y)_c, \pi_1 g_c(f, (m, n-1)))), \\
+  &\quadfive\quadeight                  ((f\ y)_p, \pi_1 g_p(f, (m, n-1))))) 
+  \end{split}
+\end{equation*}
 
 We prove by induction bounds on the work and span of the cost of $g$.
 
 \begin{theorem}
-$work(g_c(f, (m, n))) = 1 + (2 + work((f\ m)_c))*n$
+$\pi_0 g_c(f, (m, n)) \leq 1 + (2 + \pi_0(f\ m)_c)n$
 \end{theorem}
 
 \begin{proof}
+   The proof is by induction on $n$.
   \begin{description}
     \item[case $n=0$]\mbox{}\\[-1.5\baselineskip]
       \begin{align*}
-        work(g_c(f, (m, 0))) = work((1, (0, 0))_c) = 1 
+      \pi_0 g_c(f, (m, 0)) = \pi_0((1, 1), (0, 0))_c = \pi_0(1, 1) = 1 
       \end{align*}
     \item[case $n>0$]\mbox{}\\[-1.5\baselineskip]
-      \begin{align*}
-        work(g_c(f, (m, n))) &= work((1 \oplus (1 \oplus (f\ m)_c) \otimes g_c(f, (m, n-1)), ((f\ m)_p, \pi_1 g_p(f, (m, n-1))))_c) \\
-                             &= work((1 \oplus (1 \oplus (f\ m)_c) \otimes g_c(f, (m, n-1)))) \\
-                             &= work((1 \oplus (1 \oplus (f\ m)_c) \otimes g_c(f, (m, n-1)))) \\
-                             &= work(1) + work((1 \oplus (f\ m)_c) \otimes g_c(f, (m, n-1))) \\
-                             &= 1 + work(1 \oplus (f\ m)_c) + work(g_c(f, (m, n-1)) \\
-                             &= 1 + 1 + work((f\ m)_c) + 1 + (2 + work((f\ m)_c))*(n-1) \\
-                             &= 2 + work((f\ m)_c) + 1 + (2 + work((f\ m)_c))*n - 2 - work((f\ m)_c \\
-                             &= 1 + (2 + work((f\ m)_c))*n
-      \end{align*}
+      \[\begin{split}
+        &\pi_0(g_c(f, (m, n))) = \\
+        &\quad \pi_0(\bigvee\limits_{(m_1, n_1) \leq (m, n)} case((m_1, n_1), \\
+        &\quadfive\quadfour \T{Nil} \mapsto ((1, 1), (0, 0)), \\
+        &\quadfive\quadfour \T{Cons} \mapsto ((2 + \pi_0(f\ m_1)_c + \pi_0g_c(f, (m_1, n_1-1)), \\
+        &\quadfive\quadten                     1 + max(1 + \pi_1(f\ m_1)_c, \pi_1g_c(f, (m_1, n_1-1)))), \\
+        &\quadfive\quadeight                  ((f\ m_1)_p, \pi_1 g_p(f, (m_1, n_1-1))))) )_c \\
+        &\quad = 1 \vee \pi_0(\bigvee\limits_{(m_1, n_1) \leq (m, n)} ((2 + \pi_0(f\ m_1)_c + \pi_0g_c(f, (m_1, n_1-1)), \\
+        &\quadfour\quadten                     1 + max(1 + \pi_1(f\ m_1)_c, \pi_1g_c(f, (m_1, n_1-1)))), \\
+        &\quadfour\quadeight                  ((f\ m_1)_p, \pi_1 g_p(f, (m_1, n_1-1))))) )_c \\
+        &\quad = 1 \vee \bigvee\limits_{(m_1, n_1) \leq (m, n)} 2 + \pi_0 (f\ m_1)_c + \pi_0 g_c(f, (m_1, n_1-1)) \\
+        &\quad \leq \bigvee\limits_{(m_1, n_1) \leq (m, n)} 2 + \pi_0 (f\ m_1)_c + (1 + (2 + \pi_0 (f\ m_1)_c)(n_1-1)) \\
+        &\quad \leq 2 + \pi_0 (f\ m)_c + 1 + (2 + \pi_0 (f\ m)_c)(n - 1) \\
+        &\quad \leq 1 + (2 + \pi_0 (f\ m)_c)n \\
+      \end{split}\]
   \end{description}
 \end{proof}
 
 \begin{theorem}
-  $span(g_c(f, (m, n))) = 1 + span((f\ m)_c) + n$
+  $\pi_1 g_c(f, (m, n)) \leq 1 + \pi_1 (f\ m)_c + n$
 \end{theorem}
 \begin{proof}
   \begin{description}
     \item[case $n=0$]\mbox{}\\[-1.5\baselineskip]
       \begin{align*}
-        span(g_c(f, (m, 0))) = span((1, (0, 0))_c) = 1
+      \pi_1 g_c(f, (m, 0)) = \pi_1((1, 1), (0, 0))_c = \pi_1(1, 1) = 1 
       \end{align*}
-    \item[case $n=0$]\mbox{}\\[-1.5\baselineskip]
-      \begin{align*}
-        span(g_c(f, (m, n))) &= span((1 \oplus (1 \oplus (f\ m)_c) \otimes g_c(f, (m, n-1)), ((f\ m)_p, \pi_1 g_p(f, (m, n-1))))_c) \\
-                             &= span((1 \oplus (1 \oplus (f\ m)_c) \otimes g_c(f, (m, n-1)))) \\
-                             &= span(1) + span(1 \oplus (f\ m)_c) \otimes g_c(f, (m, n-1)))) \\
-                             &= 1 + max(span(1 \oplus (f\ m)_c), span(g_c(f, (m, n-1)))) \\
-                             &= 1 + max(span(1) + span(f\ m)_c), 1 + span((f\ m)_c) + n - 1) \\
-                             &= 1 + max(1 + span((f\ m)_c), 1 + span((f\ m)_c) + n - 1) \\
-                             &= 1 + 1 + span((f\ m)_c) + n - 1 \\
-                             &= 1 + span((f\ m)_c) + n
-      \end{align*}
+    \item[case $n>0$]\mbox{}\\[-1.5\baselineskip]
+      \[\begin{split}
+        &\pi_1(g_c(f, (m, n))) = \\
+        &\quad \pi_1(\bigvee\limits_{(m_1, n_1) \leq (m, n)} case((m_1, n_1), \\
+        &\quadfive\quadfour \T{Nil} \mapsto ((1, 1), (0, 0)), \\
+        &\quadfive\quadfour \T{Cons} \mapsto ((2 + \pi_0(f\ m_1)_c + \pi_0g_c(f, (m_1, n_1-1)), \\
+        &\quadfive\quadten                     1 + max(1 + \pi_1(f\ m_1)_c, \pi_1g_c(f, (m_1, n_1-1)))), \\
+        &\quadfive\quadeight                  ((f\ m_1)_p, \pi_1 g_p(f, (m_1, n_1-1))))) )_c \\
+        &\quad = 1 \vee \pi_1(\bigvee\limits_{(m_1, n_1) \leq (m, n)} ((2 + \pi_0(f\ m_1)_c + \pi_0g_c(f, (m_1, n_1-1)), \\
+        &\quadfour\quadten                     1 + max(1 + \pi_1(f\ m_1)_c, \pi_1g_c(f, (m_1, n_1-1)))), \\
+        &\quadfour\quadeight                  ((f\ m_1)_p, \pi_1 g_p(f, (m_1, n_1-1))))) )_c \\
+        &\quad = 1 \vee \bigvee\limits_{(m_1, n_1) \leq (m, n)} 1 + max(1 + \pi_1 (f\ m_1)_c, \pi_1 g_c(f, (m_1, n_1-1))) \\
+        &\quad \leq \bigvee\limits_{(m_1, n_1) \leq (m, n)} 1 + max(1 + \pi_1 (f\ m_1)_c, 1 + \pi_1 (f\ m_1)_c + n_1 - 1) \\
+        &\quad \leq 1 + max(1 + \pi_1 (f\ m)_c, 1 + \pi_1 (f\ m)_c + n - 1) \\
+        &\quad \leq 1 + 1 + \pi_1 (f\ m)_c + n - 1 \\
+        &\quad \leq 1 + \pi_1 (f\ m)_c + n
+      \end{split}\]
   \end{description}
 \end{proof}
+
+Compare these results with sequential map.
 
 
 \section{Parallel Tree Map}
@@ -267,6 +346,87 @@ A program which is embarrasingly parallel is tree map.
 When a function $f$ is mapped over a tree $t$, each application of $f$ to the label at each node can be done independently.
 Furthermore, the tree data structure itself is dividable by construction.
 Dividing the work requires only destruction of the node constructor to yield the left and right subtrees.
+
+We will use \T{int} labelled binary trees.
+\begin{equation*}
+  \T{datatype tree} = \T{E of Unit | N of int$\times$tree$\times$tree}
+\end{equation*}
+
+\T{map} simply deconstructs each node, applies the function to the label, recuses on the children, and reconstructs a node using the results.
+\begin{equation*}
+  \T{map} = \lambda f.\lambda t.\T{rec}(t, \T{E} \mapsto \T{E}, \T{N} \mapsto \langle x, \langle t_0, r_0 \rangle, \langle t_1, r_1 \rangle\rangle.\T{N} \langle f\ x, \T{force}(r_0), \T{force}(r_1)\rangle)
+\end{equation*}
+
+\begin{figure}
+  \label{fig:ws_treemap_complexity_translation}
+  \caption{Complexity translation of \T{map f t}}
+  \begin{equation*}
+    \begin{split}
+      &3 \oplus (f_c \otimes t_c) \oplus_c \T{rec}(t_p, \T{E} \mapsto 1 \oplus_c \|\T{E}\|, \\
+      &\quadten \T{N} \mapsto \langle y, \langle t_0, r_0 \rangle \langle t_1, r_1 \rangle \rangle 1 \oplus_c \|\T{N}\langle f\ x, \T{force}(r_0) \T{force}(r_1)\rangle \| ) \\
+      %E branch
+      &\quad 1 \oplus_c \|E\| = 1 \oplus \langle 0, E \rangle = \langle 1, E \rangle \\
+      %N branch
+      &\quad \|\T{N}\langle f\ x, \T{force}(r_0) \T{force}(r_1)\rangle \| = \\
+      &\qquad \langle \|\langle f\ x, \T{force}(r_0) \T{force}(r_1)\rangle \|_c, \T{N} \|\langle f\ x, \T{force}(r_0) \T{force}(r_1)\rangle\|_p\rangle \\
+      &\quadthree \|\langle f\ x, \T{force}(r_0) \T{force}(r_1)\rangle \| = \\
+      &\quadfour \langle \|f\ x\|_c \otimes \|\T{force}(r_0)\|_c \otimes \|\T{force}(r_1)\|_c, \langle \|f\ x\|_p, \|\T{force}(r_0)\|_p, \|\T{force}(r_1)\|_p \rangle \rangle \\
+      % \|f x\|
+      &\quadfive  \|f\ x\| = 1 \oplus \|f\|_c \otimes \|x\|_c \oplus_c \|f\|_p \|x\|_p \\
+      &\quadeight = 1 \oplus \langle 0, f \rangle_c \otimes \langle 0, x \rangle_c \oplus_c \langle 0, f \rangle_p \langle 0, x \rangle_p \\
+      &\quadeight = 1 \oplus_c (f_p\ x) \\
+      &\quadeight = \langle 1 \oplus (f_p\ x)_c, (f_p\ x)_p \rangle \\
+      % \|force(r0)\|
+      &\quadfive \|\T{force}(r_0)\| = \|r_0\|_c \oplus_c \|r_0\|_p \\
+      &\quadeight = \langle 0, r_0 \rangle \oplus_c \langle 0, r_0 \rangle_p \\
+      &\quadeight = \langle 0 + r_{0c}, r_{0p} \rangle \\
+      &\quadeight = r_0 \\
+      % \|force(r1)\|
+      &\quadfive \|\T{force}(r_1)\| = \|r_1\|_c \oplus_c \|r_1\|_p \\
+      &\quadeight = \langle 0, r_1 \rangle \oplus_c \langle 0, r_1 \rangle_p \\
+      &\quadeight = \langle 0 + r_{1c}, r_{1p} \rangle \\
+      &\quadeight = r_1  \\
+      %\|<...>\|
+      &\quadthree \|\langle f\ x, \T{force}(r_0) \T{force}(r_1)\rangle \| = \\
+      &\quadsix = \langle 1 \oplus (f_p\ x)_c \otimes r_{0c} \otimes r_{1c}, \langle (f_p\ x)_p, r_{0p}, r_{1p}\rangle\rangle \\
+      %\|N<...>\|
+      &\qquad \|\T{N}\langle f\ x, \T{force}(r_0) \T{force}(r_1)\rangle \| = \\
+      &\quadfive = \langle 1 \oplus (f_p\ x)_c \otimes r_{0c} \otimes r_{1c}, \T{N} \langle (f_p\ x)_p, r_{0p}, r_{1p}\rangle\rangle \\
+      %rec
+      &\|\T{map f t}\| = \\
+      &2 \oplus (f_c \otimes t_c) \oplus 1 \oplus_c \T{rec}(t_p, \T{E} \mapsto \langle 1, \T{E}\rangle, \\
+      &\quadeight \T{N} \mapsto \langle y, \langle t_0, r_0 \rangle \langle t_1, r_1 \rangle \rangle.  \langle 2 \oplus (f_p\ x)_c \otimes r_{0c} \otimes r_{1c}, \T{N} \langle (f_p\ x)_p, r_{0p}, r_{1p}\rangle\rangle
+    \end{split}
+  \end{equation*}
+\end{figure}
+
+The translation of \T{map f t} is given in figure \ref{fig:ws_treemap_complexity_translation}.
+\begin{equation}
+  \label{eq:ws_treemap_complexity}
+  \begin{split}
+    &\|\T{map f t}\| = 2 \oplus (f_c \otimes t_c) \oplus 1 \oplus_c \\
+    &\quadfour \T{rec}(t_p, \T{E} \mapsto \langle 1, \T{E}\rangle, \\
+    &\quadseven \T{N} \mapsto \langle y, \langle t_0, r_0 \rangle \langle t_1, r_1 \rangle \rangle.  \langle 2 \oplus (f_p\ x)_c \otimes r_{0c} \otimes r_{1c}, \T{N} \langle (f_p\ x)_p, r_{0p}, r_{1p}\rangle\rangle
+\end{split}
+\end{equation}
+
+The result is shown in equation \ref{eq:ws_treemap_complexity}.
+
+We interpret trees as the number of \T{N} constructors and the maximum label.
+\begin{align*}
+  \llbracket tree \rrbracket &= \mathbb{Z} \times \mathbb{Z} \\
+  D_\T{tree} &= \{\ast\} + \mathbb{Z} \times \llbracket \T{tree} \rrbracket \times \llbracket \T{tree} \rrbracket \\
+  size_\T{tree}(\ast) &= (0, 0) \\
+  size_\T{tree}(x, (m_0, n_0), (m_1, n_1)) &= (max(x, m_0, m_1), 1 + n_0 + n_1)
+\end{align*}
+
+\begin{figure}
+  \label{fig:ws_map_interpretation_derivation}
+  \caption{Deriviation of interpretation of \T{map f t}}
+\[ \begin{split}
+\end{split} \]
+\end{figure}
+
 
 \subsection*{Source Language}
 Recall the definition of the tree data type and the function map.
