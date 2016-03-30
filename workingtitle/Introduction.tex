@@ -1,21 +1,25 @@
-\chapter{Complexity Analysis}
+\chapter{Introduction}
 
-\section{Introduction}
+\section{Complexity Analysis}
 \paragraph{}
 The efficiency of programs is categorized by how the resource usage of a program increases with the input size in the limit.
 This is often called the asymptotic efficiency or complexity of a program.
 Asymptotic efficiency abstracts away the details of efficiency, allowing programs to be compared without knowledge of specific hardware architecture or the size and shape of the programs input (\citet{Cormen2001}).
-However, traditional complexity analysis is only first-order; the asymptotic efficiency of a program can only be expressed in terms of its input.
-For example it is not possible to describe the asymptotic efficiency of the function \texttt{map:(a -> b) -> [b] -> [a]}, which applies a function to every element in a list, in terms of the complexity of the function mapped over the list.
-Traditional complexity analysis can only show the asymptotic efficiency of \texttt{map} is bounded by the length of the list.
+However, traditional complexity analysis is first-order; the asymptotic efficiency of a program is only be expressed in terms of its input.
+For example the analysis of the function \T{map:(a -> b) -> [b] -> [a]}, which applies a function to every element in a list, traditionally ignores the cost of applying it's first argument.
+Consequently it shows the asymptotic efficiency of \T{map} is linear in the length of the list.
+When mapping constant cost functions, such as fixed width integer addition, over a list, first order analysis is sufficient for predicting the cost of running a program.
+However when mapping a nontrivial function over a list, first order complexity analysis may not accurately describe the cost.
+The cost of mapping the nontrivial function over a small list of large elements will be larger than mapping the function over a larger list of smaller elements.
+Higher order analysis allows us to say the complexity of \T{map} is a product of the length of the list and the cost of the function. 
+
 \paragraph{}
 This thesis will build on work by Danner, in which the complexity of an expression is composed of a cost and a potential.
 
-\subsection*{Previous Work}
-\paragraph{}
+\section{Previous Work} \paragraph{}
 \citet{Danner2007}, building on the work of others, introduced the idea that the complexity of an expression consists of a cost, representing an upper bound on the time it takes to evaluate the expression, and a potential, representing the cost of future uses of the expression.
 The notion of a potential is key because it allows the analysis of higher-order expressions. 
-The complexity of a higher order function such as \texttt{map} depends on the potential of its argument function.
+The complexity of a higher order function such as \T{map} depends on the potential of its argument function.
 They developed a type system for ATR, a call-by-value version of PCF, that consists of a part restricting the sizes of values of expressions and a part restricting the cost of evaluating a expression.
 Programs written in ATR are constrained by the type system as to run in less than type-2 polynomial time.
 \citet{Danner2009} extended this work to express more forms of recursion, in particular those required by insertion sort and selection sort.
@@ -30,11 +34,11 @@ The translated expression describes an upper bound on the complexity of the orig
 Arbitrary inductive data types are handled semantically using programmer-specified sizes of data types.
 Sizes must be programmer-specified because the structure of a data type does not always determine the interpretation of the size of a data type.
 Also, there exist different reasonable interpretations of size, and some may be preferable to others depending on what is being analyzed.
-For example, if the size of a list is interpreted as the length of the list, then the complexity \texttt{map$\langle$f,xs$\rangle$} will be order length of \texttt{xs}.
-If the size of a list is interpreted as a pair of the length and its largest element, then the complexity will depend on the length of \texttt{xs}, the potential of \texttt{f}, and the largest element.
+For example, if the size of a list is interpreted as the length of the list, then the complexity \T{map$\langle$f,xs$\rangle$} will be order length of \T{xs}.
+If the size of a list is interpreted as a pair of the length and its largest element, then the complexity will depend on the length of \T{xs}, the potential of \T{f}, and the largest element.
 
 
-\subsection*{Contribution}
+\section{Contribution}
 
 \paragraph{}
 This thesis contains a catalog of example of the extraction of recurrences from from functional programs using the approach by \citet{Danner2015}. The examples are compare this approach with other methods, such as those by \citet{Avanzini2015} and \citet{HoffHof2010}, highlighting the strengths and weakness of this approach compared with others. The examples include fold, reversing a list and parametric insertion sort.
