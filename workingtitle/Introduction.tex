@@ -2,49 +2,156 @@
 
 \section{Complexity Analysis}
 \paragraph{}
-The efficiency of programs is categorized by how the resource usage of a program increases with the input size in the limit.
-This is often called the asymptotic efficiency or complexity of a program.
-Asymptotic efficiency abstracts away the details of efficiency, allowing programs to be compared without knowledge of specific hardware architecture or the size and shape of the programs input (\citet{Cormen2001}).
-However, traditional complexity analysis is first-order; the asymptotic efficiency of a program is only be expressed in terms of its input.
-For example the analysis of the function \T{map:(a -> b) -> [b] -> [a]}, which applies a function to every element in a list, traditionally ignores the cost of applying it's first argument.
-Consequently it shows the asymptotic efficiency of \T{map} is linear in the length of the list.
-When mapping constant cost functions, such as fixed width integer addition, over a list, first order analysis is sufficient for predicting the cost of running a program.
-However when mapping a nontrivial function over a list, first order complexity analysis may not accurately describe the cost.
-The cost of mapping the nontrivial function over a small list of large elements will be larger than mapping the function over a larger list of smaller elements.
-Higher order analysis allows us to say the complexity of \T{map} is a product of the length of the list and the cost of the function. 
+The efficiency of programs is categorized by how the resource usage of a
+program increases with the input size in the limit.  This is often called the
+asymptotic efficiency or complexity of a program.  Asymptotic efficiency
+abstracts away the details of efficiency, allowing programs to be compared
+without knowledge of specific hardware architecture or the size and shape of
+the programs input (\citet{Cormen2001}).  However, traditional complexity
+analysis is first-order; the asymptotic efficiency of a program is only
+expressed in terms of its input.  For example, traditional analysis of the function
+\T{map:(a -> b) -> [b] -> [a]}, which applies a function to every element in a
+list, assumes the cost of applying its first argument is constant.  \T{map}
+is implemented below in OCaml.
+
+\lstset{language=[Objective]Caml}
+\begin{lstlisting}
+let rec map f xs =
+  match xs with
+  | [] -> []
+  | (x::xs') -> f x :: map f xs'
+\end{lstlisting}
+
+Traditional complexity analysis proceeds as follows.  First we write a
+recurrence for the cost.  \[ T(n) = c + T(n-1) \] Then we solve this recurrence
+using the substitution method in \citet{Cormen2001}.  We guess the solution is
+$T(n) = cn$.  We check it by proving $T(n) = cn$ by induction on $n$.
+
+\begin{align*}
+  T(n) &= c + T(n-1)\\
+       &= c + c(n-1) \\
+       &= c + cn - c \\
+       &= cn
+\end{align*}
+
+The result is the asymptotic efficiency of \T{map} is linear in
+the length of the list.
+
+If the cost function is has a constant cost, such as fixed width integer
+addition, then this first-order analysis is sufficient.  The cost of mapping a
+constant cost function over a list will increase linearly in the size of the
+list.  However, first-order complexity analysis will not accurately describe
+the cost of mapping a nontrivial function over a list.  Consider insertion
+sort, which is quadratic in the size of its argument.  The cost of mapping this
+function over a list of lists depends not only on the length of the list, but
+also on the length of the sublists.  A more accurate prediction of the cost of
+this function can be obtained by taking into account the cost of insertion
+sort.
+
+For an example such \T{map}, it is simple enough to change our analysis to
+reflect that applying the functions \T{f} and \T{::} does not have constant
+cost $c$, but instead has cost $c_f + c_{::}$.  Using the same substitution
+method as before, our guess becomes $T(n) = (c_f + c_{::})n$.  We prove our
+guess by induction on $n$.
+%
+\begin{align*}
+  T(n) &= c_f + c_{::} + T(n-1) \\
+       &= c_f + c_{::} + (c_f + c_{::})(n-1) \\
+       &= c_f + c_{::} + (c_f + c_{::})n - c_f - c_{::}  \\
+       &= (c_f + c_{::})n
+\end{align*}
+%
+Our analysis of the cost of \T{map} is now paramaterized by the cost \T{f} and
+\T{::}.
+
+Although this is sufficient for a function such as \T{map}, where the cost at
+each recursive call of \T{map} does not depend on the result of the recursive
+call on the tail of the argument since, in OCaml, \T{::} is a constant time
+operation.  If the cost of \T{::} was not constant, then our analysis would
+break down because we would need to know the size of the result of the
+recursive call in order to know the cost of \T{::}.
+
+To address this, we can consider the complexity of an expression to be a
+pair of a cost and a potential.  This is the approach taken by
+\citet{Danner2007}.  The cost of an expression an upper bound on the time
+required to evaluate an expression.  The cost can be a natural number or, for
+parallel analysis, a cost graph representing the dependencies between
+sub-computations.  The potential is a measure of the cost of future use of the
+expression.
+
+\section{Previous Work}
 
 \paragraph{}
-This thesis will build on work by Danner, in which the complexity of an expression is composed of a cost and a potential.
-
-\section{Previous Work} \paragraph{}
-\citet{Danner2007}, building on the work of others, introduced the idea that the complexity of an expression consists of a cost, representing an upper bound on the time it takes to evaluate the expression, and a potential, representing the cost of future uses of the expression.
-The notion of a potential is key because it allows the analysis of higher-order expressions. 
-The complexity of a higher order function such as \T{map} depends on the potential of its argument function.
-They developed a type system for ATR, a call-by-value version of PCF, that consists of a part restricting the sizes of values of expressions and a part restricting the cost of evaluating a expression.
-Programs written in ATR are constrained by the type system as to run in less than type-2 polynomial time.
-\citet{Danner2009} extended this work to express more forms of recursion, in particular those required by insertion sort and selection sort.
+\citet{Danner2007}, building on the work of others, introduced the
+idea that the complexity of an expression consists of a cost, representing an
+upper bound on the time it takes to evaluate the expression, and a potential,
+representing the cost of future uses of the expression.  The notion of a
+potential is key because it allows the analysis of higher-order expressions.
+The complexity of a higher-order function such as \T{map} depends on the
+potential of its argument function.  They developed a type system for ATR, a
+call-by-value version of System T, that consists of a part restricting the sizes of
+values of expressions and a part restricting the cost of evaluating a
+expression.  Programs written in ATR are constrained by the type system as to
+run in less than type-2 polynomial time.  \citet{Danner2009} extended this work
+to express more forms of recursion, in particular those required by insertion
+sort and selection sort.
 
 \paragraph{}
-\citet{Danner2013} utilized the notion of thinking of the complexity of an expression as a pair of a cost and a potential to statically analyze the complexity of a higher-order functional language with structural list recursion.
-The expressions in the higher-order functional language with structural list recursion, referred to as the source language, are mapped to expressions in a complexity language by a translation function.
-The translated expression describes an upper bound on the complexity of the original programs.
+\citet{Danner2013} utilized the notion of thinking of the complexity of an
+expression as a pair of a cost and a potential to statically analyze the
+complexity of a higher-order functional language with structural list
+recursion.  The expressions in the higher-order functional language with
+structural list recursion, referred to as the source language, are mapped to
+expressions in a complexity language by a translation function.  The translated
+expression describes an upper bound on the complexity of the original programs.
 
 \paragraph{}
-\citet{Danner2015} built on this work to formalize the extraction of recurrences from a higher-order functional language with structural recursion on arbitrary inductive data types.
-Arbitrary inductive data types are handled semantically using programmer-specified sizes of data types.
-Sizes must be programmer-specified because the structure of a data type does not always determine the interpretation of the size of a data type.
-Also, there exist different reasonable interpretations of size, and some may be preferable to others depending on what is being analyzed.
-For example, if the size of a list is interpreted as the length of the list, then the complexity \T{map$\langle$f,xs$\rangle$} will be order length of \T{xs}.
-If the size of a list is interpreted as a pair of the length and its largest element, then the complexity will depend on the length of \T{xs}, the potential of \T{f}, and the largest element.
+\citet{Danner2015} built on this work to formalize the extraction
+of recurrences from a higher-order functional language with structural
+recursion on arbitrary inductive data types. Programs are written in the
+functional language, referred to as the source language. The programs are
+translated into a complexity language, which represents a bound on the
+complexity of the source program. A bounding relation is used to prove the
+translation and denotational semantics of the complexity language give an upper
+bound on the operational cost of running the source program. The paper also
+presents a syntactic bounding theorem, where the abstraction of values to sizes
+done in the semantics is instead done syntactically. Arbitrary inductive data
+types are handled semantically using programmer specified sizes of data types.
+Sizes must be programmer specified because the structure of a data type does
+not always determine the interpretation of the size of a data type. There also
+exist different reasonable interpretations of size, and some may be
+preferable to others depending on what is being analyzed.
 
 
 \section{Contribution}
 
+This thesis comes in three parts.
 \paragraph{}
-This thesis contains a catalog of example of the extraction of recurrences from from functional programs using the approach by \citet{Danner2015}. The examples are compare this approach with other methods, such as those by \citet{Avanzini2015} and \citet{HoffHof2010}, highlighting the strengths and weakness of this approach compared with others. The examples include fold, reversing a list and parametric insertion sort.
+The first part contains a catalog of examples of the extraction of recurrences
+from functional programs using the approach given by \citet{Danner2015}. These
+examples illustrate how to apply the method to nontrivial examples. They also
+serve to demonstrate common techniques for solving the extracted recurrences.
+The examples also allow the comparison with other automated complexity methods
+such as those given by \citet{Avanzini2015} and \citet{HoffHof2010},
+highlighting their respective strengths and weaknesses. The examples include
+reversing a list in quadratic, reversing a list in linear time, insertion sort,
+parametric insertion sort, list map, and tree map.
+
 
 \paragraph{}
-This thesis also demonstrates the recurrence for the potential does not depend on the recurrence for the cost. Consequently we can extract the recurrence for the potential and analyze it independently.
+The second part extends the analysis to parallel progams. We change costs from
+from natural numbers to the cost graphs described in \citet{Harper2013}. A cost
+graph represents the dependencies between subcomputations in a program. The
+nodes of the graph are subcomputations of the program and an edge between two
+nodes indicates the result of one computation is an input to the other. The
+cost graph can be used to determine an optimal strategy for scheduling the
+computation on multiple processors. The cost graph has two properties that we
+are interested in, work and span. The work is the total steps required to run
+the program, which corresponds to the steps a single processor must execute to
+run the program. The span is the critical path; the longest number of steps
+from the start to the end of the cost graph.
 
 \paragraph{}
-This thesis also extends the \citet{Danner2015} approach to parallel programs. We alter the cost sematnics and the complexity translation to produce costs which are not integers, but graphs which reflect the dependencies between expressions in the program. The work and span of the program can be extracted from the cost graph, which indicate the cost of the program when run in parallel.
+The third part demonstrates the recurrence for the potential does not depend on
+the recurrence for the cost. Consequently, we can extract the recurrence for the
+potential and analyze it independently.
