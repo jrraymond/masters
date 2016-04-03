@@ -61,7 +61,7 @@ guess by induction on $n$.
        &= (c_f + c_{::})n
 \end{align*}
 %
-Our analysis of the cost of \T{map} is now paramaterized by the cost \T{f} and
+Our analysis of the cost of \T{map} is now parameterized by the cost \T{f} and
 \T{::}.
 
 Although this is sufficient for a function such as \T{map}, where the cost at
@@ -139,8 +139,8 @@ parametric insertion sort, list map, and tree map.
 
 
 \paragraph{}
-The second part extends the analysis to parallel progams. We change costs from
-from natural numbers to the cost graphs described in \citet{Harper2013}. A cost
+The second part extends the analysis to parallel programs. We change costs from
+from natural numbers to the cost graphs described in \citet{Harper2012PFPL}. A cost
 graph represents the dependencies between subcomputations in a program. The
 nodes of the graph are subcomputations of the program and an edge between two
 nodes indicates the result of one computation is an input to the other. The
@@ -154,4 +154,7 @@ from the start to the end of the cost graph.
 \paragraph{}
 The third part demonstrates the recurrence for the potential does not depend on
 the recurrence for the cost. Consequently, we can extract the recurrence for the
-potential and analyze it independently.
+potential and analyze it independently. This is useful because it is often
+easier to solve the cost and potential recurrences independently than it is to
+solve the initial recurrence. We are also sometimes only interested in just the
+potential or just the cost of a recurrence.

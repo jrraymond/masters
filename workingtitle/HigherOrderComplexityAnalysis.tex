@@ -1,66 +1,85 @@
 \chapter{Higher Order Complexity Analysis}
 
-Programs are written in the {source language.
-Then the program is translated to a complexity language.
-The semantic interpretation of the complexity language program may be used to analyse the complexity of the original program.
+Programs are written in the {source language. Then the program is translated
+to a complexity language. The semantic interpretation of the complexity
+language program may be used to analyse the complexity of the original
+program.
 
 \section{Source Language}
-The source language is the simply typed lambda calculus with \T{unit}, product types, suspensions, inductive datatypes and a recursion construct.
-The types, expressions, and typing judgments of the source language are given in figure \ref{fig:source_lang_syntax_types}.  
-Evaluation is call-by-value and the rules for evaluation are given in figure \ref{fig:source_lang_oper_sem}.
+The source language is the simply typed lambda calculus with \T{Unit},
+products, suspensions, user-defined inductive datatypes and a recursion
+construct.  Valid signatuers, types, and constructor arguments are given in
+figure \ref{fig:source_lang_sigs_types_constructors}. The types, expressions,
+and typing judgments of the source language are given in figure
+\ref{fig:source_lang_syntax_types}.  Evaluation is call-by-value and the rules
+for evaluation are given in figure \ref{fig:source_lang_oper_sem}.
 
-\T{unit} is a type with only one inhabitant, the value $\langle\rangle$, also called \T{unit}.
+\T{unit} is a singleton type with only one inhabitant, the value
+$\langle\rangle$, also called unit. 
 
 Product types are a compound types consisting of an ordered pair of types.
-Products are introduced using $\langle e_0, e_1 \rangle$
-Since evaluation is call-by-value, products are strict.
-So both expressions of in product must be evaluated before the product may be destructured.
-Products are eliminated using \T{split}.
+Products are introduced using $\langle e_0, e_1 \rangle$ Since evaluation is
+call-by-value, products are strict.  So both expressions of in product must be
+evaluated before the product may be destructured.  Products are eliminated
+using \T{split}.
 
-A suspension is an uncomputed computation that may be run in the future.
-A suspension has type \T{susp} $\tau$ where $\tau$ is the type of the resulting computation.
-Suspensions are introduced using the \T{delay}$(e)$ operator.
-Suspensions are eliminated using the \T{force}$(e)$ operator.
+A suspension is an unevaluated computation.  A suspension has type \T{susp}
+$\tau$ where $\tau$ is the type of the suspended computation.  Suspensions are
+introduced using the \T{delay}$(e)$ operator.  Suspensions are eliminated using
+the \T{force}$(e)$ operator, which evaluates the suspended computation.
 
 
-A program using datatypes must have a top-level signature $\psi$ consisting of datatype declarations of the form
+A program using datatypes must have a top-level signature $\psi$ consisting of
+datatype declarations of the form
+%
 \[ \T{datatype} \delta = C^\delta_0 \T{of} \phi_{C_0}[\delta] \ |\ ...\ |\ C^\delta_{n-1} \T{of} \phi_{C_{n-1}}[\delta] \]
-Each datatype may only refer to datatypes declared earlier in the signature. This prevents general recursive datatypes.
-The argument to each constructor is given by a strictly positive functor $\phi$, which is one of $t$, $\tau$, $\phi_0 \times \phi_1$, and $\tau \rightarrow \phi$.
-The identity functor $t$ represents recursive occurence of the datatype.
-The constant functor $\tau$ represents a non-recursive type.
-The product functor $\phi_0 \times \phi_1$ represents a pair of arguments.
-The constant exponential $\tau \rightarrow \phi$ represents a function type.
-The introduction forms for datatypes are the constructors.
-The elimination form for a datatype is the \T{rec} construct.
+%
+Each datatype may only refer to datatypes declared earlier in the signature.
+This prevents general recursive datatypes.  The argument to each constructor is
+given by a strictly positive functor $\phi$, which is one of $t$, $\tau$,
+$\phi_0 \times \phi_1$, and $\tau \rightarrow \phi$.  The identity functor $t$
+represents recursive occurence of the datatype.  The constant functor $\tau$
+represents a non-recursive type.  The product functor $\phi_0 \times \phi_1$
+represents a pair of arguments.  The constant exponential $\tau \rightarrow \phi$
+represents a function type.  The introduction forms for datatypes are the
+constructors.  The elimination form for a datatype is the \T{rec} construct.
 
 
-The \T{rec} construct allows for structural recursion.
-\T{rec} is given an argument to recurse on and a sequence of statements corresponding to each constructor for the datatype of the first argument.
-The first argument to \T{rec} is evaluated to a value, and then depending on the outermost constructor of the value, \T{rec} evaluates to the appropriate branch.
+The \T{rec} construct allows for structural recursion.  \T{rec} is given an
+argument to recurse on and a sequence of statements corresponding to each
+constructor for the datatype of the first argument.  The first argument to
+\T{rec} is evaluated to a value, and then depending on the outermost
+constructor of the value, \T{rec} evaluates to the appropriate branch.
 
 
-\T{map} is used to witness functoriallity whatever that means.
+\T{map} is used to lift functions from $\sigma \rightarrow \tau$ to
+$\phi[\sigma] \rightarrow \phi[\tau]$. \T{map} is restricted to syntactic
+values and is used in the operational semantics to insert recursive calls in
+their places. For example, if recursing on a value that does not contain a
+recursive occurence of a datatype, such as a boolean or a tree leaf, then
+\T{map} does not insert a recursive call anywhere.
+
 
 \begin{figure}
-\label{fig:source_lang_syntax_types}
-Types
-\begin{align*}
-  \tau &::= \T{unit}\ |\ \tau \times \tau\ |\ \tau \rightarrow \tau\ |\ \T{susp}\ \tau\ |\ \delta \\
-  \phi &::= t\ |\ \tau\ |\ \phi \times \phi\ |\ \tau \rightarrow \phi \\
-  \T{datatype}\ \delta &= C^\delta_0 \T{of} \phi_{C_0}[\delta]\ |\ ...\ |\ C^\delta_{n-1} \T{of} \phi_{C_{n-1}}[\delta]
-\end{align*}
+  \label{fig:source_lang_syntax_types}
+  \caption{Source language syntax and types}
+  Types
+  \begin{align*}
+    \tau &::= \T{unit}\ |\ \tau \times \tau\ |\ \tau \rightarrow \tau\ |\ \T{susp}\ \tau\ |\ \delta \\
+    \phi &::= t\ |\ \tau\ |\ \phi \times \phi\ |\ \tau \rightarrow \phi \\
+    \T{datatype}\ \delta &= C^\delta_0 \T{of} \phi_{C_0}[\delta]\ |\ ...\ |\ C^\delta_{n-1} \T{of} \phi_{C_{n-1}}[\delta]
+  \end{align*}
 
-Expressions
-\begin{align*}
-  v &::= x\ |\ \langle\rangle\ |\ \langle v, v \rangle\ |\ \lambda x.e\ |\ \T{delay}(e)\ |\ C\ v \\
-  e &::= x\ |\ \langle\rangle\ |\ \langle e, e \rangle\ |\ \T{split}(e, x.x.e)\ |\ \lambda x.e\ |\ e\ e \\
-    &\quad\ |\ \T{delay}(e)\ |\ \T{force}(e)\ |\ C^\delta\ e\ |\ \T{rec}^\delta(e, \overline{C \mapsto x.e_C}) \\
-    &\quad\ |\ \T{map}^\phi(x.v, v)\ |\ \T{let}(e, x.e) \\
-  n &::= 0\ |\ 1\ |\ n + n
-\end{align*}
+  Expressions
+  \begin{align*}
+    v &::= x\ |\ \langle\rangle\ |\ \langle v, v \rangle\ |\ \lambda x.e\ |\ \T{delay}(e)\ |\ C\ v \\
+    e &::= x\ |\ \langle\rangle\ |\ \langle e, e \rangle\ |\ \T{split}(e, x.x.e)\ |\ \lambda x.e\ |\ e\ e \\
+      &\quad\ |\ \T{delay}(e)\ |\ \T{force}(e)\ |\ C^\delta\ e\ |\ \T{rec}^\delta(e, \overline{C \mapsto x.e_C}) \\
+      &\quad\ |\ \T{map}^\phi(x.v, v)\ |\ \T{let}(e, x.e) \\
+    n &::= 0\ |\ 1\ |\ n + n
+  \end{align*}
 
-Typing Judgments
+  Typing Judgments
 
   \AxiomC{}
   \UnaryInfC{$\gamma, x : \sigma \vdash x : \sigma$}
@@ -121,6 +140,80 @@ Typing Judgments
   \DisplayProof
 \end{figure}
 
+
+\begin{figure}
+  \label{fig:source_lang_sigs_types_constructors}
+  \caption{Source language valid signatures, types, and constructor arguments}
+  Signatures: $\psi$ \T{sig}
+
+  \bigskip
+
+  \AxiomC{}
+  \UnaryInfC{$\langle\rangle$ \T{sig}}
+  \DisplayProof
+  \quadfive
+  \AxiomC{$\delta \notin \forall\text{C}(\psi \vdash \phi_C \T{ok})$}
+  \UnaryInfC{$\psi, \T{ datatype } \delta = \overline{C \T{ of } \phi_C[\delta]} \T{ sig}$}
+  \DisplayProof
+
+  \bigskip \bigskip
+
+  Types : $\psi \vdash \tau\ \T{type}$
+
+  \bigskip
+
+  \AxiomC{}
+  \UnaryInfC{$\psi \vdash \T{unit type}$}
+  \DisplayProof
+  \quad
+  \AxiomC{$\psi \vdash \tau_0\ \T{type}$}
+  \AxiomC{$\psi \vdash \tau_1\ \T{type}$}
+  \BinaryInfC{$\psi \vdash \tau_0 \times \tau_1\ \T{type}$}
+  \DisplayProof
+
+  \bigskip
+
+  \AxiomC{$\psi \vdash \tau_0\ \T{type}$}
+  \AxiomC{$\psi \vdash \tau_1\ \T{type}$}
+  \BinaryInfC{$\psi \vdash \tau_0 \rightarrow \tau_1\ \T{type}$}
+  \DisplayProof
+  \quad
+  \AxiomC{$\psi \vdash \tau\ \T{type}$}
+  \UnaryInfC{$\psi \vdash \T{susp}\ \tau\ \T{type}$}
+  \DisplayProof
+  \quad
+  \AxiomC{$\delta \in \psi$}
+  \UnaryInfC{$\psi \vdash \delta\ \T{type}$}
+  \DisplayProof
+
+  \bigskip
+
+  Constructor arguments: $\psi \vdash \phi \T{ ok}$
+
+  \bigskip
+
+  \AxiomC{}
+  \UnaryInfC{$\psi \vdash t\ \T{ ok}$}
+  \DisplayProof
+  \quadseven
+  \AxiomC{$\psi \vdash \tau \T{ type}$}
+  \UnaryInfC{$\psi \vdash \tau \T{ ok}$}
+  \DisplayProof
+
+  \bigskip
+
+  \AxiomC{$\psi \vdash \phi_0\ \T{ok}$}
+  \AxiomC{$\psi \vdash \phi_1\ \T{ok}$}
+  \BinaryInfC{$\psi \vdash \phi_0 \times \phi_1\ \T{ok}$}
+  \DisplayProof
+  \quadfive
+  \AxiomC{$\psi \vdash \tau\ \T{type}$}
+  \AxiomC{$\psi \vdash \phi\ \T{ok}$}
+  \BinaryInfC{$\psi \vdash \tau \rightarrow \phi\ \T{ok}$}
+  \DisplayProof
+\end{figure}
+
+
 \begin{figure}
   \label{fig:source_lang_oper_sem}
   \caption{Source language operational semantics}
@@ -131,6 +224,7 @@ Typing Judgments
   \AxiomC{$e_1 \downarrow^{n_1} v_1$}
   \BinaryInfC{$\langle e_0, e_1 \rangle \downarrow^{n_0 + n_1} \langle v_0, v_1 \rangle$}
   \DisplayProof
+  \quad
   \AxiomC{$e_0 \downarrow^{n_0} \langle v_0, v_1 \rangle$}
   \AxiomC{$e_1[v_0/x_0, v_1/x_1] \downarrow^{n_1} v$}
   \BinaryInfC{$\T{split}(e_0, x_0.x_1.e_1) \downarrow^{n_0 + n_1} v$}
@@ -143,6 +237,7 @@ Typing Judgments
   \AxiomC{$e_0'[v_1/x] \downarrow^n v$}
   \TrinaryInfC{$e_0\ e_1 \downarrow^{1 + n_0 + n_1 + n} v$}
   \DisplayProof
+  \quad
   \AxiomC{}
   \UnaryInfC{$\T{delay}(e) \downarrow^0 \T{delay}(e)$}
   \DisplayProof
@@ -153,6 +248,7 @@ Typing Judgments
   \AxiomC{$e_0 \downarrow^{n_1} v$}
   \BinaryInfC{$\T{force}(e) \downarrow^{n_0 + n_1} v$}
   \DisplayProof
+  \quad
   \AxiomC{$e \downarrow^n v$}
   \UnaryInfC{$C e \downarrow^n C v$}
   \DisplayProof
@@ -170,6 +266,7 @@ Typing Judgments
   \AxiomC{}
   \UnaryInfC{$\T{map}^t(x.v, v_0) \downarrow^0 v[v_0/x]$}
   \DisplayProof
+  \quad
   \AxiomC{}
   \UnaryInfC{$\T{map}^\tau(x.v, v_0) \downarrow^0 v_0$}
   \DisplayProof
@@ -184,6 +281,7 @@ Typing Judgments
   \AxiomC{}
   \UnaryInfC{$\T{map}^{\tau \to \phi}(x.v, \lambda y.e) \downarrow^0 \lambda y.\T{let}(e, z.\T{map}^\phi(x.v, z))$}
   \DisplayProof
+  \quad
   \AxiomC{$e_0 \downarrow^{n_0} v_0$}
   \AxiomC{$e_1[v_0/x] \downarrow^{n_1} v$}
   \BinaryInfC{$\T{let}(e_0, x.e_1) \downarrow^{n_0 + n_1} v$}
@@ -201,7 +299,8 @@ Tuples are destructured using projections instead of \T{split}.
 
 \begin{figure}
   \label{fig:complexity_lang}
-  
+  \caption{Complexity language types, expressions, and typing judgments}
+
   Types
   \begin{align*}
     T &::= \textbf{C} \ |\ \T{unit} \ |\ \Delta \ |\ T \times T \ |\ T \rightarrow T \\
@@ -223,12 +322,15 @@ Tuples are destructured using projections instead of \T{split}.
   \AxiomC{}
   \UnaryInfC{$\Gamma, x : T \vdash x : T$}
   \DisplayProof
+  \quad
   \AxiomC{}
   \UnaryInfC{$\Gamma \vdash 0 : \textbf{C}$}
   \DisplayProof
+  \quad
   \AxiomC{}
   \UnaryInfC{$\Gamma \vdash 1 : \textbf{C}$}
   \DisplayProof
+  \quad
   \AxiomC{}
   \UnaryInfC{$\Gamma \vdash \langle\rangle : \textbf{unit}$}
   \DisplayProof
@@ -239,6 +341,7 @@ Tuples are destructured using projections instead of \T{split}.
   \AxiomC{$\Gamma \vdash E_1 : \textbf{C}$}
   \BinaryInfC{$\Gamma \vdash E_0 + E_1 : \textbf{C}$}
   \DisplayProof
+  \quad
   \AxiomC{$\Gamma \vdash E_0 : T_0$}
   \AxiomC{$\Gamma \vdash E_1 : T_1$}
   \BinaryInfC{$\Gamma \vdash \langle E_0, E_1 \rangle : T_0 \times T_1$}
@@ -249,6 +352,7 @@ Tuples are destructured using projections instead of \T{split}.
   \AxiomC{$\Gamma \vdash E : T_0 \times T_1$}
   \UnaryInfC{$\Gamma \vdash \pi_i E : T_i$}
   \DisplayProof
+  \quad
   \AxiomC{$\Gamma, x : T_0 \vdash E : T_1$}
   \UnaryInfC{$\Gamma \vdash \lambda x.E : T_0 \rightarrow T_1$}
   \DisplayProof
@@ -259,6 +363,7 @@ Tuples are destructured using projections instead of \T{split}.
   \AxiomC{$\Gamma \vdash E_1 : T_0$}
   \BinaryInfC{$\Gamma \vdash E_0\ E_1 : T_1$}
   \DisplayProof
+  \quad
   \AxiomC{$\Gamma \vdash E : \Phi_C[\Delta]$}
   \UnaryInfC{$\Gamma \vdash C^\Delta E : \Delta$}
   \DisplayProof
