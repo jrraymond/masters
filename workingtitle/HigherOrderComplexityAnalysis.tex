@@ -376,3 +376,45 @@ Tuples are destructured using projections instead of \T{split}.
   \DisplayProof
 
 \end{figure}
+
+The translation from the source language to the complexity language is given in figure \ref{fig:complexity_translation}.
+\begin{figure}
+  \label{fig:complexity_translation}
+  \caption{Translation from source language to complexity language}
+  %
+  \begin{align*}
+    \|\tau\| &= \textbf{C} \times \llangle \tau \rrangle \\
+    \llangle\T{unit}\rrangle &= \T{unit} \\
+    \llangle \sigma \times \tau \rrangle &= \llangle \sigma \rrangle \times \llangle \tau \rrangle \\
+    \llangle \sigma \rightarrow \tau \rrangle &= \llangle \sigma \rrangle \rightarrow \|\tau\| \\
+    \llangle \T{susp}\ \tau \rrangle &= \|\tau\| \\
+    \llangle \delta \rrangle &= \delta \\
+  \end{align*}
+  %
+  \begin{align*}
+    \|\phi\| &= \textbf{C} \times \llangle \phi \rrangle \\
+    \llangle t \rrangle &= t \\
+    \llangle \tau \rrangle &= \llangle \tau \rrangle \\
+    \llangle \phi_0 \times \phi_1 \rrangle &= \llangle \phi_0 \rrangle \times \llangle phi_1 \rrangle \\
+    \llangle \tau \rightarrow \phi \rrangle &= \llangle \phi \rrangle \rightarrow \|\phi\| \\
+  \end{align*}
+  \begin{align*}
+    \llangle \psi \rrangle &= \text{ for each }\delta \in \psi, \delta = C_0^\delta \T{ of } \llangle \phi_{C_0}\rrangle[\delta], . . . , C_{n-1}^\delta \T{ of } \llangle \phi_{n-1}\rrangle[\delta] \\
+  \end{align*}
+  %
+  \begin{align*}
+    \|x\| &= \langle 0, x \rangle \\
+    \|\langle\rangle\| &= \langle 0, \langle\rangle\rangle \\
+    \|\langle e_0,e_1 \rangle\| &= \langle \|e_0\|_c + \|e_1\|_c, \langle \|e_0\|_p, \|e_1\|_p\rangle\rangle \\
+    \|\T{split}(e_0, x_0.x_1.e_1)\| &= \|e_0\|_c +_c \|e_1\|[\pi_0\|e_0\|_p/x_0, \pi_1\|e_0\|_p/x_1] \\
+    \|\lambda x.e\| &= \langle 0, \lambda x.\|e\| \rangle \\
+    \|e_0\ e_1\| &= (1 + \|e_0\|_c + \|e_1\|_c) +_c \|e_0\|_p \|e_1\|_p \\
+    \|\T{delay}(e)\| &= \langle 0, \|e\|\rangle \\
+    \|\T{force}(e)\| &= \|e\|_c +_c \|e\|_p \\
+    \|\text{C}^\delta_i\ e\| = \langle \|e\|_c, \text{C}^\delta_i \|e\|_p \rangle \\
+    \|\T{rec}^\delta(e, \overline{C \mapsto x.e_C})\| &= \|e\|_c +_c \T{rec}^\delta(\|e\|_p, \overline{C \mapsto x.1 +_c \|e_C\|}) \\
+    \|\T{map}^\phi(x.v_0, v_1)\| &= \langle 0, \T{map}^{\llangle \phi \rrangle}(x.\|v_0\|_p, \|v_1\|_p)\rangle \\
+    \|\T{let}(e_0, x.e_1)\rrangle &= \|e_0\|_c +_c \|e_1\|[\|e_0\|_p/x]
+  \end{align*}
+  %
+\end{figure}
