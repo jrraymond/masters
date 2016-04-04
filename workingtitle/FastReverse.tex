@@ -1,9 +1,6 @@
 % ---------------------------------------- FAST REVERSE ----------------------------------------
 \chapter{Fast Reverse}
 
-
-
-
 Fast reverse is an implementation reverse in linear time complexity. 
 A naive implementation of reverse appends the head of the list to recursively
 reversed tail of  the list. Fast reverse instead uses an abstraction to delay
@@ -47,193 +44,238 @@ outermost abastraction to \T{Nil}. Below we show the evaluation of \T{rev}
 applied to a small list of just two elements.
 
 \begin{lstlisting}
-rev (Cons$\langle$0,Cons$\langle$1, Nil$\rangle\rangle$) $\rightarrow$ 
+rev (Cons$\langle$0,Cons$\langle$1, Nil$\rangle\rangle$) $\to$ 
   rec(Cons$\langle$0,Cons$\langle$1,Nil$\rangle\rangle$,
       Nil $\mapsto\lambda$a.a
       Cons$\mapsto$b.split(b,x.c.split(c,xs'.r.
                $\lambda$a.force(r) Cons$\langle$x,a$\rangle$))) Nil
-  $\rightarrow^* (\lambda$a0.($\lambda$a1.($\lambda$a2.a2) Cons$\langle$1,a1$\rangle$) Cons$\langle$0,a0$\rangle$) Nil
-  $\rightarrow_\beta$ ($\lambda$a1.($\lambda$a2.a2) Cons$\langle$1,a1$\rangle$) Cons$\langle$0,Nil$\rangle$
-  $\rightarrow_\beta$ ($\lambda$a2.a2) Cons$\langle$1,Cons$\langle$0,Nil$\rangle\rangle$
-  $\rightarrow_\beta$ Cons$\langle$1,Cons$\langle$0,Nil$\rangle\rangle$
+  $\to^* (\lambda$a0.($\lambda$a1.($\lambda$a2.a2) Cons$\langle$1,a1$\rangle$) Cons$\langle$0,a0$\rangle$) Nil
+  $\to_\beta$ ($\lambda$a1.($\lambda$a2.a2) Cons$\langle$1,a1$\rangle$) Cons$\langle$0,Nil$\rangle$
+  $\to_\beta$ ($\lambda$a2.a2) Cons$\langle$1,Cons$\langle$0,Nil$\rangle\rangle$
+  $\to_\beta$ Cons$\langle$1,Cons$\langle$0,Nil$\rangle\rangle$
 \end{lstlisting}
 
-% -------------------- translation with splits --------------------   
+% -------------------- BEGIN REV TRANSLATION SPLIT --------------------   
 We will walk through the translation from the source language to the complexity
 language.
 %
-\begin{align*}
+\begin{flalign*}
   \|\T{rev}\| &= \|(\lambda\T{xs.rec(xs, Nil}\mapsto\lambda\T{a.a,} \\
               &\quad \T{Cons}\mapsto\T{b.split(b,x.c.split(c,xs'.r.}\lambda\T{a.force(r) Cons}\langle\T{x,a}\rangle\T{)))) Nil}\|
-\end{align*}
+\end{flalign*}
+%
+% BEGIN APP
 %
 First we apply the rule for translating an application. The rule is
 $\|e_0\ e_1\| = (1 + \|e_0\|_c + \|e_1\|_c) +_c (\|e_0\|_p\ \|e_1\|_p)$.
 In this case, $\lambda\T{xs.rec(...)}$ is $e_0$ and \T{Nil} is $e_1$.
-
+%
+% APP ARGUMENT
+%
 The translation of a constructor applied to an expression is a tuple of the
 cost of the translated expression and the corresponding complexity language
 constructor applied to the potential of the translated expression. Since the
 expression inside \T{Nil} is $\langle\rangle$, and
 $\|\langle\rangle\| = \langle 0,\langle\rangle\rangle$, we have
 %
-\begin{align*}
+\begin{flalign*}
   |\T{Nil}\| &= \langle\langle 0, \langle\rangle\rangle_c, \T{Nil}\langle 0,\langle\rangle\rangle_p\rangle \\
              &= \langle 0, \T{Nil}\langle\rangle\rangle
-\end{align*}
+\end{flalign*}
+%
+% BEGIN APP FUNCTION
 %
 To translate $\lambda\T{xs.rec(...)}$ we apply the rule
 $\|\lambda x.e\| = \langle 0, \lambda x.\|e\|\rangle$. So
 %
-\begin{align*}
+\begin{flalign*}
   &\|\lambda\T{xs.rec(xs, Nil}\mapsto\lambda\T{a.a,} \\
   &\qquad \T{Cons}\mapsto\T{b.split(b,x.c.split(c,xs'.r.}\lambda\T{a.force(r) Cons}\langle\T{x,a}\rangle\T{)))}\| \\
   &\quad= \langle 0, \lambda xs.\|\T{rec(xs, Nil}\mapsto\lambda\T{a.a,} \\
   &\quadthree \T{Cons}\mapsto\T{b.split(b,x.c.split(c,xs'.r.}\lambda\T{a.force(r) Cons}\langle\T{x,a}\rangle\T{)))}\|\rangle
-\end{align*}
+\end{flalign*}
+%
+% BEGIN REC
 %
 The rule for translating a \T{rec} expression is
 \[
   \|\T{rec}(e,\overline{C \mapsto x.e_C})\| = (1 + \|e\|_c) +_c \T{rec}(\|e\|_p, \overline{C \mapsto x.\|e_C\|})
 \]
-So the translation of \T{rec(xs, ...)} is
 %
-\begin{align*}
+\begin{flalign*}
   &\|\T{rec}(xs, \T{Nil}\mapsto\lambda a.a, \\
   &\qquad \T{Cons}\mapsto b.\T{split}(b,x.c.\T{split}(c,xs'.r.\lambda a.\T{force}(r)\ \T{Cons}\langle x,a\rangle)))\| \\
-  &= (1 + \|xs\|_c) +_c \T{rec}(\|xs\|_p, \T{Nil} \mapsto 1 +_c \|\lambda a.a\| \\
+  &= \|xs\|_c +_c \T{rec}(\|xs\|_p, \T{Nil} \mapsto 1 +_c \|\lambda a.a\| \\
   &\quadthree \T{Cons}\mapsto b. 1 +_c \|\T{split}(b,x.c.\T{split}(c,xs'.r.\lambda a.\T{force}(r)\ \T{Cons}\langle x,a\rangle))\|) \\
-  &= 1 +_c \T{rec}(xs, \T{Nil} \mapsto 1 +_c \|\lambda a.a\| \\
+  &= \langle 0, xs \rangle_c +_c \T{rec}(\langle 0, xs\rangle_p, \T{Nil} \mapsto 1 +_c \|\lambda a.a\| \\
+  &\quadthree \T{Cons}\mapsto b. 1 +_c \|\T{split}(b,x.c.\T{split}(c,xs'.r.\lambda a.\T{force}(r)\ \T{Cons}\langle x,a\rangle))\|) \\
+  &\text{The term $xs$ is a variable and the rule for translating variables is $\|xs\| = \langle 0, xs\rangle$.} \\
+  &= \T{rec}(xs, \T{Nil} \mapsto 1 +_c \|\lambda a.a\| \\
   &\quadthree \T{Cons}\mapsto b. 1 +_c \|\T{split}(b,x.c.\T{split}(c,xs'.r.\lambda a.\T{force}(r)\ \T{Cons}\langle x,a\rangle))\|)
-\end{align*}
+\end{flalign*}
 %
-We use the fact that $xs$ is a variable and the rule for translating variables
-is $\|x\| = \langle 0, x\rangle$. The translation of the \T{Nil} branch is
+% NIL BRANCH
+%
+The translation of the \T{Nil} branch is
 simple application of the $\|\lambda x.e\| = \langle 0, \lambda
 x.\|e\|\rangle$ and the variable translation rule.
 %
-\begin{align*}
+\begin{flalign*}
   &1 +_c \|\lambda a.a\| \\
   &= 1  +_c   \langle 0, \lambda a. \| a \|\rangle \\
   &=  \langle 1, \lambda a. \langle 0,a \rangle\rangle 
-\end{align*}
+\end{flalign*}
 %
-The translation of the \T{Cons} branch is a slightly more involved. The rule 
+% BEGIN CONS BRANCH
 %
-\begin{align*}
+The translation of the \T{Cons} branch is a slightly more involved. The rule
+for translating \T{split} is
+%
+\[ \|\T{split}(e_0,x_0.x_1.e_1)\| = \|e_0\|_c +_c \|e_1\|[\pi_0\|e_0\|_p/x_0, \pi_1\|e_0\|_p/x_1] \]
+%
+After applying the rule to the \T{Cons} branch we get
+%
+\begin{flalign*}
   &1 +_c \|\T{split}(b,x.c.\T{split}(c,xs'.r.\lambda a.\T{force}(r)\ \T{Cons} \langle x,a \rangle )) \| \\
   &= 1 +_c \|b\|_c +_c \|\T{split}(c,xs'.r.\lambda a.\T{force}(r)\ \T{Cons}\langle x,a \rangle) \|[\pi_0 \| b \|_p/x,\pi_1 \| b \|_p/c] 
-\end{align*}
+\end{flalign*}
 %
-Remember that $b$ is a variable and has the type
-\T{int$\times\langle$list$\times \langle$list$\to$list$\rangle\rangle$}.
-The type of \T{$\|$b$\|$} is
-\T{$\langle$C$\times \langle$int$\times\langle$list$\times\langle$C$\times$list$\to\langle$C$\times$list$\rangle\rangle\rangle\rangle\rangle$}.
+Remember that $b$ is a variable and has type
+$\phi_\T{Cons}[\T{list} \times \T{susp (list} \to \T{list)}]$.
+The translation of this type is 
+$\textbf{C} \times \llangle \phi_\T{Cons} \rrangle [\T{list} \times \langle \T{list} \to \langle \textbf{C} \times \T{list} \rangle\rangle]$.
 We can say that \T{$\pi_0\|$b$\|_p$} is the head of the list \T{xs},
 \T{$\pi_0\pi_1\|$b$\|_p$} is the tail of the list \T{xs}, and
 \T{$\pi_1\pi_1\|$b$\|_p$} is the result of the recursive call.
+The translation of $b$ is $\langle 0, \|b\|_p\rangle$.
 %
-\begin{lstlisting}
-= Cons$\mapsto$b.$ 1 +_c$ $\langle$0,$\|$b$\|_p\rangle_c +_c \|$split(c,xs'.r.
-        $\lambda$a.force(r) Cons$\langle$x,a$\rangle\|[\pi_0 \|$b$\|_p/x,\pi_1 \|$b$\|_p/c]$
-
-= Cons$\mapsto$b.$ 1 +_c 0 +_c (\|$c$\|_c +_c$
-        $(\|\lambda$a.force(r) Cons$\langle$x,a$\rangle\|)[\pi_0 \|$c$\|_p / xs',\pi_1 \|$c$\|_p / r])[\pi_0 \|$b$\|_p/x,\pi_1 \|$b$\|_p/c]$
-
-= Cons$\mapsto$b.$ 1 +_c (\|$c$\|_c +_c$
-        $\langle0,\lambda$a.$\|$force(r) Cons$\langle$x,a$\rangle\|\rangle[\pi_0 \|$c$\|_p / xs',\pi_1 \|$c$\|_p / r])[\pi_0 \|$b$\|_p/x,\pi_1 \|$b$\|_p/c]$
-\end{lstlisting}
+\begin{flalign*}
+  &1 +_c \|b\|_c +_c \|\T{split}(c,xs'.r.\lambda a.\T{force}(r)\ \T{Cons}\langle x,a \rangle) \|[\pi_0 \| b \|_p/x,\pi_1 \| b \|_p/c] \\
+  &=1 +_c \|\T{split}(c,xs'.r.\lambda a.\T{force}(r)\ \T{Cons}\langle x,a \rangle) \|[\pi_0 \| b \|_p/x,\pi_1 \| b \|_p/c] \\
+  %
+  &\qquad \text{We apply the rule for \T{split} again.} \\
+  %
+  &=1 +_c (\|c\|_c +_c \|\lambda a.\T{force}(r)\ \T{Cons}\langle x,a \rangle\|[\pi_0 \|c\|_p/xs', \pi_1\|c\|_p/r][\pi_0 \| b \|_p/x,\pi_1 \| b \|_p/c] \\
+  %
+  &\qquad \text{$c$ is a variable, so its translation is $\langle 0, c \rangle$.} \\
+  %
+  &=1 +_c \|\lambda a.\T{force}(r)\ \T{Cons}\langle x,a \rangle\|[\pi_0 \|c\|_p/xs', \pi_1\|c\|_p/r][\pi_0 \| b \|_p/x,\pi_1 \| b \|_p/c] \\
+  %
+  &\qquad \text{We apply the rule for abstraction.} \\
+  %
+  &=1 +_c \langle 0, \lambda a.\|\T{force}(r)\ \T{Cons}\langle x,a \rangle\|[\pi_0 \|c\|_p/xs', \pi_1\|c\|_p/r][\pi_0 \| b \|_p/x,\pi_1 \| b \|_p/c] \\
+  %
+  &\qquad \text{Recall $C +_c E$ is a macro for $\langle C + E_c, E_p\rangle$. We use this to eliminate the $+_c$.} \\
+  &\qquad \text{We also apply the translation rule for application.} \\
+  %
+  &=\langle 1, \lambda a.(1 + \|\T{force}(r)\|_c + \|\T{Cons}\langle x,a\rangle\|_c) \\
+  &\quadfive +_c \|\T{force}(r)\|_p \|\T{Cons}\langle x,a \rangle\|_p\rangle[\pi_0 \|c\|_p/xs', \pi_1\|c\|_p/r][\pi_0 \| b \|_p/x,\pi_1 \| b \|_p/c] \\
+\end{flalign*}
 %
-Let us focus on the translation of \T{$\|$force(r) Cons$\langle$x,a$\rangle\|$}.
-\begin{lstlisting}
-= $(1 + \|$force(r)$\|_c + \|$Cons$\langle$x,a$\|_c) +_c \|$force(r)$\|_p \|$Cons$\langle$x,a$\rangle\|_p$
-
-= $(1 + (\|$r$\|_c +_c \|$r$\|_p)_c + \|$Cons$\langle$x,a$\rangle\|_c) +_c (\|$r$\|_c +_c \|$r$\|_p)_p \|$Cons$\langle$x,a$\rangle\|_p$
-
-= $(1 + (\|$r$\|_c +_c \|$r$\|_p)_c + \|$Cons$\langle$x,a$\rangle\|_c) +_c (\|$r$\|_c +_c \|$r$\|_p)_p \|$Cons$\langle$x,a$\rangle\|_p$
-
-= $(1 + \|$r$\|_c + \|$Cons$\langle$x,a$\rangle\|_c) +_c \|$r$\|_p \|$Cons$\langle$x,a$\rangle\|_p$
-
-= $(1 + \|$r$\|_c + (\langle\|\langle$x,a$\rangle\|_c$,Cons$\|\langle$x,a$\rangle\|_p\rangle)_c) +_c \|$r$\|_p \langle\|\langle$x,a$\rangle\|_c$,Cons$\|\langle$x,a$\rangle\|_p\rangle_p$
-
-= $(1 + \|$r$\|_c + \|\langle$x,a$\rangle\|_c) +_c \|$r$\|_p $Cons$\|\langle$x,a$\rangle\|_p$
-
-= $(1 + \|$r$\|_c + \langle \|$x$\|_c + \|$a$\|_c$,$\langle \|$x$\|_p$,$\|$a$\|_p \rangle \rangle_c) +_c \|$r$\|_p $Cons$\langle \|$x$\|_c + \|$a$\|_c$,$\langle \|$x$\|_p$,$\|$a$\|_p \rangle \rangle_p$
-
-= $(1 + \|$r$\|_c + (\|$x$\|_c + \|$a$\|_c)) +_c \|$r$\|_p $Cons$\langle \|$x$\|_p$,$\|$a$\|_p \rangle$
-
-= $(1 + $r$_c + (\langle$0,x$\rangle_c + \langle$0,a$\rangle_c)) +_c \langle$0,r$\rangle_p $Cons$\langle \langle$0,x$\rangle_p$,$\langle$0,a$\rangle_p \rangle$
-
-= $(1 + $r$_c + 0 + 0) +_c $r$_p $Cons$\langle$x,a$\rangle$
-
-= $(1 + $r$_c) +_c $r$_p $Cons$\langle$x,a$\rangle$
-\end{lstlisting}
+% COMPOSE SUBSTITUTIONS
 %
-We can now use this in our translation of the \T{Cons} case.
+\begin{flalign*}
+  &\text{We will translate $\T{force}(r)$ and $\T{Cons}\langle x,a\rangle$ individually.} \\
+  &\text{First we compose the two substitutions.} \\
+  %
+  &\text{let } \Theta = [\pi_0 \|c\|_p/xs', \pi_1\|c\|_p/r][\pi_0 \| b \|_p/x,\pi_1 \| b \|_p/c] \\
+  &\quadthree = [\pi_0\pi_1 \|b\|_p/xs', \pi_1\pi_1\|b\|_p/r, \pi_0 \| b \|_p/x] \\
+  &\quad \text{Since $b$ is a variable, the potential  of its translation is $b$.} \\
+  &\Theta = [\pi_0\pi_1 b/xs', \pi_1\pi_1 b/r, \pi_0 b/x] \\
+\end{flalign*}
 %
-\begin{lstlisting}
-= Cons$\mapsto$b.$ 1 +_c (\|$c$\|_c +_c$
-        $\langle0,\lambda$a.$(1 + $r$_c) +_c $r$_p $Cons$\langle$x,a$\rangle\rangle[\pi_0 \|$c$\|_p / xs',\pi_1 \|$c$\|_p / r])[\pi_0 \|$b$\|_p/x,\pi_1 \|$b$\|_p/c]$
-
-= Cons$\mapsto$b.$ 1 +_c (\|$c$\|_c +_c$
-        $\langle0,\lambda$a.$(1 + (\pi_1\|$c$\|_p)_c) +_c (\pi_1\|$c$\|_p)_p $Cons$\langle$x,a$\rangle\rangle)[\pi_0 \|$b$\|_p/x,\pi_1 \|$b$\|_p/c]$
-
-= Cons$\mapsto$b.$ 1 +_c (\|\pi_1\|$b$\|_p\|_c +_c$
-        $\langle0,\lambda$a.$(1 + (\pi_1\|\pi_1\|$b$\|_p\|_p)_c) +_c (\pi_1\|\pi_1\|$b$\|_p\|_p)_p $Cons$\langle\pi_1\|$b$\|_p$,a$\rangle\rangle)$
-
-= Cons$\mapsto$b.$ 1 +_c (\|\pi_1\langle$0,b$\rangle_p\|_c +_c$
-        $\langle0,\lambda$a.$(1 + (\pi_1\|\pi_1\langle$0,b$\rangle_p\|_p)_c) +_c (\pi_1\|\pi_1\langle$0,b$\rangle_p\|_p)_p $Cons$\langle\pi_1\langle$0,b$\rangle_p$,a$\rangle\rangle)$
-
-= Cons$\mapsto$b.$ 1 +_c (\|\pi_1$b$\|_c +_c$
-        $\langle0,\lambda$a.$(1 + (\pi_1\|\pi_1$b$\|_p)_c) +_c (\pi_1\|\pi_1$b$\|_p)_p $Cons$\langle\pi_1$b,a$\rangle\rangle)$
-
-= Cons$\mapsto$b.$ 1 +_c (\langle$0,$\pi_1$b$\rangle_c +_c$
-        $\langle0,\lambda$a.$(1 + (\pi_1\langle$0,$\pi_1$b$\rangle_p)_c) +_c (\pi_1\langle$0,$\pi_1$b$\rangle_p)_p $Cons$\langle\pi_1$b,a$\rangle\rangle)$
-
-= Cons$\mapsto$b.$ 1 +_c \langle0,\lambda$a.$(1 + (\pi_1\pi_1$b$)_c) +_c (\pi_1\pi_1$b$)_p $Cons$\langle\pi_1$b,a$\rangle\rangle$
-
-= Cons$\mapsto$b.$ \langle1,\lambda$a.$(1 + (\pi_1\pi_1$b$)_c) +_c (\pi_1\pi_1$b$)_p $Cons$\langle\pi_1$b,a$\rangle\rangle$
-\end{lstlisting}
+% FORCE
 %
-\begin{lstlisting}
-$\|$rec(xs,$\dots$)$\|$ = rec(xs,Nil$\mapsto\langle$1,$\lambda$a.$\langle$0,a$\rangle\rangle$,
-                  Cons$\mapsto$b.$ \langle1,\lambda$a.$(1 + (\pi_1\pi_1$b$)_c) +_c (\pi_1\pi_1$b$)_p $Cons$\langle\pi_1$b,a$\rangle\rangle$)
-\end{lstlisting}
+\begin{flalign*}
+  &\quad \text{In translation of $\T{force}(r)$ we apply the rule $\|\T{force}(e)\| = \|e\|_c +_c \|e\|_p$.}\\
+  &\quadthree \|\T{force}(r)\|\Theta = \|r\|_c\Theta +_c \|r\|_p\Theta \\
+  %
+  &\quad \text{We apply the variable translation rule to $r$, then apply the substitution $\Theta$.}\\
+  %
+  &\quadfive = \langle 0, r \rangle_c\Theta +_c \langle 0, r \rangle_p \Theta \\
+  &\quadfive = r\Theta = \pi_1\pi_1 b \\
+\end{flalign*}
 %
-So our translation of \T{rev} is
+% CONS
 %
-\begin{align*}
-  \|\T{rev}\| &= 1 +_c (\lambda xs.2 +_c \T{rec}(xs, \T{Nil}\mapsto \langle 1, \lambda a, \langle 0, a \rangle\rangle,\\
-              &\quad \T{Cons}\mapsto b.\langle (1 + (\pi_1\pi_1 b)_c) +_c (\pi_1\pi_1 b)_p \T{Cons}\langle \pi_1 b, a\rangle\rangle)\ \T{Nil})
-\end{align*}
+\begin{flalign*}
+  &\quad \text{Next we do the translation of $\T{Cons}\langle x,a \rangle$.} \\
+  &\quadthree \|\T{Cons}\langle x, a\rangle\| = \langle \|\langle x,a \rangle\|_c, \T{Cons} \|\langle x,a \rangle\|_p\rangle \\
+  %
+  &\quad \text{Notice the translation of $\langle x,a \rangle$ appears twice, so we will do this seperately.} \\
+  %
+  &\quadfour \|\langle x,a \rangle\| = \langle \|x\|_c + \|a\|_c, \langle \|x\|_p, \|a\|_p \rangle \rangle \Theta\\
+  %
+  &\quad \text{Both $x$ and $a$ are variables, so they have $0$ cost.}\\
+  %
+  &\quadsix = \langle 0, \langle x, a \rangle\rangle \Theta\\
+  %
+  &\quad \text{We apply the substitution $\Theta$.}\\
+  %
+  &\quadsix = \langle 0, \langle \pi_1 b, \pi_1\pi_1 b \rangle\rangle \\
+  %
+  &\quadsix = \langle 0, \langle \pi_1 b, \pi_1\pi_1 b \rangle\rangle \\
+  %
+  &\quad \text{We complete the translation of $\T{Cons}\langle x, a\rangle$ using $\langle x, a \rangle$.} \\
+  %
+  &\quadthree \|\T{Cons}\langle x, a\rangle\| = \langle \|\langle x,a \rangle\|_c, \T{Cons} \|\langle x,a \rangle\|_p\rangle \\
+  &\quadfive = \langle 0, \T{Cons} \langle \pi_1 b, \pi_1\pi_1 b \rangle\rangle \\
+\end{flalign*}
 %
-%\begin{lstlisting}
-%$\|$rev$\|$ = $\langle$0,$\lambda$xs.rec(xs,Nil$\mapsto \langle$1,$\lambda$a.$\langle$0,a$\rangle\rangle$,
-%                  Cons$\mapsto$b.$ \langle1,\lambda$a.$(1 + (\pi_1\pi_1$b$)_c) +_c (\pi_1\pi_1$b$)_p $Cons$\langle\pi_1$b,a$\rangle\rangle$)$\rangle$
-%\end{lstlisting}
+% END CONS BRANCH
 %
+\begin{flalign*}
+  &\quad \text{We use substitute in the translations of $\T{force}(r)$ and $\T{Cons}\langle x, a\rangle$.}\\
+  &\quad \text{$\|\T{force}(r)\|$ has cost $(\pi_1\pi_1 b)_c$ and $\|\T{Cons}\langle x,a\rangle\|$ has cost $0$.}\\
+  &\langle 1, \lambda a.(1 + \|\T{force}(r)\|_c + \|\T{Cons}\langle x,a\rangle\|_c) +_c \|\T{force}(r)\|_p \|\T{Cons}\langle x,a \rangle\|_p\rangle \rangle\Theta \\
+  %
+  &= \langle 1, \lambda a.(1 + (\pi_1\pi_1 b)_c) +_c (\pi_1\pi_1 b)_p\ \T{Cons}\langle \pi_1 b, a \rangle\rangle \\
+\end{flalign*}
+%
+% END REC
+%
+\begin{flalign*}
+  &\text{We can now complete the translation of the \T{rec} expression.} \\
+  &\|\lambda\T{xs.rec(xs, Nil}\mapsto\lambda\T{a.a,} \\
+  &\qquad \T{Cons}\mapsto\T{b.split(b,x.c.split(c,xs'.r.}\lambda\T{a.force(r) Cons}\langle\T{x,a}\rangle\T{)))}\| \\
+  &= \T{rec}(xs, \T{Nil} \mapsto 1 +_c \|\lambda a.a\| \\
+  &\quadthree \T{Cons}\mapsto b. 1 +_c \|\T{split}(b,x.c.\T{split}(c,xs'.r.\lambda a.\T{force}(r)\ \T{Cons}\langle x,a\rangle))\|) \\
+  &= \T{rec}(xs, \T{Nil} \mapsto \langle 1, \lambda a. \langle 0,a \rangle\rangle \\
+  &\quadthree \T{Cons}\mapsto b.\langle 1, \lambda a.(1 + (\pi_1\pi_1 b)_c) +_c (\pi_1\pi_1 b)_p\ \T{Cons}\langle \pi_1 b, a \rangle\rangle) \\
+\end{flalign*}
+%
+% END APP FUNCTION
+%
+\begin{flalign*}
+  &\text{We substitute the translation of \T{rec} into the translation of the abstraction.}\\
+  &\|\lambda\T{xs.rec(xs, Nil}\mapsto\lambda\T{a.a,} \\
+  &\qquad \T{Cons}\mapsto\T{b.split(b,x.c.split(c,xs'.r.}\lambda\T{a.force(r) Cons}\langle\T{x,a}\rangle\T{)))}\| \\
+  &\quad= \langle 0, \lambda xs.\|\T{rec(xs, Nil}\mapsto\lambda\T{a.a,} \\
+  &\quadthree \T{Cons}\mapsto\T{b.split(b,x.c.split(c,xs'.r.}\lambda\T{a.force(r) Cons}\langle\T{x,a}\rangle\T{)))}\|\rangle \\
+  &= \langle 0, \T{rec}(xs, \T{Nil} \mapsto \langle 1, \lambda a. \langle 0,a \rangle\rangle \\
+  &\quadthree \T{Cons}\mapsto b.\langle 1, \lambda a.(1 + (\pi_1\pi_1 b)_c) +_c (\pi_1\pi_1 b)_p\ \T{Cons}\langle \pi_1 b,a \rangle\rangle)\rangle \\
+  &= \langle 0, \T{rec}(xs, \T{Nil} \mapsto \langle 1, \lambda a. \langle 0,a \rangle\rangle \\
+  &\quadthree \T{Cons}\mapsto b.\langle 1, \lambda a.(1 + (\pi_1\pi_1 b)_c) +_c (\pi_1\pi_1 b)_p\ \T{Cons}\langle \pi_1 b,a \rangle\rangle)\rangle \\
+\end{flalign*}
+%
+% END APP
+%
+\begin{flalign*}
+  &\text{Finally, we substitute this into the translation of \T{rev}.} \\
+  \|\T{rev}\| &= \|(\lambda\T{xs.rec(xs, Nil}\mapsto\lambda\T{a.a,} \\
+              &\quad \T{Cons}\mapsto\T{b.split(b,x.c.split(c,xs'.r.}\lambda\T{a.force(r) Cons}\langle\T{x,a}\rangle\T{)))) Nil}\| \\
+              &= 1 +_c \T{rec}(xs, \T{Nil} \mapsto \langle 1, \lambda a. \langle 0,a \rangle\rangle \\
+  &\quadthree \T{Cons}\mapsto b.\langle 1, \lambda a.(1 + (\pi_1\pi_1 b)_c) +_c (\pi_1\pi_1 b)_p\ \T{Cons}\langle \pi_1 b,a \rangle\rangle)\rangle \\
+\end{flalign*}
+%
+% END REV TRANSLATION SPLIT
+%
+Observe that $\|\T{rev}\|$ admits the same syntactic sugar as \T{rev}. In the complexity language, instead of taking projections of $b$, we can use the same pattern matching syntactic sugar as in the source language.
 
-We observe that in both cases of the \T{rec}, the cost of the recursive call is 1, so we can replace \T{$\pi_1\pi_1$b$_c$} with 1.
-%
-\begin{lstlisting}
-$\|$rev$\|$ = $\langle$0,$\lambda$xs.rec(xs,Nil$\mapsto \langle$1,$\lambda$a.$\langle$0,a$\rangle\rangle$,
-                  Cons$\mapsto$b.$ \langle1,\lambda$a.$(2 +_c (\pi_1\pi_1$b$)_p $Cons$\langle\pi_1$b,a$\rangle\rangle$)$\rangle$
-\end{lstlisting}
-%
-We are interested in the interpretation of \T{rev xs}.
-%
-\begin{lstlisting}
-$\|$rev xs$\|$ = $(1 + \|$rev$\|_c \|$xs$\|_c) +_c \|$rev$\|_p \|$xs$\|_p$
-
-         = $(1 + \langle$0,$\lambda$xs.rec($\dots$)$\rangle_c + \langle$0,xs$\rangle_c) +_c \|$rev$\|_p \langle$0,xs$\rangle_p$
-
-         = $(1 + 0 + 0) +_c (\lambda$xs.rec(xs,Nil$\mapsto \langle$1,$\lambda$a.$\langle$0,a$\rangle\rangle$,
-                    Cons$\mapsto$b.$ \langle1,\lambda$a.$(2 +_c (\pi_1\pi_1$b$)_p $Cons$\langle\pi_1$b,a$\rangle\rangle$)$)_p$xs
-
-         = $1 +_c $rec(xs,Nil$\mapsto \langle$1,$\lambda$a.$\langle$0,a$\rangle\rangle$,
-                  Cons$\mapsto$b.$ \langle1,\lambda$a.$(2 +_c (\pi_1\pi_1$b$)_p $Cons$\langle\pi_1$b,a$\rangle\rangle$)
-\end{lstlisting}
-%
+\begin{flalign*}
+  &\|\T{rev}\| = 1 +_c \T{rec}(xs, \T{Nil} \mapsto \langle 1, \lambda a. \langle 0,a \rangle\rangle \\
+  &\quadthree \T{Cons}\mapsto \langle x, \langle xs',r \rangle\rangle.\langle 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\langle x,a \rangle\rangle)\ \T{Nil}\\
+\end{flalign*}
 
 \subsection*{Complexity Language}
 \subsubsection*{Translation of \T{rev} using matching}
