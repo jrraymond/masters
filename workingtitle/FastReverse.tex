@@ -270,134 +270,156 @@ The translation of $b$ is $\langle 0, \|b\|_p\rangle$.
 %
 % END REV TRANSLATION SPLIT
 %
-Observe that $\|\T{rev}\|$ admits the same syntactic sugar as \T{rev}. In the complexity language, instead of taking projections of $b$, we can use the same pattern matching syntactic sugar as in the source language.
+Observe that $\|\T{rev}\|$ admits the same syntactic sugar as \T{rev}. In the
+complexity language, instead of taking projections of $b$, we can use the same
+pattern matching syntactic sugar as in the source language.
 
 \begin{flalign*}
   &\|\T{rev}\| = 1 +_c \T{rec}(xs, \T{Nil} \mapsto \langle 1, \lambda a. \langle 0,a \rangle\rangle \\
   &\quadthree \T{Cons}\mapsto \langle x, \langle xs',r \rangle\rangle.\langle 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\langle x,a \rangle\rangle)\ \T{Nil}\\
 \end{flalign*}
 
-\subsection*{Complexity Language}
-\subsubsection*{Translation of \T{rev} using matching}
-The translation into the complexity language proceeds as follows.
-First we apply the rule \T{$\|\lambda$x.e$\|$ = $\langle$0,$\lambda$x.$\|$e$\|\rangle$}
-%
-\begin{lstlisting}
-$\|$rev$\|$ = $\langle$0,$\lambda$xs.$\|$rec(xs, Nil $\mapsto$ $\lambda$a.a
-                     , Cons $\mapsto$ $\langle$x,$\langle$xs,r$\rangle\rangle$.$\lambda$a.force(r) Cons$\langle$x,a$\rangle$) Nil$\|\rangle$
-\end{lstlisting}
-%
-The we apply the rule for function application, \T{$\|$e$_0$ e$_1\|$ = 1$+\|$e$_0\|_c+\|$e$_1\|_c+_c\|$e$_0\|_p\|$e$_1\|_p$}.
-%
-\begin{lstlisting}
-$\|$rev$\|$ = $\langle$0,$\lambda$xs.(1$+\|$xs$\|_c + \|$rec($\dots$)$\|_c + \|$Nil$\|_c ) +_c \|$rec($\dots$)$\|_p\|$Nil$\|_p\rangle$
-\end{lstlisting}
-%
-We will focus on the translation of the \T{rec} construct.
-We apply the rule \T{$\|$rec(xs,$\overline{C \mapsto x.e_C})\|$ = $\|xs\|_c +_c $ rec($\|$xs$\|_p$,$\overline{C \mapsto x.1 +_c \|e_C\|}$) }
-%
-\begin{lstlisting}
-$\|$rec(xs,$\dots$)$\|$ = $\|$xs$\|_c +_c$ rec($\|$xs$\|_p$,
-                Nil $\mapsto$ 1 $+_c$ $\|\lambda$a.a$\|$,
-                Cons $\mapsto$ $\langle$x,$\langle$xs,r$\rangle\rangle$.1 $+_c$ $\|\lambda$a.force(r) Cons$\langle$x,a$\rangle\|$)
-= $\langle$0,xs$\rangle_c +_c$ rec($\langle$0,xs$\rangle_p$,
-                Nil $\mapsto$ 1 $+_c$ $\|\lambda$a.a$\|$,
-                Cons $\mapsto$ $\langle$x,$\langle$xs,r$\rangle\rangle$.1 $+_c$ $\|\lambda$a.force(r) Cons$\langle$x,a$\rangle\|$)
-= rec(xs,
-      Nil $\mapsto$ 1 $+_c$ $\|\lambda$a.a$\|$,
-      Cons $\mapsto$ $\langle$x,$\langle$xs,r$\rangle\rangle$.1 $+_c$ $\|\lambda$a.force(r) Cons$\langle$x,a$\rangle\|$)
-\end{lstlisting}
 
-The translation of the \T{Nil} branch is simple.
 %
-\begin{lstlisting}
-= 1 $+_c$ $\|\lambda$a.a$\|$
-= 1 $+_c$ $\langle$0,$\lambda$a.$\|$a$\|\rangle$
-= 1 $+_c$ $\langle$0,$\lambda$a.$\langle$0,a$\rangle\rangle$
-= $\langle$1,$\lambda$a.$\langle$0,a$\rangle\rangle$
-\end{lstlisting}
+% FAST REVESE TRANSLATION USING SYNTACTIC SUGAR
 %
-
-The translation of the \T{Cons} branch is a slightly more involved.
+We walk through the same translation of fast reverse, but we use the syntactic
+sugar for matching introducted earlier. Recall the implementation of fast using
+syntactic sugar. The translation is identicaly to the translation of \T{rev}
+written without syntactic sugar until we translate the \T{Cons} branch of the
+\T{rec}.
 %
-\begin{lstlisting}
-= 1 $+_c$ $\|\lambda$a.force(r) Cons$\langle$x,a$\rangle\|$)
-
-= 1 $+_c$ $\langle 0,\|\lambda$a.force(r) Cons$\langle$x,a$\rangle\|\rangle$
-
-= $\langle 1,\lambda$a.$\|$force(r) Cons$\langle$x,a$\rangle\|\rangle$
-
-= $\langle 1,\lambda$a.$(1 + \|$force(r)$\|_c + \|$Cons$\langle$x,a$\rangle\|_c) +_c \|$force(r)$\|_p$ $\|$Cons$\langle$x,a$\rangle\|_p\rangle$
-
-= $\langle 1,\lambda$a.$(1 + (\|$r$\|_c +_c \|$r$\|_p)_c + \|$Cons$\langle$x,a$\rangle\|_c) +_c (\|$r$\|_c +_c \|$r$\|_p)_p$ $\|$Cons$\langle$x,a$\rangle\|_p\rangle$
-
-= $\langle 1,\lambda$a.$(1 + $r$_c + \|$Cons$\langle$x,a$\rangle\|_c) +_c $ r$_p$ $\|$Cons$\langle$x,a$\rangle\|_p\rangle$
-
-= $\langle 1,\lambda$a.$(1 + $r$_c + (\langle\|\langle$x,a$\rangle\|_c$,Cons$\|\langle$x,a$\rangle\|_p\rangle)_c) +_c $ r$_p (\langle\|\langle$x,a$\rangle\|_c$,Cons$\|\langle$x,a$\rangle\|_p\rangle)_p\rangle$
-
-= $\langle 1,\lambda$a.$(1 + $r$_c + \|\langle$x,a$\rangle\|_c) +_c $ r$_p $Cons$\|\langle$x,a$\rangle\|_p\rangle$
-
-= $\langle 1,\lambda$a.$(1 + $r$_c + \langle\|$x$\|_c + \|$a$\|_c$,$\langle\|$x$\|_p$,$\|$a$\|_p\rangle\rangle_c) +_c $ r$_p $Cons$\langle\|$x$\|_c + \|$a$\|_c$,$\langle\|$x$\|_p$,$\|$a$\|_p\rangle\rangle_p\rangle$
-
-= $\langle 1,\lambda$a.$(1 + $r$_c + \|$x$\|_c + \|$a$\|_c) +_c $ r$_p $Cons$\langle\|$x$\|_p$,$\|$a$\|_p\rangle\rangle$
-
-= $\langle 1,\lambda$a.$(1 + $r$_c + \langle$0,x$\rangle_c + \langle$0,a$\rangle_c) +_c $ r$_p $Cons$\langle\langle$0,x$\rangle_p$,$\langle$0,a$\rangle_p\rangle\rangle$
-
-= $\langle 1,\lambda$a.$(1 + $r$_c + 0 + 0) +_c $ r$_p $Cons$\langle$x,a$\rangle\rangle$
-
-= $\langle 1,\lambda$a.$(1 + $r$_c) +_c $ r$_p $Cons$\langle$x,a$\rangle\rangle$
-\end{lstlisting}
+\begin{flalign*}
+  \|\T{rev}\| &= \|(\lambda\T{xs.rec(xs, Nil}\mapsto\lambda\T{a.a,} \\
+              &\quad \T{Cons}\mapsto\langle x, \langle xs', r\rangle\rangle.\lambda a.\T{force}(r)\ \T{Cons}\langle x, a\rangle))\ \T{Nil}\|
+\end{flalign*}
 %
-So the translation of the whole \T{rec} is:
+% BEGIN APP
 %
-\begin{lstlisting}
-rec(xs, Nil$\mapsto \langle$1,$\lambda$a.$\langle$0,a$\rangle\rangle$, Cons$\mapsto\langle$x,$\langle$xs',r$\rangle\rangle$.$\langle 1,\lambda$a.$(1 + $r$_c) +_c $ r$_p $Cons$\langle$x,a$\rangle\rangle$)
-\end{lstlisting}
+First we apply the rule for translating an application. The rule is
+$\|e_0\ e_1\| = (1 + \|e_0\|_c + \|e_1\|_c) +_c (\|e_0\|_p\ \|e_1\|_p)$.
+In this case, $\lambda\T{xs.rec(...)}$ is $e_0$ and \T{Nil} is $e_1$.
 %
-We observe that in both cases, the cost of \T{rec} is $1$, so we can simplify \T{r$_c$} to $1$.
+% APP ARGUMENT
 %
-\begin{lstlisting}
-rec(xs, Nil$\mapsto \langle$1,$\lambda$a.$\langle$0,a$\rangle\rangle$, Cons$\mapsto\langle$x,$\langle$xs',r$\rangle\rangle$.$\langle 1,\lambda$a.$2 +_c $ r$_p $Cons$\langle$x,a$\rangle\rangle$)
-\end{lstlisting}
+The translation of a constructor applied to an expression is a tuple of the
+cost of the translated expression and the corresponding complexity language
+constructor applied to the potential of the translated expression. Since the
+expression inside \T{Nil} is $\langle\rangle$, and
+$\|\langle\rangle\| = \langle 0,\langle\rangle\rangle$, we have
 %
-
-We will pick up where we left off with out translation of \T{rev}.
+\begin{flalign*}
+  |\T{Nil}\| &= \langle\langle 0, \langle\rangle\rangle_c, \T{Nil}\langle 0,\langle\rangle\rangle_p\rangle \\
+             &= \langle 0, \T{Nil}\langle\rangle\rangle
+\end{flalign*}
 %
-\begin{lstlisting}
-$\|$rev$\|$ = $\langle$0,$\lambda$xs.(1$+\|$xs$\|_c + \|$rec($\dots$)$\|_c + \|$Nil$\|_c ) +_c \|$rec($\dots$)$\|_p\|$Nil$\|_p\rangle$
-\end{lstlisting}
+% BEGIN APP FUNCTION
 %
-First we will translate the variables.
+To translate $\lambda\T{xs.rec(...)}$ we apply the rule
+$\|\lambda x.e\| = \langle 0, \lambda x.\|e\|\rangle$. So
 %
-\begin{lstlisting}
-$\|$rev$\|$ = $\langle$0,$\lambda$xs.$(1+\langle$0,xs$\rangle_c + \|$rec($\dots$)$\|_c + \langle$0,Nil$\rangle_c ) +_c \|$rec($\dots$)$\|_p\langle$0,Nil$\rangle_p\rangle$
-      = $\langle$0,$\lambda$xs.$(1 + 0 + \|$rec($\dots$)$\|_c + 0 ) +_c \|$rec($\dots$)$\|_p$Nil$\rangle$
-\end{lstlisting}
+\begin{flalign*}
+  &\|\lambda\T{xs.rec(xs, Nil}\mapsto\lambda\T{a.a,} \\
+  &\qquad \T{Cons}\mapsto \langle x, \langle xs', r\rangle\rangle.\lambda a.\T{force}(r)\ \T{Cons}\langle x, a\rangle)\| \\
+  &\quad= \langle 0, \lambda xs.\|\T{rec(xs, Nil}\mapsto\lambda\T{a.a,} \\
+  &\quadthree \T{Cons}\mapsto \langle x, \langle xs', r\rangle\rangle.\lambda a.\T{force}(r)\ \T{Cons}\langle x, a\rangle)\|\rangle
+\end{flalign*}
 %
-We use our translation of \T{rec(xs,$\dots$)} and the fact that the cost of every call to \T{rec} is $1$ to get:
+% BEGIN REC
 %
-\begin{lstlisting}
-$\|$rev$\|$ = $\langle$0,$\lambda$xs.$(1 + 0 + 1 + 0 ) +_c \|$rec($\dots$)$\|_p$Nil$\rangle$
-      = $\langle$0,$\lambda$xs.$2 +_c$rec(xs, Nil$\mapsto \langle$1,$\lambda$a.$\langle$0,a$\rangle\rangle$,
-                      Cons$\mapsto\langle$x,$\langle$xs',r$\rangle\rangle$.$\langle 1,\lambda$a.$2 +_c $ r$_p $Cons$\langle$x,a$\rangle\rangle$)$_p $Nil$\rangle$
-\end{lstlisting}
+Next we apply the translation rule for \T{rec}.
 %
-
-So our complete translation of the linear time reversal function is
-\begin{align*}
-  \|\T{rev}\| &= \langle 0, \lambda xs.2 +_c \T{rec})xs, \T{Nil}\mapsto \langle 1, \lambda a, \langle 0, a \rangle\rangle,\\
-              &\quad \T{Cons}\mapsto \langle x, \langle xs', r\rangle\rangle.\langle 1,\lambda a.2 +_c r_p \T{Cons}\langle x, a \rangle\rangle)_p \T{Nil} \rangle
-\end{align*}
+\begin{flalign*}
+  &\|\T{rec}(xs, \T{Nil}\mapsto\lambda a.a, \\
+  &\qquad \T{Cons}\mapsto  \langle x, \langle xs', r\rangle\rangle.\lambda a.\T{force}(r)\ \T{Cons}\langle x, a\rangle)\| \\
+  &= \|xs\|_c +_c \T{rec}(\|xs\|_p, \T{Nil} \mapsto 1 +_c \|\lambda a.a\| \\
+  &\quadthree \T{Cons}\mapsto \langle x, \langle xs', r\rangle\rangle.\lambda a.\T{force}(r)\ \T{Cons}\langle x, a\rangle)\|) \\
+  &= \langle 0, xs \rangle_c +_c \T{rec}(\langle 0, xs\rangle_p, \T{Nil} \mapsto 1 +_c \|\lambda a.a\| \\
+  &\quadthree \T{Cons}\mapsto \langle x, \langle xs', r\rangle\rangle.\lambda a.\T{force}(r)\ \T{Cons}\langle x, a\rangle)\|) \\
+  &\text{The term $xs$ is a variable and the rule for translating variables is $\|xs\| = \langle 0, xs\rangle$.} \\
+  &= \T{rec}(xs, \T{Nil} \mapsto 1 +_c \|\lambda a.a\| \\
+  &\quadthree \T{Cons}\mapsto \langle x, \langle xs', r\rangle\rangle.\lambda a.\T{force}(r)\ \T{Cons}\langle x, a\rangle)\|)
+\end{flalign*}
 %
-\begin{framed}
-\begin{small}
-\begin{lstlisting}
-$\|$rev$\|$ = $\langle$0,$\lambda$xs.$(1 + 0 + 1 + 0 ) +_c \|$rec($\dots$)$\|_p$Nil$\rangle$
-  = $\langle$0,$\lambda$xs.$2 +_c$rec(xs, Nil$\mapsto \langle$1,$\lambda$a.$\langle$0,a$\rangle\rangle$,
-                  Cons$\mapsto\langle$x,$\langle$xs',r$\rangle\rangle$.$\langle 1,\lambda$a.$2 +_c $ r$_p $Cons$\langle$x,a$\rangle\rangle$)$_p $Nil$\rangle$
-\end{lstlisting}
-\end{small}
-\end{framed}
+% NIL BRANCH
+%
+The translation of the \T{Nil} branch is the same as before.
+%
+\begin{flalign*}
+  &1 +_c \|\lambda a.a\| =  \langle 1, \lambda a. \langle 0,a \rangle\rangle 
+\end{flalign*}
+%
+% BEGIN CONS BRANCH
+%
+The translation of the \T{Cons} branch where the difference lies.
+%
+\begin{flalign*}
+  &1 +_c \|\lambda a.\T{force}(r)\ \T{Cons}\langle x, a\rangle)\| \\
+  &\quad = 1 +_c \langle 0, \lambda a.\|\T{force}(r)\ \T{Cons}\langle x, a\rangle)\| \\
+  &\quad = \langle 1, \lambda a.(1 + \|\T{force}(r)\|_c + \|\T{Cons}\langle x, a\rangle)\|_c) +_c \|\T{force}(r)\|_p\ \|\T{Cons}\langle x, r \rangle\|_p \rangle \\
+\end{flalign*}
+%
+The translation of $\T{force}(r)$ and $\T{Cons}\langle x, a \rangle$
+are the same as before, except we do not have a substitution to apply.
+%
+\begin{flalign*}
+  &\|\T{force}(r)\| = \|r\|_c +_c \|r\|_p = \langle 0, r \rangle_c +_c \langle 0, r \rangle_p = 0 +_c r = r
+\end{flalign*}
+%
+\begin{flalign*}
+  &\|\T{Cons}\langle x, a\rangle\| =  \langle 0, \T{Cons} \langle x, a \rangle\rangle \\
+\end{flalign*}
+%
+So the complete translation of the \T{Cons} branch is
+%
+\begin{flalign*}
+  &1 +_c \|\lambda a.\T{force}(r)\ \T{Cons}\langle x, a\rangle)\| \\
+  &\quad = 1 +_c \langle 0, \lambda a.\|\T{force}(r)\ \T{Cons}\langle x, a\rangle)\| \\
+  &\quad = \langle 1, \lambda a.(1 + \|\T{force}(r)\|_c + \|\T{Cons}\langle x, a\rangle)\|_c) +_c \|\T{force}(r)\|_p\ \|\T{Cons}\langle x, r \rangle\|_p \rangle \\
+  &\quad = \langle 1, \lambda a.(1 + r_c + 0) +_c r_p\ \T{Cons}\langle x, r \rangle \rangle \\
+  &\quad = \langle 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\langle x, r \rangle \rangle \\
+\end{flalign*}
+%
+The complete translation of the \T{rec} becomes
+%
+\begin{flalign*}
+  &\|\T{rec}(xs, \T{Nil}\mapsto\lambda a.a, \\
+  &\qquad \T{Cons}\mapsto  \langle x, \langle xs', r\rangle\rangle.\lambda a.\T{force}(r)\ \T{Cons}\langle x, a\rangle)\| \\
+  &= \T{rec}(xs, \T{Nil} \mapsto 1 +_c \|\lambda a.a\| \\
+  &\quadthree \T{Cons}\mapsto \langle x, \langle xs', r\rangle\rangle.\lambda a.\T{force}(r)\ \T{Cons}\langle x, a\rangle)\|) \\
+  &= \T{rec}(xs, \T{Nil} \mapsto \langle 0, \lambda a. \langle 0, a \rangle \rangle \\
+  &\quadthree \T{Cons}\mapsto \langle x, \langle xs', r\rangle\rangle. \langle 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\langle x, r \rangle \rangle \\
+\end{flalign*}
+%
+The translation of the $\lambda$ is
+%
+\begin{flalign*}
+  &\|\lambda\T{xs.rec(xs, Nil}\mapsto\lambda\T{a.a,} \\
+  &\qquad \T{Cons}\mapsto \langle x, \langle xs', r\rangle\rangle.\lambda a.\T{force}(r)\ \T{Cons}\langle x, a\rangle)\| \\
+  &= \langle 0, \T{rec}(xs, \T{Nil} \mapsto \langle 0, \lambda a. \langle 0, a \rangle \rangle \\
+  &\quadthree \T{Cons}\mapsto \langle x, \langle xs', r\rangle\rangle. \langle 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\langle x, r \rangle \rangle \rangle\\
+\end{flalign*}
+%
+And our complete translation of \T{rev} is
+%
+\begin{flalign*}
+  \|\T{rev}\| &= \|(\lambda\T{xs.rec(xs, Nil}\mapsto\lambda\T{a.a,} \\
+              &\quad \T{Cons}\mapsto\langle x, \langle xs', r\rangle\rangle.\lambda a.\T{force}(r)\ \T{Cons}\langle x, a\rangle))\ \T{Nil}\| \\
+              &= (1 + \|(\lambda\T{xs.rec(xs, Nil}\mapsto\lambda\T{a.a,} \\
+              &\quad \T{Cons}\mapsto\langle x, \langle xs', r\rangle\rangle.\lambda a.\T{force}(r)\ \T{Cons}\langle x, a\rangle))\|_c + \|\T{Nil}\|_c) \\
+              &\quad +_c \|(\lambda\T{xs.rec(xs, Nil}\mapsto\lambda\T{a.a,} \\
+              &\quad \T{Cons}\mapsto\langle x, \langle xs', r\rangle\rangle.\lambda a.\T{force}(r)\ \T{Cons}\langle x, a\rangle))\|_p\ \|\T{Nil}\|_p \\
+              &= 1 +_c \T{rec}(xs, \T{Nil} \mapsto \langle 0, \lambda a. \langle 0, a \rangle \rangle \\
+              &\quadthree \T{Cons}\mapsto \langle x, \langle xs', r\rangle\rangle. \langle 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\langle x, r \rangle \rangle)\ \T{Nil} \\
+\end{flalign*}
+%
+This is the same as the translation of \T{rev} without the syntactic sugar.
+%
+% END FAST REVERSE SYNTACTIC SUGAR TRANSLATION
+%
+%
+% FAST REVERSE INTERPRETATION
+%
 
 The interpretation of \T{rev} is rather dull as the cost of \T{rev} is always null.
 Instead of interpreting \T{rev}, we will interpret \T{rev xs}.
