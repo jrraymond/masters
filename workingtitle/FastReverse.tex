@@ -55,6 +55,7 @@ rev (Cons$\langle$0,Cons$\langle$1, Nil$\rangle\rangle$) $\to$
 \end{lstlisting}
 
 % -------------------- BEGIN REV TRANSLATION SPLIT --------------------   
+\subsection*{Fast Reverse Translation}
 We will walk through the translation from the source language to the complexity
 language.
 %
@@ -282,9 +283,10 @@ pattern matching syntactic sugar as in the source language.
 %
 % FAST REVESE TRANSLATION USING SYNTACTIC SUGAR
 %
+\subsection*{Sugared Fast Reverse Translation}
 We walk through the same translation of fast reverse, but we use the syntactic
 sugar for matching introducted earlier. Recall the implementation of fast using
-syntactic sugar. The translation is almost identicall to the translation of \T{rev}
+syntactic sugar. The translation is almost identical to the translation of \T{rev}
 written without syntactic sugar until we translate the \T{Cons} branch of the
 \T{rec}.
 %
@@ -298,7 +300,7 @@ $\|\lambda x. e\| = \langle 0, \lambda x. \|e\|\rangle$.
 %
 \begin{flalign*}
   \|\T{rev}\| &= \langle 0, \lambda xs. \|\T{rec}(xs, \T{Nil}\mapsto\lambda a.a, \\
-              &\quad \T{Cons}\mapsto\langle x, \langle xs', r\rangle\rangle.\lambda a.\T{force}(r)\ \T{Cons}\langle x, a\rangle))\ \T{Nil}\|\rangle
+              &\quad \T{Cons}\mapsto\langle x, \langle xs', r\rangle\rangle.\lambda a.\T{force}(r)\ \T{Cons}\langle x, a\rangle)\ \T{Nil}\|\rangle
 \end{flalign*}
 %
 %
@@ -318,7 +320,7 @@ expression inside \T{Nil} is $\langle\rangle$, and
 $\|\langle\rangle\| = \langle 0,\langle\rangle\rangle$, we have
 %
 \begin{flalign*}
-  |\T{Nil}\| &= \langle\langle 0, \langle\rangle\rangle_c, \T{Nil}\langle 0,\langle\rangle\rangle_p\rangle \\
+  \|\T{Nil}\| &= \langle\langle 0, \langle\rangle\rangle_c, \T{Nil}\langle 0,\langle\rangle\rangle_p\rangle \\
              &= \langle 0, \T{Nil}\langle\rangle\rangle
 \end{flalign*}
 %
@@ -331,14 +333,14 @@ The rule for translating a \T{rec} expression is
 %
 \begin{flalign*}
   &\|\T{rec}(xs, \T{Nil}\mapsto\lambda a.a, \\
-  &\qquad \T{Cons}\mapsto b.\T{split}(b,x.c.\T{split}(c,xs'.r.\lambda a.\T{force}(r)\ \T{Cons}\langle x,a\rangle)))\| \\
+  &\qquad \T{Cons}\mapsto \langle x,\langle xs',r \rangle\rangle.\lambda a.\T{force}(r)\ \T{Cons}\langle x,a\rangle)\| \\
   &= \|xs\|_c +_c \T{rec}(\|xs\|_p, \T{Nil} \mapsto 1 +_c \|\lambda a.a\| \\
-  &\quadthree \T{Cons}\mapsto b. 1 +_c \|\T{split}(b,x.c.\T{split}(c,xs'.r.\lambda a.\T{force}(r)\ \T{Cons}\langle x,a\rangle))\|) \\
+  &\quadthree \T{Cons}\mapsto \langle x,\langle xs',r \rangle\rangle.1 +_c \|\lambda a.\T{force}(r)\ \T{Cons}\langle x,a\rangle\|) \\
   &= \langle 0, xs \rangle_c +_c \T{rec}(\langle 0, xs\rangle_p, \T{Nil} \mapsto 1 +_c \|\lambda a.a\| \\
-  &\quadthree \T{Cons}\mapsto b. 1 +_c \|\T{split}(b,x.c.\T{split}(c,xs'.r.\lambda a.\T{force}(r)\ \T{Cons}\langle x,a\rangle))\|) \\
+  &\quadthree \T{Cons}\mapsto \langle x,\langle xs',r \rangle\rangle.1 +_c \|\lambda a.\T{force}(r)\ \T{Cons}\langle x,a\rangle\|) \\
   &\text{The term $xs$ is a variable and the rule for translating variables is $\|xs\| = \langle 0, xs\rangle$.} \\
   &= \T{rec}(xs, \T{Nil} \mapsto 1 +_c \|\lambda a.a\| \\
-  &\quadthree \T{Cons}\mapsto b. 1 +_c \|\T{split}(b,x.c.\T{split}(c,xs'.r.\lambda a.\T{force}(r)\ \T{Cons}\langle x,a\rangle))\|)
+  &\quadthree \T{Cons}\mapsto \langle x,\langle xs',r \rangle\rangle.1 +_c \|\lambda a.\T{force}(r)\ \T{Cons}\langle x,a\rangle\|) \\
 \end{flalign*}
 %
 % NIL BRANCH
@@ -351,12 +353,12 @@ The translation of the \T{Nil} branch is the same as before.
 %
 % BEGIN CONS BRANCH
 %
-The translation of the \T{Cons} branch where the difference lies.
+The translation of the \T{Cons} branch is much simpler without the two \T{split}s.
 %
 \begin{flalign*}
-  &1 +_c \|\lambda a.\T{force}(r)\ \T{Cons}\langle x, a\rangle)\| \\
-  &\quad = 1 +_c \langle 0, \lambda a.\|\T{force}(r)\ \T{Cons}\langle x, a\rangle)\| \\
-  &\quad = \langle 1, \lambda a.(1 + \|\T{force}(r)\|_c + \|\T{Cons}\langle x, a\rangle)\|_c) +_c \|\T{force}(r)\|_p\ \|\T{Cons}\langle x, r \rangle\|_p \rangle \\
+  &1 +_c \|\lambda a.\T{force}(r)\ \T{Cons}\langle x, a\rangle\| \\
+  &\quad = 1 +_c \langle 0, \lambda a.\|\T{force}(r)\ \T{Cons}\langle x, a\rangle\|\rangle \\
+  &\quad = \langle 1, \lambda a.(1 + \|\T{force}(r)\|_c + \|\T{Cons}\langle x, a\rangle)\|_c) +_c \|\T{force}(r)\|_p\ \|\T{Cons}\langle x, a \rangle\|_p \rangle \\
 \end{flalign*}
 %
 The translation of $\T{force}(r)$ and $\T{Cons}\langle x, a \rangle$
@@ -373,11 +375,11 @@ are the same as before, except we do not have a substitution to apply.
 So the complete translation of the \T{Cons} branch is
 %
 \begin{flalign*}
-  &1 +_c \|\lambda a.\T{force}(r)\ \T{Cons}\langle x, a\rangle)\| \\
-  &\quad = 1 +_c \langle 0, \lambda a.\|\T{force}(r)\ \T{Cons}\langle x, a\rangle)\| \\
-  &\quad = \langle 1, \lambda a.(1 + \|\T{force}(r)\|_c + \|\T{Cons}\langle x, a\rangle)\|_c) +_c \|\T{force}(r)\|_p\ \|\T{Cons}\langle x, r \rangle\|_p \rangle \\
-  &\quad = \langle 1, \lambda a.(1 + r_c + 0) +_c r_p\ \T{Cons}\langle x, r \rangle \rangle \\
-  &\quad = \langle 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\langle x, r \rangle \rangle \\
+  &1 +_c \|\lambda a.\T{force}(r)\ \T{Cons}\langle x, a\rangle\| \\
+  &\quad = 1 +_c \langle 0, \lambda a.\|\T{force}(r)\ \T{Cons}\langle x, a\rangle\|\rangle \\
+  &\quad = \langle 1, \lambda a.(1 + \|\T{force}(r)\|_c + \|\T{Cons}\langle x, a\rangle)\|_c) +_c \|\T{force}(r)\|_p\ \|\T{Cons}\langle x, a \rangle\|_p \rangle \\
+  &\quad = \langle 1, \lambda a.(1 + r_c + 0) +_c r_p\ \T{Cons}\langle x, a \rangle \rangle \\
+  &\quad = \langle 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\langle x, a \rangle \rangle \\
 \end{flalign*}
 %
 The complete translation of the \T{rec} becomes
@@ -388,20 +390,20 @@ The complete translation of the \T{rec} becomes
   &= \T{rec}(xs, \T{Nil} \mapsto 1 +_c \|\lambda a.a\| \\
   &\quadthree \T{Cons}\mapsto \langle x, \langle xs', r\rangle\rangle.1 +_c \|\lambda a.\T{force}(r)\ \T{Cons}\langle x, a\rangle\|) \\
   &= \T{rec}(xs, \T{Nil} \mapsto \langle 0, \lambda a. \langle 0, a \rangle \rangle \\
-  &\quadthree \T{Cons}\mapsto \langle x, \langle xs', r\rangle\rangle. \langle 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\langle x, r \rangle \rangle \\
+  &\quadthree \T{Cons}\mapsto \langle x, \langle xs', r\rangle\rangle. \langle 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\langle x, a \rangle \rangle \\
 \end{flalign*}
 %
 We substitute the translations of \T{rec(..)} and \T{Nil} into the application.
 %
 \begin{flalign*}
-  &\text{Let }R = \T{rec}(xs, \T{Nil} \mapsto \langle 0, \lambda a. \langle 0, a \rangle \rangle \\
-  &\quadthree \T{Cons}\mapsto \langle x, \langle xs', r\rangle\rangle. \langle 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\langle x, r \rangle \rangle \\
+  &\text{Let }R = \T{rec}(xs, \T{Nil} \mapsto \langle 1, \lambda a. \langle 0, a \rangle \rangle \\
+  &\quadthree \T{Cons}\mapsto \langle x, \langle xs', r\rangle\rangle. \langle 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\langle x, a \rangle \rangle \\
   &\|\T{rec}(xs, \T{Nil}\mapsto\lambda a.a, \\
   &\qquad \T{Cons}\mapsto \langle x, \langle xs',r \rangle\rangle.\lambda a.\T{force}(r)\ \T{Cons}\langle x, a \rangle)\ \T{Nil}\| \\
   &\text{Substituting $R$ for the translation of \T{rec} and $\langle 0, \T{Nil}\rangle$ for the translation of \T{Nil}.} \\
   &\quad = (1 + R_c) +_c R_p\ \T{Nil} \rangle\\
-  &\quad = 1 +_c \T{rec}(xs, \T{Nil} \mapsto \langle 0, \lambda a. \langle 0, a \rangle \rangle \\
-  &\quadthree \T{Cons}\mapsto \langle x, \langle xs', r\rangle\rangle. \langle 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\langle x, r \rangle \rangle)\ \T{Nil} \\
+  &\quad = 1 +_c \T{rec}(xs, \T{Nil} \mapsto \langle 1, \lambda a. \langle 0, a \rangle \rangle \\
+  &\quadthree \T{Cons}\mapsto \langle x, \langle xs', r\rangle\rangle. \langle 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\langle x, a \rangle \rangle)\ \T{Nil} \\
 \end{flalign*}
 %
 And our complete translation of \T{rev} is
@@ -411,8 +413,8 @@ And our complete translation of \T{rev} is
               &\qquad \T{Cons}\mapsto\langle x, \langle xs', r\rangle\rangle.\lambda a.\T{force}(r)\ \T{Cons}\langle x, a\rangle)\ \T{Nil}\| \\
               &= \langle 0, \lambda xs. \|\T{rec}(xs, \T{Nil}\mapsto\lambda a.a, \\
               &\quad \T{Cons}\mapsto\langle x, \langle xs', r\rangle\rangle.\lambda a.\T{force}(r)\ \T{Cons}\langle x, a\rangle)\ \T{Nil}\| \rangle \\
-              &= \langle 0, \lambda xs. 1 +_c \T{rec}(xs, \T{Nil} \mapsto \langle 0, \lambda a. \langle 0, a \rangle \rangle \\
-              &\qquad \T{Cons}\mapsto \langle x, \langle xs', r\rangle\rangle. \langle 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\langle x, r \rangle \rangle)\ \T{Nil} \rangle\\
+              &= \langle 0, \lambda xs. 1 +_c \T{rec}(xs, \T{Nil} \mapsto \langle 1, \lambda a. \langle 0, a \rangle \rangle \\
+              &\qquad \T{Cons}\mapsto \langle x, \langle xs', r\rangle\rangle. \langle 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\langle x, a \rangle \rangle)\ \T{Nil} \rangle\\
 \end{flalign*}
 %
 This is the same as the translation of \T{rev} without the syntactic sugar. We
@@ -421,9 +423,10 @@ will use the syntactic sugar for the rest of this thesis.
 % END FAST REVERSE SYNTACTIC SUGAR TRANSLATION
 %
 %
-% FAST REVERSE INTERPRETATION
+% ============= FAST REVERSE INTERPRETATION ====================
 %
-The interpretation of \T{rev} is rather dull as the cost of \T{rev} is always null.
+\subsection*{Interpretation}
+The interpretation of \T{rev} is not interesting as the cost of \T{rev} is always null.
 Instead of interpreting \T{rev}, we will interpret \T{rev} applied to a list \T{xs}.
 Below is the translation of \T{rev xs}.
 %
@@ -431,8 +434,8 @@ Below is the translation of \T{rev xs}.
   &\|\T{rev xs}\| = (1 + \|\T{rev}\|_c + \|xs\|_c) +_c \|\T{rev}\|_p\ \|xs\|_p \\
   &\text{The cost of $\|\T{rev}\|$ is $0$, and we will let \T{xs} be a value, which has $0$ cost.} \\
   &= (1 + 0 + 0) +_c \|\T{rev}\|_p\ xs \\
-  &= 1 +_c (\lambda xs. 1 +_c \T{rec}(xs, \T{Nil} \mapsto \langle 0, \lambda a. \langle 0, a \rangle \rangle \\
-  &\qquad \T{Cons}\mapsto \langle x, \langle xs', r\rangle\rangle. \langle 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\langle x, r \rangle \rangle)\ \T{Nil})\ xs\\
+  &= 1 +_c (\lambda xs. 1 +_c \T{rec}(xs, \T{Nil} \mapsto \langle 1, \lambda a. \langle 0, a \rangle \rangle \\
+  &\qquad \T{Cons}\mapsto \langle x, \langle xs', r\rangle\rangle. \langle 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\langle x, a \rangle \rangle)\ \T{Nil})\ xs\\
 \end{flalign*}
 %
 The cost of \T{rev} is driven by the auxilary function \T{rec(...)}. The cost
@@ -448,89 +451,180 @@ function in the following denotational semantics. We intepret the size of an
   size_{list}(\T{Cons(1,n)}) &= 1 + n\\
 \end{flalign*}
 %
-%The interpretation of \T{rev xs} proceeds as follows.
-%\begin{lstlisting}
-%  $\llbracket \|$rev xs$\| \rrbracket = \llbracket 1 +_c $rec(xs,$\dots$)$_p$ Nil$ \rrbracket$
-%  = $\llbracket \langle 1 + ($rec(xs,$\dots$)$_p$ Nil$)_c, ($rec(xs,$\dots$)$_p$ Nil$)_p \rangle \rrbracket$
-%  = $\langle 1 + \llbracket ($rec(xs,$\dots$)$_p$ Nil$)_c \rrbracket, \llbracket ($rec(xs,$\dots$)$_p$ Nil$)_p \rrbracket \rangle$
-%\end{lstlisting}
+We define the macro $R(xs)$ as the translation of the auxilary function
+\T{rec(...)} to avoid repeated coping of the translation.
 %
-Let $g(n) = \llbracket \T{rec(xs,$\dots$)} \rrbracket \{xs \mapsto n\}$.
+\begin{flalign*}
+  &\text{Let } R(xs) = \T{rec}(xs, \T{Nil} \mapsto \langle 1, \lambda a. \langle 0, a \rangle \rangle \\
+  &\quadfive \T{Cons}\mapsto b. \langle 1, \lambda a.(1 + \pi_1\pi_1 b_c) +_c \pi_1\pi_1 b_p\ \T{Cons}\langle \pi_0 b, a \rangle \rangle \\
+\end{flalign*}
 %
-\[
-g(n) = \bigvee_{size\ ys \leq n} case(ys, Nil \mapsto \langle1,\lambda a.\langle 0,a\rangle\rangle, Cons \mapsto \langle 1,m \rangle.\langle 1, \lambda a. 2 +_c \pi_1g(m) (a+1)\rangle)
-\]
+The recurrence $g(n)$ is the interpretation of the auxilary function $R(xs)$,
+where $n$ is the interpretation of $xs$.
 %
-For $n=0$, $g(0) = \langle 1,\lambda a.\langle 0,a\rangle\rangle$.
-
-For $n>0$,
-\[g(n+1) = \bigvee_{size\ ys \leq n+1} case(ys, Nil \mapsto \langle1,\lambda a.\langle 0,a\rangle\rangle, Cons \mapsto \langle 1,m \rangle.\langle 1, \lambda a. 2 +_c \pi_1g(m) (a+1)\rangle)\]
-
-\[ g(n+1) = \bigvee_{size\ ys \leq n} case(ys, Nil \mapsto \langle1,\lambda a.\langle 0,a\rangle\rangle, Cons \mapsto \langle 1,m \rangle.\langle 1, \lambda a. 2 +_c \pi_1g(m) (a+1)\rangle) \]
-\[ \vee \bigvee_{size\ ys = n+1} case(ys, Nil \mapsto \langle1,\lambda a.\langle 0,a\rangle\rangle, Cons \mapsto \langle 1,m \rangle.\langle 1, \lambda a. 2 +_c \pi_1g(m) (a+1)\rangle) \]
- 
-\[ g(n+1) = g(n) \vee \bigvee_{size\ ys = n+1} case(ys, Nil \mapsto \langle1,\lambda a.\langle 0,a\rangle\rangle, Cons \mapsto \langle 1,m \rangle.\langle 1, \lambda a. 2 +_c \pi_1g(m) (a+1)\rangle) \]
-
-\[ g(n+1) = g(n) \vee \langle 1, \lambda a. 2 +_c \pi_1g(n) (a+1)\rangle)\]
-
-We want to show that $g$ is monotonically increasing; $\forall n.g(n) \leq g(n+1)$.
-By definition of $\leq$, $g(n) \leq g(n+1) \Leftrightarrow \pi_0 g(n) \leq \pi_0 g(n+1) \land \pi_1 g(n) \leq \pi_1 g(n+1)$.
-First we will show $\forall n. \pi_0 g(n) = 1$, the immediate corollary of which is $\forall n. \pi_0 g(n) \leq \pi_0 g(n+1)$.
+\begin{flalign*}
+  &g(n) = \llbracket R(xs) \rrbracket \{xs \mapsto n\} \\
+  &= \bigvee\limits_{size\ z \leq \llbracket xs \rrbracket \{xs \mapsto n\}} case(z, f_C, f_N) \\
+  &\text{where} \\
+  &f_{Nil}(x) = \llbracket \langle 1, \lambda a. \langle 0, a\rangle\rangle \rrbracket \{xs \mapsto n\} \\
+  &\qquad = (1, \llambda a.(0, a)) \\
+  &f_{Cons}(b) = \llbracket \langle 1, \lambda a.(1 + \pi_1\pi_1 b_c) +_c \pi_1\pi_1 b_p\ \T{Cons}\langle \pi_0 b, a \rangle \rangle \rrbracket \\
+  &\quadfive \{xs \mapsto n, b \mapsto map^{\Phi_{Cons}}(\llambda d.(d, \llbracket R(w) \rrbracket \{ w \mapsto d, xs \mapsto n \}), b) \} \\ 
+\end{flalign*}
+%
+Let us take a moment to analyze the semantic $map$. The definition mirrors the
+definition of the \T{map} macro in the complexity language. Since $b$ is a
+tuple, $map$ over a tuple is defined as the tuple of the $map$ over the
+projections of the
+tuple.
+%
+\begin{flalign*}
+  &\qquad map^{\Phi_{Cons}}(\llambda d.(d, \llbracket R(w) \rrbracket \{ w \mapsto d \}), b) \\
+  &\qquad = (map^{int}(\llambda d.(d, \llbracket R(w) \rrbracket \{w \mapsto d\}), \pi_0 b), \\
+  &\quadfour map^{list}(\llambda d.(d, \llbracket R(w) \rrbracket \{w \mapsto d\}), \pi_1 b)) \\
+  %
+  &\text{The definition of $map$ over $int$ is $map^{int}(\llambda x.V_0, V_1) = V_1$.}\\
+  &\qquad = (\pi_0 b, map^{list}(\llambda d.(d, \llbracket R(w) \rrbracket \{w \mapsto d\}), \pi_1 b)) \\
+  %
+  &\text{The definition of $map$ over a recursive occurence of a }\\
+  &\text{a datatype is $map^T(\llambda x.V_0,V_1) = V_0[V_1/x]$.} \\
+  &\qquad = (\pi_0 b, (\pi_1 b, \llbracket R(w) \rrbracket \{w \mapsto \pi_1 b\})) \\
+  %
+  &\text{Observe that we can substitute $g(\pi_1 b)$ for $\llbracket R(w) \rrbracket \{w \mapsto \pi_1 b\}$.} \\
+  &\qquad = (\pi_0 b, (\pi_1 b, g(\pi_1 b))) \\
+\end{flalign*}
+%
+Let us resume our interpretation of \T{rec(...)}.
+%
+\begin{flalign*}
+  &f_{Cons}(b) = \llbracket \langle 1, \lambda a.(1 + \pi_1\pi_1 b_c) +_c \pi_1\pi_1 b_p\ \T{Cons}\langle \pi_0 b, a \rangle \rangle \rrbracket \\
+  &\quadfive \{xs \mapsto n, b \mapsto map^{\Phi_{Cons}}(\llambda d.(d, \llbracket R(w) \rrbracket \{ w \mapsto d\}), b) \} \\ 
+  &\quad = \llbracket \langle 1, \lambda a.(1 + \pi_1\pi_1 b_c) +_c \pi_1\pi_1 b_p\ \T{Cons}\langle \pi_0 b, a \rangle \rangle \rrbracket \\
+  &\quadfive \{xs \mapsto n, b \mapsto (\pi_0 b, (\pi_1 b, g(\pi_1 b))) \} \\ 
+  &\quad = (1, \llbracket \lambda a.(1 + \pi_1\pi_1 b_c) +_c \pi_1\pi_1 b_p\ \T{Cons}\langle \pi_0 b, a \rangle \rrbracket \\
+  &\quadfive \{xs \mapsto n, b \mapsto (\pi_0 b, (\pi_1 b, g(\pi_1 b))) \}) \\ 
+  &\quad = (1, \llambda a. \llbracket (1 + \pi_1\pi_1 b_c) +_c \pi_1\pi_1 b_p\ \T{Cons}\langle \pi_0 b, a \rangle \rrbracket \\
+  &\quadfive \{xs \mapsto n, b \mapsto (\pi_0 b, (\pi_1 b, g(\pi_1 b))), a \mapsto a \}) \\ 
+  &\quad = (1, \llambda a. (1 + g_c(\pi_1 b)) \pplus_c g_p(\pi_1 b)\ (1 + a))\\
+\end{flalign*}
+%
+So the initial extracted recurrence from \T{rec} is
+%
+\begin{flalign*}
+  &g(n) = \bigvee\limits_{size\ z \leq n} case(z, f_C, f_N) \\
+  &\text{where} \\
+  &f_{Nil}(x) = (1, \llambda a.(0, a)) \\
+  &f_{Cons}(b) = (1, \llambda a. (1 + g_c(\pi_1 b)) \pplus_c g_p(\pi_1 b)\ (a + 1))\\
+\end{flalign*}
+%
+To obtain a closed form solution for the recurrence, we must eliminate the big
+maximum operator. To do so we break the defnition of $g$ into two cases.
+%
+\begin{description}
+  \item[case $n=0$]\hfill \\
+    For $n=0$, $g(0) = (1,\llambda a.(0,a))$.
+  \item[case $n>0$]\hfill \\
+    \begin{align*}
+      g(n+1) &= \bigvee_{size\ ys \leq n+1} case(ys, f_{Nil}, f_{Cons}) \\
+             &= \bigvee_{size\ ys \leq n} case(ys, f_{Nil}, f_{Cons}) \vee \bigvee_{size\ ys = n+1} case(ys, f_{Nil}, f_{Cons}) \\
+             &= g(n) \vee \bigvee_{size\ ys = n+1} case(ys, \llambda().(1,\llambda a.( 0,a)), \\
+             &\quadten \llambda (1,m).(1, \llambda a.(1 + g_c(m)) \pplus_c g_p(m) (a+1))) \\
+             &= g(n) \vee \langle 1, \llambda a. (1 + g_c(n)) \pplus_c g_p(n) (a+1))) \\
+    \end{align*}
+\end{description}
+%
+In order to eliminate the remaining max operator, we want to show that $g$ is
+monotonically increasing; $\forall n.g(n) \leq g(n+1)$.
+By definition of $\leq$,
+$g(n) \leq g(n+1) \Leftrightarrow g_c(n) \leq g_c(n+1) \land g_p(n) \leq g_p(n+1)$.
+First we will show lemma \ref{lem:fr_interp_g_cost_one}, which states the cost
+of $g(n)$ is always one.
+%
+\begin{lemma}
+  \label{lem:fr_interp_g_cost_one}
+  $\forall n. g_c(n) = 1$.
+\end{lemma}
+%
 \begin{proof}
 We prove this by induction on $n$.
   \begin{description}
     \item[Base case: $n=0$]\hfill \\
-      By definition, $\pi_0 g(0) = 1$.
+      By definition, $g_c(0) = (1, \llambda a.(0,a)) = 1$.
     \item[Induction step: $n>0$]\hfill \\
-      By definition $\pi_0 g(n+1) = \pi_0 (g(n) \vee \langle 1, \lambda a. 2 +_c \pi_1g(n) (a+1)\rangle)$.
-      We distribute the projection over the max: $\pi_0 g(n+1) = \pi_0 g(n) \vee 1$.
-      By the induction hypothesis, $\pi_0 g(n) = 1$, so $\pi_0 g(n+1) = 1$.
+      By definition $g_c(n+1) = (g(n) \vee (1, \llambda a. (1 + g_c(n)) \pplus_c g_p(n)\ (a+1)))_c$.
+      We distribute the projection over the max: $g_c(n+1) = g_c(n) \vee 1$.
+      By the induction hypothesis, $g_c(n) = 1$, so $g_c(n+1) = 1$.
   \end{description}
 \end{proof}
-Now we argue that $\pi_1g(n) \leq \pi_1 g(n+1)$.
-First we prove the lemma $\forall n.\pi_1 g(n) a \leq \pi_1 g(n) (a+1)$.
+%
+The immediate corollary of this is $g_c(n)$ is monotonically increasing.
+%
+\begin{corollary}
+  \label{lem:fr_interp_g_cost_monotonically_increasing}
+  $\forall n. g_c(n) \leq g_c(n+1)$.
+\end{corollary}
+%
+First we prove the lemma stating the potential of $g$ is monotonically
+increasing.
+%
+\begin{lemma}
+  \label{lem:fr_interp_g_potential_monotonically_increasing}
+  The potential of $g$ is monotonically increasing.
+  $\forall n.g_p(n)\ a \leq g_p(n)\ (a+1)$
+\end{lemma}
+%
 \begin{proof}
   We prove this by induction on $n$.
   \begin{description}
     \item[$n=0$]\hfill \\
-      $\pi_1 g(0) a = \langle 0,a\rangle \leq \pi_1 g(0) (a+1) = \langle 0,a+1 \rangle$.
+      $g_p(0)\ a = (\llambda a.(0,a))\ a = (0,a)$\\
+      $g_p(0)\ (a+1) = (\llambda a.(0.a))\ (a+1) = (0,a+1)$\\
+      $(0,a) \leq (0,a+1)$.
     \item[$n>0$]\hfill \\
-      We assume $\pi_1 g(n) a \leq \pi_1 g(n) (a+1)$.
-      \[ \pi_1 g(n) a \leq \pi_1 g(n) (a+1) \]
-      \[ \pi_1 g(n) a \vee 2 +_c g(n) a \leq \pi_1 g(n) (a+1) \vee 2 +_c g(n) (a+1) \]
-      \[ \pi_1 g(n+1) a \leq \pi_1 g(n+1) (a+1) \]
+      We assume $g_p(n)\ a \leq g_p(n)\ (a+1)$.
+      \begin{align*}
+      g_p(n)\ a &\leq g_p(n)\ (a+1)  \\
+      g_p(n)\ a \vee (1 + g_c(n)) \pplus_c g_p(n)\ a &\leq g_p(n)\ (a+1) \vee (1 + g_c(n)) \pplus_c g_p(n)\ (a+1) \\
+      g_p(n+1)\ a &\leq g_p(n+1)\ (a+1)
+      \end{align*}
   \end{description}
 \end{proof}
-
-Now we show $\pi_1 g(n) \leq \pi_1 g(n+1)$.
+%
+Now we show $g_p(n) \leq g_p(n+1)$.
+%
 \begin{proof}
-  By reflexivity, $\pi_1 g(n) \leq \pi_1 g(n)$.
+  By reflexivity, $g_p(n) \leq g_p(n)$.
   By the lemma we just proved:
-  \[ \pi_1 g(n) a \leq \pi_1 g(n) (a+1) \]
-  \[ \pi_1 g(n) a \leq 2 +_c \pi_1 g(n) (a+1) \]
+  \begin{align*}
+  g_p(n)\ a &\leq g_p(n)\ (a+1) \\
+  g_p(n)\ a &\leq (1 + g_c(n)) \pplus_c g_p(n)\ (a+1) \\
   %\[ \pi_1 g(n) a \leq \langle 2 + \pi_0 (\pi_1 g(n) (a+1)), \pi_1 (\pi_1 g(n) (a+1)) \rangle \]
-  \[ \lambda a.\pi_1 g(n) a \leq \lambda a. 2 +_c \pi_1 g(n) (a+1) \]
+  \llambda a.g_p(n)\ a &\leq \llambda a. (1 + g_c(n)) \pplus_c g_p(n)\ (a+1) \\
+  \end{align*}
 \end{proof}
-
-So since for all $n$, $\pi_0 g(n) = 1$ and $\pi_1 g(n) \leq \lambda a. 2 +_c \pi_1 g(n) (a+1)$, we can say
-
-\[ g(n) \leq \langle 1, \lambda a. 2 +_c \pi_1g(n) (a+1)\rangle) \]
-
+%
+So since for all $n$, $g_c(n) = 1$ and $g_p(n) \leq \llambda a. (1 + g_c(n)) +_c g_p(n)\ (a+1)$, we can say
+%
+\[ g(n) \leq \langle 1, \lambda a. (1 + g_c(n)) +_c g_p(n)\ (a+1)\rangle) \]
+%
 So 
-\[ g(n+1) = \langle 1, \lambda a. 2 +_c \pi_1g(n) (a+1)\rangle\]
-
-
+\[ g(n+1) = \langle 1, \lambda a. (1 + g_c(n)) +_c g_p(n)\ (a+1)\rangle\]
+%
+%
 To extract a recurrence from $g$, we apply $g$ to the interpretation of a list $a$.
-
+%
 Let $h(n,a) = \pi_1 g(n) a$
-
+%
 For $n=0$
+%
 \begin{align*}
 h(0,a) &= \pi_1 g(0) a \\
 &= (\lambda a.\langle 0,a\rangle) a \\
 &= \langle 0, a\rangle
 \end{align*}
+%
 For $n>0$
+%
 \begin{align*}
 h(n,a) &= \pi_1 g(n) a \\ 
 &= (\lambda a. 2 +_c \pi_1g(n-1) (a+1)) a \\
@@ -538,22 +632,25 @@ h(n,a) &= \pi_1 g(n) a \\
 &= 2 +_c h(n-1,a+1) \\
 &= \langle 2 + \pi_0 h(n-1,a+1), \pi_1 h(n-1,a+1)\rangle
 \end{align*}
-
+%
 From this recurrence, we can extract a recurrence for the cost. Let $h_c = \pi_0 \circ h$.
-
+%
 For $n=0$
+%
 \begin{align*}
 h_c(0,a) &= \pi_0 h(0,a)\\
 &= \pi_0 \langle 0, a\rangle\\
 &= 0
 \end{align*}
+%
 For $n>0$
+%
 \begin{align*}
 h_c(n,a) &= \pi_0 \langle 2 + \pi_0 h(n-1,a+1), \pi_1 h(n-1,a+1)\rangle\\
 &= 2 + \pi_0 h(n-1,a+1)\\
 &= 2 + h_c(n-1,a+1)
 \end{align*}
-
+%
 We now have a recurrence for the cost of the auxilary function \T{rec(xs,$\dots$)}:
 \begin{framed}
   \begin{equation}
