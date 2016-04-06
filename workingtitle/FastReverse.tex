@@ -1,6 +1,5 @@
 % ---------------------------------------- FAST REVERSE ----------------------------------------
 \chapter{Fast Reverse}
-
 Fast reverse is an implementation reverse in linear time complexity. 
 A naive implementation of reverse appends the head of the list to recursively
 reversed tail of  the list. Fast reverse instead uses an abstraction to delay
@@ -436,7 +435,11 @@ Below is the translation of \T{rev xs}.
   &\qquad \T{Cons}\mapsto \langle x, \langle xs', r\rangle\rangle. \langle 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\langle x, r \rangle \rangle)\ \T{Nil})\ xs\\
 \end{flalign*}
 %
-We intepret the size of an \T{list} to be the number of list constructors.
+The cost of \T{rev} is driven by the auxilary function \T{rec(...)}. The cost
+of \T{rev} will be determined by the cost of the auxilary function \T{rec(...)}
+applied to \T{Nil} plus some constant factor. We will interpret the auxilary
+function in the following denotational semantics. We intepret the size of an
+\T{list} to be the number of list constructors.
 %
 \begin{flalign*}
   \llbracket \T{list} \rrbracket &= \mathbb{N}^\infty\\
@@ -445,19 +448,19 @@ We intepret the size of an \T{list} to be the number of list constructors.
   size_{list}(\T{Cons(1,n)}) &= 1 + n\\
 \end{flalign*}
 %
-The interpretation of \T{rev xs} proceeds as follows.
-\begin{lstlisting}
-  $\llbracket \|$rev xs$\| \rrbracket = \llbracket 1 +_c $rec(xs,$\dots$)$_p$ Nil$ \rrbracket$
-  = $\llbracket \langle 1 + ($rec(xs,$\dots$)$_p$ Nil$)_c, ($rec(xs,$\dots$)$_p$ Nil$)_p \rangle \rrbracket$
-  = $\langle 1 + \llbracket ($rec(xs,$\dots$)$_p$ Nil$)_c \rrbracket, \llbracket ($rec(xs,$\dots$)$_p$ Nil$)_p \rrbracket \rangle$
-\end{lstlisting}
-
-We will focus on the interpretation of the auxilary function \T{rec(xs,$\dots$)}.
-
-Let $g(n) = \llbracket \T{rec(xs,$\dots$)} \rrbracket \{xs \mapsto n\}$
-
-\[g(n) = \bigvee_{size\ ys \leq n} case(ys, Nil \mapsto \langle1,\lambda a.\langle 0,a\rangle\rangle, Cons \mapsto \langle 1,m \rangle.\langle 1, \lambda a. 2 +_c \pi_1g(m) (a+1)\rangle)\]
-
+%The interpretation of \T{rev xs} proceeds as follows.
+%\begin{lstlisting}
+%  $\llbracket \|$rev xs$\| \rrbracket = \llbracket 1 +_c $rec(xs,$\dots$)$_p$ Nil$ \rrbracket$
+%  = $\llbracket \langle 1 + ($rec(xs,$\dots$)$_p$ Nil$)_c, ($rec(xs,$\dots$)$_p$ Nil$)_p \rangle \rrbracket$
+%  = $\langle 1 + \llbracket ($rec(xs,$\dots$)$_p$ Nil$)_c \rrbracket, \llbracket ($rec(xs,$\dots$)$_p$ Nil$)_p \rrbracket \rangle$
+%\end{lstlisting}
+%
+Let $g(n) = \llbracket \T{rec(xs,$\dots$)} \rrbracket \{xs \mapsto n\}$.
+%
+\[
+g(n) = \bigvee_{size\ ys \leq n} case(ys, Nil \mapsto \langle1,\lambda a.\langle 0,a\rangle\rangle, Cons \mapsto \langle 1,m \rangle.\langle 1, \lambda a. 2 +_c \pi_1g(m) (a+1)\rangle)
+\]
+%
 For $n=0$, $g(0) = \langle 1,\lambda a.\langle 0,a\rangle\rangle$.
 
 For $n>0$,
