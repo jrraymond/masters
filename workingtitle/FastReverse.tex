@@ -564,12 +564,11 @@ The immediate corollary of this is $g_c(n)$ is monotonically increasing.
   $\forall n. g_c(n) \leq g_c(n+1)$.
 \end{corollary}
 %
-First we prove the lemma stating the potential of $g$ is monotonically
+First we prove the lemma stating the potential of $g(n)\ a$ is monotonically
 increasing.
 %
 \begin{lemma}
   \label{lem:fr_interp_g_potential_monotonically_increasing}
-  The potential of $g$ is monotonically increasing.
   $\forall n.g_p(n)\ a \leq g_p(n)\ (a+1)$
 \end{lemma}
 %
@@ -599,125 +598,141 @@ Now we show $g_p(n) \leq g_p(n+1)$.
   g_p(n)\ a &\leq g_p(n)\ (a+1) \\
   g_p(n)\ a &\leq (1 + g_c(n)) \pplus_c g_p(n)\ (a+1) \\
   %\[ \pi_1 g(n) a \leq \langle 2 + \pi_0 (\pi_1 g(n) (a+1)), \pi_1 (\pi_1 g(n) (a+1)) \rangle \]
-  \llambda a.g_p(n)\ a &\leq \llambda a. (1 + g_c(n)) \pplus_c g_p(n)\ (a+1) \\
+  \llambda a.g_p(n)\ a &\leq \llambda a. (1 + g_c(n)) \pplus_c g_p(n)\ (a+1)
   \end{align*}
 \end{proof}
 %
-So since for all $n$, $g_c(n) = 1$ and $g_p(n) \leq \llambda a. (1 + g_c(n)) +_c g_p(n)\ (a+1)$, we can say
+So since for all $n$, $g_c(n) = 1$ and $g_p(n) \leq \llambda a. (1 + g_c(n)) \pplus_c g_p(n)\ (a+1)$, we conclude
 %
-\[ g(n) \leq \langle 1, \lambda a. (1 + g_c(n)) +_c g_p(n)\ (a+1)\rangle) \]
+\begin{flalign*}
+  g(n) &\leq \langle 1, \llambda a. (1 + g_c(n)) \pplus_c g_p(n)\ (a+1)\rangle) \\
+\end{flalign*}
 %
 So 
-\[ g(n+1) = \langle 1, \lambda a. (1 + g_c(n)) +_c g_p(n)\ (a+1)\rangle\]
+%
+\begin{flalign*}
+  g(n+1) &= \langle 1, \llambda a. (1 + g_c(n)) \pplus_c g_p(n)\ (a+1)\rangle\\
+\end{flalign*}
 %
 %
 To extract a recurrence from $g$, we apply $g$ to the interpretation of a list $a$.
 %
-Let $h(n,a) = \pi_1 g(n) a$
+Let $h(n,a) = g_p(n)\ a$.
 %
 For $n=0$
 %
 \begin{align*}
-h(0,a) &= \pi_1 g(0) a \\
-&= (\lambda a.\langle 0,a\rangle) a \\
-&= \langle 0, a\rangle
+  h(0,a) &= g_p(0) a \\
+         &= (\llambda a.(0,a)) a \\
+         &= (0, a)
 \end{align*}
 %
 For $n>0$
 %
 \begin{align*}
-h(n,a) &= \pi_1 g(n) a \\ 
-&= (\lambda a. 2 +_c \pi_1g(n-1) (a+1)) a \\
-&= 2 +_c \pi_1 g(n-1) (a+1)) \\
-&= 2 +_c h(n-1,a+1) \\
-&= \langle 2 + \pi_0 h(n-1,a+1), \pi_1 h(n-1,a+1)\rangle
+  h(n,a) &= g_p(n) a \\ 
+         &= (\llambda a. (1 + g_c(n-1)) \pplus_c g_p(n-1)\ (a+1))\ a \\
+         &= (1 + g_c(n-1)) +_c g_p(n-1) (a+1) \\
+         &= (1 + 1) +_c h(n-1,a+1) \\
+         &= (2 + h_c(n-1,a+1), h_p(n-1,a+1))
 \end{align*}
 %
-From this recurrence, we can extract a recurrence for the cost. Let $h_c = \pi_0 \circ h$.
+From this recurrence, we can extract a recurrence for the cost.
 %
 For $n=0$
 %
 \begin{align*}
-h_c(0,a) &= \pi_0 h(0,a)\\
-&= \pi_0 \langle 0, a\rangle\\
-&= 0
+h_c(0,a) &= (0, a)_c = 0
 \end{align*}
 %
 For $n>0$
 %
 \begin{align*}
-h_c(n,a) &= \pi_0 \langle 2 + \pi_0 h(n-1,a+1), \pi_1 h(n-1,a+1)\rangle\\
-&= 2 + \pi_0 h(n-1,a+1)\\
-&= 2 + h_c(n-1,a+1)
+  h_c(n,a) &= (2 + h_c(n-1,a+1), h_p(n-1,a+1))_c = 2 + h_c(n-1,a+1)
 \end{align*}
 %
-We now have a recurrence for the cost of the auxilary function \T{rec(xs,$\dots$)}:
-\begin{framed}
-  \begin{equation}
-    h_c(n,a) = \begin{cases}
-      0 & n = 0 \\
-      2 + h_c(n-1,a+1) & n > 0
-    \end{cases}
-  \end{equation}
-\end{framed}
-
-\textbf{Theroem: $h_c(n,a) = 2n$}
+We now have a recurrence for the cost of the auxilary function
+\T{rec(xs,$\dots$)} when applied to some list:
+%
+\begin{equation}
+  h_c(n,a) = \begin{cases}
+    0 & n = 0 \\
+    2 + h_c(n-1,a+1) & n > 0
+  \end{cases}
+\end{equation}
+%
+We state the solution to the recurrence $h_c$ is $2n$.
+%
+\begin{theorem}
+  \label{lem:fr_interp_h_cost}
+  $h_c(n,a) = 2n$
+\end{theorem}
+%
 \begin{proof}
   We prove this by induction on $n$.
   \begin{description}
-    \item{Base case: $n=0$}\hfill \\
-      \[ h_c(0,a) = 0 = 2\cdot0 \]
-    \item{Induction case:}\hfill \\
-      We assume $h_c(n,a+1) = 2n$.\[h_c(n+1,a) = 2 + h_c(n,a+1) = 2 + 2n = 2(n+1)\]
+    \item{case $n=0$}\hfill \\
+      $h_c(0,a) = 0 = 2 \cdot 0$ 
+    \item{case $n>0$}\hfill \\
+      We assume $h_c(n,a+1) = 2n$.
+      \begin{align*}
+        h_c(n+1,a) &= 2 + h_c(n,a+1) \\
+                   &= 2 + 2n  \\
+                   &= 2(n+1)
+      \end{align*}
   \end{description}
 \end{proof}  
-
-The solution to the recurrence for the cost of the auxilary function \T{rec(xs,$\dots$)} is:
-\begin{framed}
-  \[h_c(n,a) = 2n \]
-\end{framed}
+%
+So we have proved the interpretation of applying the auxilary function of
+\T{rev xs} to a list is linear in the length of \T{xs}.
 
 
-We can also extract a recurrence for the potential. Let $h_p = \pi_1 \circ h$.
 
+We can also extract a recurrence for the potential.
 For $n=0$
+%
 \begin{align*}
-h_p(0,a) &= \pi_1 h(0,a)\\
-&= \pi_1 \langle 0, a\rangle\\
-&= a
+h_p(0,a) &= h_p(0,a) \\
+         &= (0, a)_p \\
+         &= a
 \end{align*}
+%
 For $n>0$
+%
 \begin{align*}
-h_p(n,a) &= \pi_1 \langle 2 + \pi_0 h(n-1,a+1), \pi_1 h(n-1,a+1)\rangle\\
-&= \pi_1 h(n-1,a+1)\\
-&= h_p (n-1,a+1)
+  h_p(n,a) &= (2 + h_c(n-1,a+1), h_p(n-1,a+1))_p \\
+           &= h_p(n-1,a+1)
 \end{align*}
-
-We now have a recurrence for the potential of the auxilary function in \T{rev xs}:
-\begin{framed}
-  \begin{equation}
-    h_p(n,a) = \begin{cases}
-      a & n = 0 \\
-      h_p(n-1,a+1) & n > 0
-    \end{cases}
-  \end{equation}
-\end{framed}
-
-\textbf{Theroem: $h_p(n,a) = n + a$}
+%
+We now have a recurrence for the potential of the auxilary function in
+\T{rev xs} when applied to some list $a$.
+%
+\begin{equation}
+  h_p(n,a) = \begin{cases}
+    a & n = 0 \\
+    h_p(n-1,a+1) & n > 0
+  \end{cases}
+\end{equation}
+%
+\begin{theorem}
+  \label{lem:fr_interp_h_potential}
+  $h_p(n,a) = n + a$
+\end{theorem}
+%
 \begin{proof}
   We prove this by induction on $n$.
   \begin{description}
-    \item{Base case: $n=0$}\hfill \\
+    \item{case $n=0$}\hfill \\
       \[ h_p(0,a) = a \]
-    \item{Induction case:}\hfill \\
-      \[h_p(n,a) = h_p(n-1,a+1) = n - 1 + a + 1 = n + a\]
+    \item{case $n>0$}\hfill \\
+      \begin{align*}
+      h_p(n,a) &= h_p(n-1,a+1) \\
+               &= n - 1 + a + 1  \qquad \text{by the induction hypothesis} \\
+               &= n + a
+      \end{align*}
   \end{description}
 \end{proof}  
-
-So the solution to the recurrence for the potential of the auxilary function.
-\begin{framed}
-  \[h_p(n,a) = n + a \]
-\end{framed}
+%
 
 
 We return to our interpretation of \T{rev xs}.
