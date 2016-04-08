@@ -1,65 +1,78 @@
-\section{Reverse}
-
-\subsection*{Source Language}
-
-\begin{lstlisting}
-datatype intlist = Nil of unit | Cons of int $\times$ intlist
-\end{lstlisting}
-The following function reverses a list on $\Theta(n^2)$ time.
-It walks down a list, appending the head of the list to the end of the result of recursively calling itself on the tail of the list.
-\begin{lstlisting}[frame=single]
-rev = $\lambda$xs.rec(xs, Nil $\mapsto$ Nil
-                , Cons $\mapsto \langle$x,$\langle$xs',r$\rangle \rangle$.
-                       rec(force(r), Nil $\mapsto$ Cons$\langle$x, Nil$\rangle$
-                                   , Cons $\mapsto \langle$y,$\langle$ys,rys$\rangle \rangle$. Cons$\langle$y,force(rys)$\rangle$))
-\end{lstlisting}
-
-
-\subsection*{Complexity Language}
+\chapter{Reverse}
+%
+Here we present the naive implementation of list reverse. The naive
+implementation reverses a list in quadratic time as opposed to linear time.
+%
+\[
+  \T{datatype list} = \T{Nil of unit}\ |\ \T{Cons of int} \times \T{list}
+\]
+%
+The implementation walks down a list, appending the head of the list to the end
+of the result of recursively calling itself on the tail of the list. We use the
+syntactic sugar introduced earlier.
+%
+\begin{flalign*}
+  rev &= \lambda xs.\T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \\
+      &\quadfive \T{Cons} \mapsto \langle x, \langle xs',r\rangle \rangle. \T{rec}(\T{force}(r), \T{Nil} \mapsto \T{Cons} \langle x, \T{Nil} \rangle, \\
+      &\quadten\quadsix \T{Cons}  \mapsto \langle y, \langle ys,rys \rangle \rangle . \T{Cons} \langle y,\T{force}(rys) \rangle ))
+\end{flalign*}
+%
+%
+%
+\section{Translation}
+%
 The translation into the complexity language is
+%
 \begin{lstlisting}
 rev = $\langle$0,$\lambda$xs.rec(xs, Nil $\mapsto$ Nil
                   , Cons $\mapsto \langle$x,$\langle$xs',r$\rangle \rangle$.
                        rec(r, Nil $\mapsto$ Cons$\langle$x, Nil$\rangle$
                             , Cons $\mapsto \langle$y,$\langle$ys,rys$\rangle \rangle$. Cons$\langle$y,rys$\rangle$))$\rangle$
 \end{lstlisting}
-
-It is more interesting if we consider the translation of \texttt{rev} applied to some \texttt{xs:intlist}.
-The translation of this function into the complexity language proceeds as follows.
-We begin with translating the  outer \texttt{rec} construct.
-
+%
+It is more interesting if we consider the translation of \T{rev} applied to
+some \T{xs:intlist}.  The translation of this function into the complexity
+language proceeds as follows.  We begin with translating the  outer \T{rec}
+construct.
+%
 \begin{lstlisting}
 rev xs  = 1 $+$ $\|$xs$\|_c$ $+_c$ rec($\|$xs$\|_p$
                          , Nil $\mapsto$ 1 $+_c$ $\|$Nil$\|$
                          , Cons $\mapsto \langle$x,$\langle$xs',r$\rangle \rangle$. 1 $+_c$ $\|$rec($\dots$)$\|$)
 \end{lstlisting}
-
-The cost of the translation of an \texttt{intlist} is zero, and the potential of the translation of an \texttt{intlist} is the list itself.
+%
+The cost of the translation of an \T{intlist} is zero, and the potential of the
+translation of an \T{intlist} is the list itself.
+%
 \begin{lstlisting}
 rev xs = 1 $+_c$ rec(xs, Nil $\mapsto$ $\langle$1,Nil$\rangle$ , Cons $\mapsto \langle$x,$\langle$xs',r$\rangle \rangle$. 1 $+_c$ $\|$rec($\dots$)$\|$)
 \end{lstlisting}
-
-Next we translate the inner \texttt{rec}.
+%
+Next we translate the inner \T{rec}.
+%
 \begin{lstlisting}
 $\|$rec(force(r), Nil $\mapsto$ Cons($\langle$x, Nil$\rangle$)
                 , Cons $\mapsto \langle$y,$\langle$ys,rys$\rangle \rangle$. Cons$\langle$y,force(rys)$\rangle$))$\|$
 \end{lstlisting}
-
-Since \texttt{x}, \texttt{xs'}, \texttt{r} are terms in the complexity language, they do not need to be translated.
-First we apply the rules for \texttt{rec} and \texttt{force}.
+%
+Since \T{x}, \T{xs'}, \T{r} are terms in the complexity language, they do not
+need to be translated.  First we apply the rules for \T{rec} and \T{force}.
+%
 \begin{lstlisting}
 r$_c$ $+_c$ rec(r$_p$, Nil $\mapsto$ 1 $+_c$ $\|$Cons($\langle$x, Nil$\rangle$)$\|$
           , Cons $\mapsto \langle$y,$\langle$ys,rys$\rangle \rangle$. 1 $+_c$ $\|$Cons$\langle$y,force(rys)$\rangle\|$)
 \end{lstlisting}
-
-The cost of the \texttt{Cons} constructor is zero, and the translation of \texttt{force} is just the translation of its argument.
+%
+The cost of the \T{Cons} constructor is zero, and the translation of \T{force}
+is just the translation of its argument.
+%
 \begin{lstlisting}
 r$_c$ $+_c$ rec(r$_p$, Nil $\mapsto$ $\langle$1,Cons$\langle$x$_p$, Nil$\rangle\rangle$
            , Cons $\mapsto \langle$y,$\langle$ys,rys$\rangle \rangle$. $\langle$1 $+$ rys$_c$,Cons$\langle$y$_p$,rys$_p$$\rangle\rangle$)
 \end{lstlisting}
-
+%
 Putting the pieces together, we get
-
+%
 \begin{lstlisting}[frame=single]
 $\|$rev xs$\|$ = 1 $+_c$ rec(xs$_p$
                    , Nil $\mapsto$ $\langle$1,Nil$\rangle$
@@ -67,19 +80,21 @@ $\|$rev xs$\|$ = 1 $+_c$ rec(xs$_p$
                         rec(r$_p$, Nil $\mapsto$ $\langle$1,Cons$\langle$x$_p$, Nil$\rangle\rangle$
                              , Cons $\mapsto \langle$y,$\langle$ys,rys$\rangle \rangle$. $\langle$1 $+$ rys$_c$,Cons$\langle$y$_p$,rys$_p$$\rangle\rangle$))
 \end{lstlisting}
-
-
-\subsection*{Interpretation}
-We intepret the size of an \texttt{intlist} to be the number of constructors.
-
-$\llbracket$ \texttt{intlist} $\rrbracket$ = $\mathbb{N}^\infty$\\
+%
+%
+%
+\section{Interpretation}
+%
+We intepret the size of an \T{intlist} to be the number of constructors.
+%
+$\llbracket$ \T{intlist} $\rrbracket$ = $\mathbb{N}^\infty$\\
 $D^{intlist} = \{\ast\} + \{1\} \times \mathbb{N}^\infty$\\
-$size_{intlist}(\texttt{Nil}) = 0$\\
-$size_{intlist}(\texttt{Cons(1,n)}) = 1 + n$\\
-
-Then $\llbracket \| \texttt{rev xs} \|_c \rrbracket = 1 + g(\|xs\|_p)$, where
+$size_{intlist}(\T{Nil}) = 0$\\
+$size_{intlist}(\T{Cons(1,n)}) = 1 + n$\\
+%
+Then $\llbracket \| \T{rev xs} \|_c \rrbracket = 1 + g(\|xs\|_p)$, where
 \[g(n) = \llbracket rec(z, Nil \mapsto 1, Cons \mapsto \langle x, \langle xs',r\rangle \rangle.1 + r_c + h(r_p))\rrbracket \{z \mapsto n\}\]
 \[h(n) = \llbracket rec(z, Nil \mapsto 1, Cons \mapsto \langle y, \langle ys',r\rangle \rangle.1 + r_c \rrbracket \{z \mapsto n\}\]
-
+%
 We calculate that $h(0)=1$ and for $n > 0$, $h(n) = 1 + h(n-1)$.
 $g(0) = 1$ and for $n > 0$, $g(n) = 1 + g(n-1) + h(n-1)$

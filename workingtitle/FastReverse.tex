@@ -55,7 +55,7 @@ rev (Cons$\langle$0,Cons$\langle$1, Nil$\rangle\rangle$) $\to$
 \end{lstlisting}
 
 % -------------------- BEGIN REV TRANSLATION SPLIT --------------------   
-\subsection*{Fast Reverse Translation}
+\section{Translation}
 We will walk through the translation from the source language to the complexity
 language.
 %
@@ -283,7 +283,8 @@ pattern matching syntactic sugar as in the source language.
 %
 % FAST REVESE TRANSLATION USING SYNTACTIC SUGAR
 %
-\subsection*{Sugared Fast Reverse Translation}
+\section{Syntactic Sugar Translation}
+%
 We walk through the same translation of fast reverse, but we use the syntactic
 sugar for matching introducted earlier. Recall the implementation of fast using
 syntactic sugar. The translation is almost identical to the translation of \T{rev}
@@ -425,7 +426,8 @@ will use the syntactic sugar for the rest of this thesis.
 %
 % ============= FAST REVERSE INTERPRETATION ====================
 %
-\subsection*{Interpretation}
+\section{Interpretation}
+%
 The interpretation of \T{rev} is not interesting as the cost of \T{rev} is always null.
 Instead of interpreting \T{rev}, we will interpret \T{rev} applied to a list \T{xs}.
 Below is the translation of \T{rev xs}.

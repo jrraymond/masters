@@ -1,12 +1,16 @@
-\section{Parametric Insertion Sort}
-
-\subsection{Parametric Insertion Sort}
-Parametric insertion sort is a higher order algorithm which sorts a list using a comparison function which is passed to it as an argument.
-The running time of insertion sort is $\mathcal{O}(n^2)$.
-This characterization of the complexity of parametric insertion sort does not capture role of the comparison function in the running time.
-When sorting a list of integers, where comparison between any two integers takes constant time, this does not matter.
-However, when sorting a list of strings, where the complexity of comparison is order the length of the string, the length of the strings may influence the running time more than the length of the list when sorting small lists of large strings.
-
+\chapter{Parametric Insertion Sort}
+%
+Parametric insertion sort is a higher order algorithm which sorts a list using
+a comparison function which is passed to it as an argument.  The running time
+of insertion sort is $\mathcal{O}(n^2)$.  This characterization of the
+complexity of parametric insertion sort does not capture role of the comparison
+function in the running time.  When sorting a list of integers, where
+comparison between any two integers takes constant time, this does not matter.
+However, when sorting a list of strings, where the complexity of comparison is
+order the length of the string, the length of the strings may influence the
+running time more than the length of the list when sorting small lists of large
+strings.
+%
 \begin{figure}[H]
 \caption{Parametric insertion sort in the source language}
 \begin{lstlisting}
@@ -19,15 +23,21 @@ insert = $\lambda$f.$\lambda$x.$\lambda$xs.rec(xs, Nil$\mapsto$ Cons$\langle$x,N
 sort = $\lambda$f.$\lambda$xs.rec(xs, Nil$\mapsto$ Nil, Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle$.insert f y force(r))
 \end{lstlisting}
 \end{figure}
-
+%
+%
 \subsubsection{Insert}
-The function \T{sort} relies on the function \T{insert} to insert the head of the list into the result of recursively sorted tail of the list.
-We will begin with a translation and interpretation of \T{insert}.
-
+%
+The function \T{sort} relies on the function \T{insert} to insert the head of
+the list into the result of recursively sorted tail of the list.  We will begin
+with a translation and interpretation of \T{insert}.
+%
+%
 \subsubsection{Translation}
+%
 The translation of \T{insert} is broken into chunks to make it more manageable.
-Figure \ref{fig:fxy} steps through the translation of the comparison function \T{f} applied to variables \T{x} and \T{y}.
-
+Figure \ref{fig:fxy} steps through the translation of the comparison function
+\T{f} applied to variables \T{x} and \T{y}.
+%
 \begin{figure}[H]
 \caption{Translation of \T{(f:Int$\to$Int$\to$Bool) (x:Int) (y:Int)}.
 \label{fig:fxy}
@@ -35,6 +45,7 @@ We assume \T{f}, \T{x} and \T{y} are variables, so the cost of their translation
 Since \T{f} is a function of two arguments, the cost of \T{f} is 0 unless \T{f} is fully applied.
 Notice that \T{f} in \T{$\|$f$\|$} is a source variable while plain \T{f} is a potential variable.
 }
+%
 \begin{lstlisting}
 $\|$f x y$\| = (1 + \|$f x$\|_c + \|$y$\|_c) +_c \|$f x$\|_p \|$y$\|_p$
 
@@ -49,9 +60,10 @@ $\|$f x y$\| = (1 + \|$f x$\|_c + \|$y$\|_c) +_c \|$f x$\|_p \|$y$\|_p$
   %$= (1 + \langle 1 + \|$f$\|_c + \|$x$\|_c + (\|$f$\|_p\|$x$\|_p)_c,(\|$f$\|_p\|$x$\|_p)_p \rangle_c + \langle$0,y$\rangle_c) +_c$
   %     $(\langle 1 + \|$f$\|_c + \|$x$\|_c + (\|$f$\|_p\|$x$\|_p)_c,(\|$f$\|_p\|$x$\|_p)_p \rangle_p  \langle$0,y$\rangle_p)$
 \end{figure}
-
-The translation \T{true} and \T{false} branches are given in figures \ref{fig:insert_true} and \ref{fig:insert_false} respectively.
-
+%
+The translation \T{true} and \T{false} branches are given in figures
+\ref{fig:insert_true} and \ref{fig:insert_false} respectively.
+%
 \begin{figure}[H]
 \caption{Translation of \T{True$\to$Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle$} in the inner \T{rec} of \T{insert}.
 In this case the element we are inserting into the list comes before the head of the list under the ordering given by \T{f}.
@@ -85,7 +97,7 @@ $\|$True$\mapsto $Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle\|$
   $=$ True$\mapsto \langle 1, $Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle\rangle$
 \end{lstlisting}
 \end{figure}
-
+%
 \begin{figure}[H]
 \caption{Translation of the \T{False} branch of the inner \T{rec} of \T{insert}.
 \label{fig:insert_false}
@@ -110,9 +122,11 @@ $\|$False$\mapsto $Cons$\langle$y,force(r)$\rangle\|$
   $=$ False$\mapsto \langle1 + $r$_c,$Cons$\langle$y$,$r$_p\rangle\rangle$
 \end{lstlisting}
 \end{figure}
-
-Figure \ref{fig:insert_inner_rec} uses the translation of \T{f x y} and the \T{true} and \T{false} branches to construct the translation of the inner \T{rec} construct.
-
+%
+Figure \ref{fig:insert_inner_rec} uses the translation of \T{f x y} and the
+\T{true} and \T{false} branches to construct the translation of the inner
+\T{rec} construct.
+%
 \begin{figure}[H]
 \caption{Translation of the inner \T{rec} in \T{insert}.
 In the \T{True} case, we have found the place of \T{x} in the list and we so stop.
@@ -138,10 +152,11 @@ $\|$rec(f x y,True$\mapsto$Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle$,Fals
 
 \end{lstlisting}
 \end{figure}
-
-
-The \T{Nil} and \T{Cons} branches of the outer \T{rec} construct are given in figures \ref{fig:insert_nil} and \ref{fig:insert_cons}, respectively.
-
+%
+%
+The \T{Nil} and \T{Cons} branches of the outer \T{rec} construct are given in
+figures \ref{fig:insert_nil} and \ref{fig:insert_cons}, respectively.
+%
 \begin{figure}[H]
 \caption{Translation of the \T{Nil} branch of the outer \T{rec} in \T{insert}.
 The insertion of an element into an empty list results in a singleton list containing only the element.
@@ -166,7 +181,7 @@ $\|$Nil$\mapsto$Cons$\langle$x,Nil$\rangle\|$
   $=$ Nil$\mapsto \langle1$,Cons$\langle$x,Nil$\rangle\rangle$
 \end{lstlisting}
 \end{figure}
-
+%
 \begin{figure}[H]
 \caption{Translation of the \T{Cons} branch of the outer \T{rec} in \T{insert}.
 In this branch we recurse on a nonempty list.
@@ -190,10 +205,9 @@ $\|$Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle$.rec(f x y, True $\mapst
                                            False$\mapsto \langle1 + $r$_c,$Cons$\langle$y$,$r$_p\rangle\rangle$)$)$
 \end{lstlisting}
 \end{figure}
-
-
+%
 We put these together to give the translation of \T{insert}.
-
+%
 \begin{figure}[H]
 \caption{Translation of \T{insert}}
 \label{fig:insert}
@@ -221,10 +235,11 @@ $\|$insert$\|$ = $\|\lambda$f.$\lambda$x.$\lambda$xs.rec(xs, Nil$\mapsto$ Cons$\
                                                  False$\mapsto \langle1 + $r$_c,$Cons$\langle$y$,$r$_p\rangle\rangle$)$)$
 \end{lstlisting}
 \end{figure}
-
-
-Finally we give a translation of \T{insert f x xs} in figure \ref{fig:insert_applied} because this is the term we will interpret in a size-based semantics.
-
+%
+Finally we give a translation of \T{insert f x xs} in figure
+\ref{fig:insert_applied} because this is the term we will interpret in a
+size-based semantics.
+%
 \begin{figure}[H]
   \caption{The translation of \T{insert f x xs}.
   Unlike before, we do not assume that \T{f}, \T{x}, \T{xs} are variables.
@@ -250,9 +265,9 @@ Finally we give a translation of \T{insert f x xs} in figure \ref{fig:insert_app
                                                  False$\mapsto \langle1 + $r$_c,$Cons$\langle$y$,$r$_p\rangle\rangle$)$)$
   \end{lstlisting}
 \end{figure}
-
-
+%
 The result is:
+%
 \begin{lstlisting}
 $\|$insert f x xs$\|= (3 + \|$f$\|_c + \|$x$\|_c + \|$xs$\|_c)$
         $+_c $rec($\|$xs$\|_p$,
@@ -261,12 +276,14 @@ $\|$insert f x xs$\|= (3 + \|$f$\|_c + \|$x$\|_c + \|$xs$\|_c)$
                                                  True$\mapsto \langle 1, $Cons$\langle \|$x$\|_p$,Cons$\langle$y,ys$\rangle\rangle\rangle$
                                                  False$\mapsto \langle1 + $r$_c,$Cons$\langle$y$,$r$_p\rangle\rangle$)$)$
 \end{lstlisting}
-
+%
 
 
 \subsubsection{Interpretation}
-We well use an interpretation of lists as a pair of their greatest element and their length.
-Figure \ref{fig:interp_sizes} formalizes this interpretation.
+%
+We well use an interpretation of lists as a pair of their greatest element and
+their length.  Figure \ref{fig:interp_sizes} formalizes this interpretation.
+%
 \begin{figure}[H]
   \caption{Interpretation of lists as lengths}
   \label{fig:interp_sizes}
@@ -277,15 +294,18 @@ Figure \ref{fig:interp_sizes} formalizes this interpretation.
     size_{list} (Cons(i,(j,n))) &= (max\{i,j\},1 + n)
   \end{align*}
 \end{figure}
-We use the mutual ordering on pairs.
-That is, $(s,n) \leq (s',n')$ if $n \leq n'$ and $s < s'$ or $n < n'$ and $s \leq s'$.
+%
+We use the mutual ordering on pairs.  That is, $(s,n) \leq (s',n')$ if
+$n \leq n'$ and $s < s'$ or $n < n'$ and $s \leq s'$.
 
-First we interpret the \T{rec}, which drives of the cost of \T{insert}.
-As in the translation, we break the interpretation up to make it more manageable.
-We will write $map, \lambda$ and $+_c$ in the semantics, which stand for the semantic equivalents of the syntactic \T{map}, $\lambda$ and $+_c$.
-The definitions of these semantic functions mirror the definitions of their syntactic equivalents.
-Figures \ref{fig:interp_sizes_inner_rec} and \ref{fig:interp_sizes_outer_rec} walk through the interpretation.
-
+First we interpret the \T{rec}, which drives of the cost of \T{insert}.  As in
+the translation, we break the interpretation up to make it more manageable.  We
+will write $map, \lambda$ and $+_c$ in the semantics, which stand for the
+semantic equivalents of the syntactic \T{map}, $\lambda$ and $+_c$.  The
+definitions of these semantic functions mirror the definitions of their
+syntactic equivalents.  Figures \ref{fig:interp_sizes_inner_rec} and
+\ref{fig:interp_sizes_outer_rec} walk through the interpretation.
+%
 \begin{figure}[H]
   \caption{Interpretation of the inner \T{rec} of \T{insert} with lists abstracted to sizes}
   \label{fig:interp_sizes_inner_rec}
@@ -309,7 +329,7 @@ Figures \ref{fig:interp_sizes_inner_rec} and \ref{fig:interp_sizes_outer_rec} wa
     $= (1, (max\{x,y,i\},2 + n)) \vee (1 + \pi_0 r, (max\{y,\pi_0\pi_1 r\}, 1 + \pi_1\pi_1 r))$
   \end{lstlisting}
 \end{figure}
-
+%
 \begin{figure}[H]
   \caption{Interpretation of \T{rec} in \T{insert}.}
   \label{fig:interp_sizes_outer_rec}
@@ -344,8 +364,9 @@ Figures \ref{fig:interp_sizes_inner_rec} and \ref{fig:interp_sizes_outer_rec} wa
        $g(i,n) = \bigvee_{size(z) \leq (i,n)} case(z, (f_{Nil},f_{Cons}))$
   \end{lstlisting}
 \end{figure}
-
+%
 The initial result is given in equation \ref{eq:insert_initial_recurrence}.
+%
 \begin{align*}
   &f_{Nil}(\langle\rangle) = (1,(x,1)) \\ 
   &f_{Cons}(j,(j,m)) = (4 + \pi_0(\pi_1(f\ x)\ j) + \pi_0g(j,m), \\
@@ -353,16 +374,18 @@ The initial result is given in equation \ref{eq:insert_initial_recurrence}.
   \label{eq:insert_initial_recurrence}
   &g(i,n) = \bigvee_{size(z) \leq (i,n)} case(z, (f_{Nil},f_{Cons})) \numberthis
 \end{align*}
-
-This recurrence is difficult to work with.
-Specifically, we cannot apply traditional methods of solving it.
-We will manipulate it into a more usable form by eliminating the arbitrary maximum.
-We will separate the recurrence into a recurrence for the cost and a recurrence for the potential, and solve those independently.
-
+%
+This recurrence is difficult to work with.  Specifically, we cannot apply
+traditional methods of solving it.  We will manipulate it into a more usable
+form by eliminating the arbitrary maximum.  We will separate the recurrence
+into a recurrence for the cost and a recurrence for the potential, and solve
+those independently.
+%
 \begin{lemma}
   \label{lem:insert_rec_cost}
   $g_c(i,n) \leq (4 + ((f\ x)_p\ i)_c n + 1$
 \end{lemma}
+%
 \begin{proof}
   We prove this by induction on $n$.
   Recall we use the mutual ordering on pairs.
@@ -382,13 +405,14 @@ We will separate the recurrence into a recurrence for the cost and a recurrence 
       \end{align*}
   \end{description}
 \end{proof}
-
+%
 As expected, we find the cost of insert is bounded by the length of the list and the largest element.
-
+%
 \begin{lemma}
   \label{lem:insert_rec_potential}
   $g_p(i,n) \leq (max\{x, i\}, n+1)$
 \end{lemma}
+%
 \begin{proof}
   We prove this by induction on $n$.
   \begin{description}
@@ -404,12 +428,13 @@ As expected, we find the cost of insert is bounded by the length of the list and
       \end{align*}
   \end{description}
 \end{proof}
-
-We find the length of the potential is bounded by one plus the length of the input,
-  and the largest element in the output is bounded by the maximum of the element being inserted and the
-  largest element in the input.
-This is somewhat unsatisfactory, since we would expect the relationship to be equality.
-What happens if we try to prove the equality?
+%
+We find the length of the potential is bounded by one plus the length of the
+input, and the largest element in the output is bounded by the maximum of the
+element being inserted and the largest element in the input.  This is somewhat
+unsatisfactory, since we would expect the relationship to be equality.  What
+happens if we try to prove the equality?
+%
 \begin{lemma}
   \label{lem:insert_rec_potential_wrong}
   $g_p(i,n) = (max\{x, i\}, n+1)$
@@ -429,28 +454,31 @@ What happens if we try to prove the equality?
       \end{align*}
   \end{description}
 \end{proof}
+%
+We see that we get stuck.  Because of the mutual ordering on pairs, our big
+maximum is over all $z$ such that $size(z) < (i, n)$.  This includes $(j, m)$
+such that $j < i ^ m \leq n$.  We have no way of reasoning about the potential
+of $g(i-1, n) \vee g(i, n -1)$.  So we cannot prove equality for
+\ref{lem:insert_rec_potential}.  This indicates we may not have the optimal
+ordering on pairs.
 
-We see that we get stuck.
-Because of the mutual ordering on pairs, our big maximum is over all $z$ such that $size(z) < (i, n)$.
-This includes $(j, m)$ such that $j < i ^ m \leq n$.
-We have no way of reasoning about the potential of $g(i-1, n) \vee g(i, n -1)$.
-So we cannot prove equality for \ref{lem:insert_rec_potential}.
-This indicates we may not have the optimal ordering on pairs.
-
-Using lemmas \ref{lem:insert_rec_cost} and \ref{lem:insert_rec_potential}, we can express the cost and potential of \T{insert} in terms of its arguments.
+Using lemmas \ref{lem:insert_rec_cost} and \ref{lem:insert_rec_potential}, we
+can express the cost and potential of \T{insert} in terms of its arguments.
+%
 \begin{equation}
   \label{eq:insert_interp}
   insert\ f\ x\ xs \leq (4 + ((f\ x)_p\ i)_c n + 1, (max\{x, i\}, n+1))
 \end{equation}
-
+%
 
 \subsubsection{Sort}
-
+%
 \subsubsection{Translation}
-The translation of sort is shown in figure \ref{fig:sort}.
-The translation of the \T{Nil} and \T{Cons} branches in the \T{rec} are walked through in figures \ref{fig:sort_nil} and \ref{fig:sort_cons}, respectively.
-The translation of \T{sort} applied to its arguments is given in figure \ref{fig:sort_applied}.
-
+The translation of sort is shown in figure \ref{fig:sort}.  The translation of
+the \T{Nil} and \T{Cons} branches in the \T{rec} are walked through in figures
+\ref{fig:sort_nil} and \ref{fig:sort_cons}, respectively.  The translation of
+\T{sort} applied to its arguments is given in figure \ref{fig:sort_applied}.
+%
 \begin{figure}[H]
   \caption{Translation of \T{Nil} branch of \T{sort}.}
   \label{fig:sort_nil}
@@ -464,7 +492,7 @@ The translation of \T{sort} applied to its arguments is given in figure \ref{fig
   $= $Nil$\mapsto \langle$1,Nil$\rangle$
   \end{lstlisting}
 \end{figure}
-
+%
 \begin{figure}[H]
   \caption{Translation of \T{Cons} branch of \T{sort}.}
   \label{fig:sort_cons}
@@ -485,7 +513,7 @@ The translation of \T{sort} applied to its arguments is given in figure \ref{fig
 
   \end{lstlisting}
 \end{figure}
-
+%
 \begin{figure}[H]
 \caption{Translation of \T{sort}}
 \label{fig:sort}
@@ -497,7 +525,7 @@ $\|$sort$\|$ = $\langle0,\lambda$f.$\langle0,\lambda$xs.$\|$rec(xs, Nil$\mapsto$
                         Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle.4 +_c $r$_c +_c \|$insert$\|_p$ f y r$_p$
 \end{lstlisting}
 \end{figure}
-
+%
 \begin{figure}[H]
   \caption{Translation of \T{sort} applied to variables \T{f} and \T{xs}}
 \label{fig:sort_applied}
@@ -514,12 +542,14 @@ $\|$sort f xs$\| = (1 + \|$sort f$\|_c + \|$xs$\|_c) +_c \|$sort f$\|_p \|$xs$\|
                         Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle.(4 + $r$_c) +_c \|$insert$\|_p$ f y r$_p$
 \end{lstlisting}
 \end{figure}
-
-
+%
+%
 \subsubsection{Interpretation}
-The \T{rec} construct again drives the cost and potential of \T{sort}.
-The walk through of the interpretation of the \T{rec} is given in figure \ref{fig:sort_rec_interp}.
-
+%
+The \T{rec} construct again drives the cost and potential of \T{sort}.  The
+walk through of the interpretation of the \T{rec} is given in figure
+\ref{fig:sort_rec_interp}.
+%
 \begin{figure}[H]
   \caption{Interpretation of \T{rec} in \T{sort}.TO DO FIX THIS}
   \label{fig:sort_rec_interp}
@@ -551,17 +581,18 @@ The walk through of the interpretation of the \T{rec} is given in figure \ref{fi
   $g(i, n) = \bigvee_{size(z)\leq n} case(z,(\lambda(\langle\rangle).(1,(\neg\infty,0)),\lambda(j,m).(4 + \pi_0 g(j,m)) +_c insert\ f\ j\ \pi_1g(j, m)))$
   \end{lstlisting}
 \end{figure}
-
-
+%
 Equation \ref{eq:sort_interp0_init} shows the initial recurrence extracted.
+%
 \begin{equation}
   \label{eq:sort_interp0_init}
   g(i,n) = \bigvee_{size(z)\leq (i,n)} case(z,(\lambda(\langle\rangle).(1,(\neg\infty,0),\lambda(j,m).4 + \pi_0 g(j,m)) +_c(insert\ f\ j\ \pi_1g(j, m)))
 \end{equation}
-
-Observe that in equation \ref{eq:sort_interp0_init}, the cost is depends on the potential of the recursive call.
-Therefore we must solve the recurrence for the potential first.
-
+%
+Observe that in equation \ref{eq:sort_interp0_init}, the cost is depends on the
+potential of the recursive call.  Therefore we must solve the recurrence for
+the potential first.
+%
 \begin{lemma}
   \label{lem:sort_interp_potential}
   $\pi_1g(n) \leq (j, n)$
@@ -583,18 +614,21 @@ Therefore we must solve the recurrence for the potential first.
       \end{align*}
   \end{description}
 \end{proof}
-
-As in the interpretation of \T{insert} we are left with a less than satisfactory bound on the potential of \T{sort}.
-It would grievous mistake to write a sorting function whose output was smaller than its input.
-Under the current interpretation of lists, this would mean either the length of the list decreased or the size of the largest element in the list decreased.
-Unfortunately we are stuck with an upper bound on the size of the output because or interpretation of \T{insert} only provides an upper bound on the potential of its output.
-
-We may solve the recurrence for the cost of \T{sort}.
-
+%
+As in the interpretation of \T{insert} we are left with a less than
+satisfactory bound on the potential of \T{sort}.  It would grievous mistake to
+write a sorting function whose output was smaller than its input.  Under the
+current interpretation of lists, this would mean either the length of the list
+decreased or the size of the largest element in the list decreased.
+Unfortunately we are stuck with an upper bound on the size of the output
+because or interpretation of \T{insert} only provides an upper bound on the
+potential of its output. We may solve the recurrence for the cost of \T{sort}.
+%
 \begin{lemma}
   \label{lem:sort_interp_cost}
   $\pi_0g(n) \leq (4 + \pi_0(\pi_1(f\ x)\ i)n^2 + 5n + 1$
 \end{lemma}
+%
 \begin{proof}
   We prove this by induction on $n$.
   \begin{description}
@@ -614,7 +648,8 @@ We may solve the recurrence for the cost of \T{sort}.
       \end{align*}
   \end{description}
 \end{proof}
-
-As expected the cost of \T{sort} is $\mathcal{O}(n^2)$ where $n$ is the length of the list.
-It is clear from the analysis how the cost of the comparison function determines the running time of \T{sort}.
-We can see that the comparison function is called order $n^2$ times.
+%
+As expected the cost of \T{sort} is $\mathcal{O}(n^2)$ where $n$ is the length
+of the list.  It is clear from the analysis how the cost of the comparison
+function determines the running time of \T{sort}.  We can see that the
+comparison function is called order $n^2$ times.
