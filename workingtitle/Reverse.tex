@@ -3,46 +3,187 @@
 Here we present the naive implementation of list reverse. The naive
 implementation reverses a list in quadratic time as opposed to linear time.
 %
-\[
-  \T{datatype list} = \T{Nil of unit}\ |\ \T{Cons of int} \times \T{list}
-\]
+\begin{align*}
+  \T{datatype list} &= \T{Nil of unit}\ |\ \T{Cons of int} \times \T{list}
+\end{align*}
 %
 The implementation walks down a list, appending the head of the list to the end
 of the result of recursively calling itself on the tail of the list. We use the
-syntactic sugar introduced earlier.
+syntactic sugar introduced earlier. \T{rev} uses the auxilary function
+\T{snoc}.  \T{snoc} appends an item to the end of a list.
+%
+\begin{flalign*}
+  \T{snoc} &= \lambda xs.\lambda x.\T{rec}(xs, \T{Nil} \mapsto \T{Cons} \langle x, \T{Nil} \rangle, \\
+           &\quadsix \T{Cons}  \mapsto \langle y, \langle ys,r \rangle \rangle . \T{Cons} \langle y,\T{force}(r) \rangle)
+\end{flalign*}
+%
+The quadratic time implementation of reverse recurses on the list, appending
+the head of the list to the recursively reversed tail of the list.
 %
 \begin{flalign*}
   rev &= \lambda xs.\T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \\
-      &\quadfive \T{Cons} \mapsto \langle x, \langle xs',r\rangle \rangle. \T{rec}(\T{force}(r), \T{Nil} \mapsto \T{Cons} \langle x, \T{Nil} \rangle, \\
-      &\quadten\quadsix \T{Cons}  \mapsto \langle y, \langle ys,rys \rangle \rangle . \T{Cons} \langle y,\T{force}(rys) \rangle ))
+      &\quadfive \T{Cons} \mapsto \langle x, \langle xs',r\rangle \rangle. \T{snoc}\ \T{force}(r)\ x)
 \end{flalign*}
-%
 %
 %
 \section{Translation}
 %
-The translation into the complexity language is
+% BEGIN SNOC TRANSLATION ========================================
 %
-\begin{lstlisting}
-rev = $\langle$0,$\lambda$xs.rec(xs, Nil $\mapsto$ Nil
-                  , Cons $\mapsto \langle$x,$\langle$xs',r$\rangle \rangle$.
-                       rec(r, Nil $\mapsto$ Cons$\langle$x, Nil$\rangle$
-                            , Cons $\mapsto \langle$y,$\langle$ys,rys$\rangle \rangle$. Cons$\langle$y,rys$\rangle$))$\rangle$
-\end{lstlisting}
+\subsection{\T{snoc} Translation}
+%
+First we translate the function \T{snoc}. To do so we apply the rule for
+translating an abstraction two times. Recall the rule is
+$\|\lambda x.e\| = \langle 0, \lambda x.\|e\|\rangle$.
+%
+\begin{flalign*}
+  \|\T{snoc}\| &= \|\lambda xs.\lambda x.\T{rec}(xs, \T{Nil} \mapsto \T{Cons} \langle x, \T{Nil} \rangle, \\
+               &\quadsix \T{Cons}  \mapsto \langle y, \langle ys,r \rangle \rangle . \T{Cons} \langle y,\T{force}(r) \rangle) \| \\
+               &= \langle 0, \lambda xs.\|\lambda x.\T{rec}(xs, \T{Nil} \mapsto \T{Cons} \langle x, \T{Nil} \rangle, \\
+               &\quadsix \T{Cons}  \mapsto \langle y, \langle ys,r \rangle \rangle . \T{Cons} \langle y,\T{force}(r) \rangle)\|\rangle \\
+               &= \langle 0, \lambda xs.\langle 0, \lambda x.\|\T{rec}(xs, \T{Nil} \mapsto \T{Cons} \langle x, \T{Nil} \rangle, \\
+               &\quadsix \T{Cons}  \mapsto \langle y, \langle ys,r \rangle \rangle . \T{Cons} \langle y,\T{force}(r) \rangle)\|\rangle\rangle \\
+               %
+               &\text{Next we apply the rule for translating a \T{rec}.} \\
+               %
+               &= \langle 0, \lambda xs.\langle 0, \lambda x.\|xs\|_c +_c \T{rec}(\|xs\|_p, \T{Nil} \mapsto 1 +_c \|\T{Cons} \langle x, \T{Nil} \rangle\|, \\
+               &\quadsix \T{Cons}  \mapsto \langle y, \langle ys,r \rangle \rangle . 1 +_c \|\T{Cons} \langle y,\T{force}(r) \rangle\|)\rangle\rangle \\
+               %
+               &\text{$xs$ is a variable, so its translation is $\langle 0,xs \rangle$.} \\
+               %
+               &= \langle 0, \lambda xs.\langle 0, \lambda x.\langle 0,xs\rangle_c +_c \T{rec}(\langle 0,xs\rangle_p, \T{Nil} \mapsto 1 +_c \|\T{Cons} \langle x, \T{Nil} \rangle\|, \\
+               &\quadsix \T{Cons}  \mapsto \langle y, \langle ys,r \rangle \rangle . 1 +_c \|\T{Cons} \langle y,\T{force}(r) \rangle\|)\rangle\rangle \\
+               %
+               &\text{We take the cost and potential projections of the translated term.} \\
+               %
+               &= \langle 0, \lambda xs.\langle 0, \lambda x.\T{rec}(xs, \T{Nil} \mapsto 1 +_c \|\T{Cons} \langle x, \T{Nil} \rangle\|, \\
+               &\quadsix \T{Cons}  \mapsto \langle y, \langle ys,r \rangle \rangle . 1 +_c \|\T{Cons} \langle y,\T{force}(r) \rangle\|)\rangle\rangle \\
+\end{flalign*}
+%
+We will translate $\T{Cons}\langle x,\T{Nil}\rangle$. In order to do so we will
+first translate $\langle x,\T{Nil}\rangle$.
+%
+\begin{flalign*}
+  \|\langle x,\T{Nil}\rangle\| &= \langle \|x\|_c + \|\T{Nil}\|_c, \langle\|x\|_p,\|\T{Nil}\|_p\rangle \\
+       &\text{$x$ is a variable, so its translation is $\langle 0,x\rangle$.} \\
+       &\text{The translation of \T{Nil} is $\langle 0,\T{Nil}\rangle$.} \\
+       &= \langle \langle 0,x\rangle_c + \langle 0,\T{Nil}\rangle_c, \langle \langle 0,x\rangle_p,\langle 0,\T{Nil}\rangle_p\rangle\rangle \\
+       &= \langle 0, \langle x,\T{Nil}\rangle\rangle
+\end{flalign*}
+%
+We use the result in translation of $\T{Cons}\langle x,\T{Nil}\rangle$.
+%
+\begin{flalign*}
+  \quad \|\T{Cons}\langle x,\T{Nil}\rangle\| &= \langle \|\langle x,\T{Nil}\rangle\|_c, \T{Cons} \|\langle x,\T{Nil}\rangle\|_p\rangle \\
+     &= \langle \langle 0, \langle x,\T{Nil}\rangle\rangle_c, \T{Cons} \langle 0, \langle x,\T{Nil}\rangle\rangle_p\rangle \\
+     &= \langle 0, \T{Cons} \langle x,\T{Nil}\rangle\rangle
+\end{flalign*}
+%
+Now that we have translated $\T{Cons}\langle x,\T{Nil}\rangle$ we return can
+substitute it in to the translation of \T{snoc} to complete the translation of
+the \T{Nil} branch of the \T{rec}.
+%
+\begin{flalign*}
+   &= \langle 0, \lambda xs.\langle 0, \lambda x.\T{rec}(xs, \T{Nil} \mapsto 1 +_c \langle 0, \T{Cons} \langle x,\T{Nil}\rangle\rangle \\
+   &\quadsix \T{Cons}  \mapsto \langle y, \langle ys,r \rangle \rangle . 1 +_c \|\T{Cons} \langle y,\T{force}(r) \rangle\|)\rangle\rangle \\
+   &\text{we can expand the $+_c$ macro to simplify the \T{Nil} branch.} \\
+   &= \langle 0, \lambda xs.\langle 0, \lambda x.\T{rec}(xs, \T{Nil} \mapsto \langle 1, \T{Cons} \langle x,\T{Nil}\rangle\rangle \\
+   &\quadsix \T{Cons}  \mapsto \langle y, \langle ys,r \rangle \rangle . 1 +_c \|\T{Cons} \langle y,\T{force}(r) \rangle\|)\rangle\rangle \\
+\end{flalign*}
+%
+To complete the translation of \T{snoc} we must translate
+$\T{Cons} \langle y,\T{force}(r) \rangle$. To do so we first translate
+$\langle y,\T{force}(r)\rangle$.
+%
+\begin{flalign*}
+  \|\langle y,\T{force}(r)\rangle\| &= \langle \|y\|_c + \|\T{force}(r)\|_c, \langle \|y\|_p,\|\T{force}(r)\|_p\rangle\rangle \\
+                                    &\text{$y$ is a variable, so } \\
+                                    &\quad \|y\| = \langle 0,y\rangle \\
+                                    &\quad \T{force}(r) = \|r\|_c +_c \|r\|_p \\
+                                    &\quad\text{$r$ is also a variable.} \\
+                                    &\quad\quadthree = \langle 0,r\rangle_c +_c \langle 0,r\rangle_p \\
+                                    &\quad\quadthree = 0 +_c r = r \\
+                                    &= \langle \langle 0,y\rangle_c + r_c,\langle \langle 0,y\rangle_p,r_p\rangle\rangle \\
+                                    &= \langle r_c,\langle y,r_p\rangle\rangle
+\end{flalign*}
+%
+We use this in our translation of $\T{Cons} \langle y,\T{force}(r) \rangle$.
+%
+\begin{flalign*}
+  \T{Cons} \langle y,\T{force}(r) \rangle &= \langle \|\langle y,\T{force}(r)\rangle\|_c, \T{Cons} \|\langle y,\T{force}(r)\rangle\|_p\rangle \\
+                                          &= \langle \langle r_c,\langle y,r_p\rangle\rangle_c, \langle r_c,\langle y,r_p\rangle\rangle_p\rangle \\
+                                          &= \langle r_c, \T{Cons} \langle y,r_p\rangle\rangle
+\end{flalign*}
+%
+We substitute this result into our translation of \T{rev}
+\begin{flalign*}
+  \|\T{snoc}\| &= \langle 0, \lambda xs.\langle 0, \lambda x.\T{rec}(xs, \T{Nil} \mapsto \langle 1,\T{Cons} \langle x, \T{Nil} \rangle\rangle, \\
+               &\quadsix \T{Cons}  \mapsto \langle y, \langle ys,r \rangle \rangle . 1 +_c \|\T{Cons} \langle y,\T{force}(r) \rangle\|)\rangle\rangle \\
+               &= \langle 0, \lambda xs.\langle 0, \lambda x.\T{rec}(xs, \T{Nil} \mapsto \langle 1,\T{Cons} \langle x, \T{Nil} \rangle\rangle, \\
+               &\quadsix \T{Cons}  \mapsto \langle y, \langle ys,r \rangle \rangle . 1 +_c \langle r_c, \T{Cons} \langle y,r_p\rangle\rangle)\rangle\rangle \\
+               &= \langle 0, \lambda xs.\langle 0, \lambda x.\T{rec}(xs, \T{Nil} \mapsto \langle 1,\T{Cons} \langle x, \T{Nil} \rangle\rangle, \\
+               &\quadsix \T{Cons}  \mapsto \langle y, \langle ys,r \rangle \rangle .\langle 1 + r_c, \T{Cons} \langle y,r_p\rangle\rangle)\rangle\rangle
+\end{flalign*}
+%
+% END SNOC TRANSLATION
+%
+% ========================================
+%
+% BEGIN REV TRANSLATION
+%
+\subsection{\T{rev} Translation}
+%
+The translation into the complexity language follows
+%
+First we apply the abstraction translation rule:
+$\|\lambda x.e\| = \langle 0, \lambda x.\|e\|\rangle$.
+%
+\begin{flalign*}
+  \|rev\| &= \|\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \\
+          &\quadfive \T{Cons} \mapsto \langle x, \langle xs',r\rangle \rangle. \T{snoc}\ xs\ x)\\
+          &= \langle 0,\lambda xs.\|\T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \\
+          &\quadfive \T{Cons} \mapsto \langle x, \langle xs',r\rangle \rangle. \T{snoc}\ xs\ x)\|\rangle\\
+          &\text{Next we apply the \T{rec} translation rule.} \\
+          &= \langle 0,\lambda xs.\|xs\|_c +_c \T{rec}(\|xs\|_p, \T{Nil} \mapsto 1 +_c \|\T{Nil}\|, \\
+          &\quadfive \T{Cons} \mapsto \langle x, \langle xs',r\rangle \rangle. 1 +_c \|\T{snoc}\ xs\ x\|)\rangle\\
+          &\text{As before, the translation of the variable $xs$ is $\langle 0, xs\rangle$,}\\
+          &\text{and the translation of \T{Nil} is $\langle 0,\T{Nil}\rangle$.} \\
+          &= \langle 0,\lambda xs.\langle 0,xs\rangle_c +_c \T{rec}(\langle 0, xs\rangle_p, \T{Nil} \mapsto 1 +_c \langle 0,\T{Nil}\rangle, \\
+          &\quadfive \T{Cons} \mapsto \langle x, \langle xs',r\rangle \rangle. 1 +_c \|\T{snoc}\ xs\ x\|)\rangle\\
+          &\text{We take the projections of the translated expressions and expand the $+_c$ macro.} \\
+          &= \langle 0,\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \langle 1,\T{Nil}\rangle, \\
+          &\quadfive \T{Cons} \mapsto \langle x, \langle xs',r\rangle \rangle. 1 +_c \|\T{snoc}\ xs\ x\|)\rangle\\
+          %
+          &\text{Next we translate the application \T{snoc xs x}.}\\
+          &\quad \|\T{snoc}\ xs\ x\| = (1 + \|\T{snoc xs}\|_c + \|x\|c) +_c \|\T{snoc}\ xs\|_p \|x\|_p \\
+          &\quad\text{$x$ is a variable so its translation is $\langle 0,x\rangle$.} \\
+          &\quad \|\T{snoc}\ xs\| = (1 + \|\T{snoc}\|_c + \|xs\|_c) +_c \|\T{snoc}\|_p \|xs\|_p \\
+          &\quadthree \text{$xs$ is also a variable, so its translation is $\langle 0,xs\rangle$. The cost of $\|\T{snoc}\|$ is 0.} \\
+          &\quad \|\T{snoc}\ xs\| = (1 + 0 + 0) +_c \|\T{snoc}\|_p\ xs \\
+          &\quad \|\T{snoc}\ xs\ x\| = (1 + \|\T{snoc xs}\|_c + \|x\|c) +_c \|\T{snoc}\ xs\|_p \|x\|_pi \\
+          &\quadfour = (1 + 1 + (\|\T{snoc}\|_p\ xs)_c) +_c (\|\T{snoc}\|_p\ xs)_p\ x \\
+          &\quad\text{The cost of the partially applied function is 0.} \\
+          &\quadfour = 2 +_c (\|\T{snoc}\|_p\ xs)_p\ x \\
+          %
+          &= \langle 0,\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \langle 1,\T{Nil}\rangle, \\
+          &\quadfive \T{Cons} \mapsto \langle x, \langle xs',r\rangle \rangle. 1 +_c (2 +_c (\|\T{snoc}\|_p\ xs)_p\ x))\rangle\\
+\end{flalign*}
+%
 %
 It is more interesting if we consider the translation of \T{rev} applied to
-some \T{xs:intlist}.  The translation of this function into the complexity
+some \T{xs:list}.  The translation of this function into the complexity
 language proceeds as follows.  We begin with translating the  outer \T{rec}
 construct.
 %
-\begin{lstlisting}
-rev xs  = 1 $+$ $\|$xs$\|_c$ $+_c$ rec($\|$xs$\|_p$
-                         , Nil $\mapsto$ 1 $+_c$ $\|$Nil$\|$
-                         , Cons $\mapsto \langle$x,$\langle$xs',r$\rangle \rangle$. 1 $+_c$ $\|$rec($\dots$)$\|$)
-\end{lstlisting}
+\begin{flalign*}
+  \|\T{rev xs}\| &= 1 + \|xs\|_c +_c \T{rec}(\|xs\|_p, \\
+             &\quadthree \T{Nil} \mapsto 1 +_c \|\T{Nil}\|, \\
+             &\quadthree \T{Cons} \mapsto \langle x, \langle xs',r\rangle \rangle. 1 +_c \|\T{rec}(\T{force}(r), \T{Nil} \mapsto \T{Cons} \langle x, \T{Nil} \rangle, \\
+             &\quadten\quadthree \T{Cons}  \mapsto \langle y, \langle ys,ri \rangle \rangle . \T{Cons} \langle y,\T{force}(ri) \rangle)\|)
+\end{flalign*}
 %
-The cost of the translation of an \T{intlist} is zero, and the potential of the
-translation of an \T{intlist} is the list itself.
+The cost of the translation of an \T{list} is zero, and the potential of the
+translation of an \T{list} is the list itself.
 %
 \begin{lstlisting}
 rev xs = 1 $+_c$ rec(xs, Nil $\mapsto$ $\langle$1,Nil$\rangle$ , Cons $\mapsto \langle$x,$\langle$xs',r$\rangle \rangle$. 1 $+_c$ $\|$rec($\dots$)$\|$)
@@ -52,7 +193,7 @@ Next we translate the inner \T{rec}.
 %
 \begin{lstlisting}
 $\|$rec(force(r), Nil $\mapsto$ Cons($\langle$x, Nil$\rangle$)
-                , Cons $\mapsto \langle$y,$\langle$ys,rys$\rangle \rangle$. Cons$\langle$y,force(rys)$\rangle$))$\|$
+                , Cons $\mapsto \langle$y,$\langle$ys,ri$\rangle \rangle$. Cons$\langle$y,force(ri)$\rangle$))$\|$
 \end{lstlisting}
 %
 Since \T{x}, \T{xs'}, \T{r} are terms in the complexity language, they do not
@@ -60,7 +201,7 @@ need to be translated.  First we apply the rules for \T{rec} and \T{force}.
 %
 \begin{lstlisting}
 r$_c$ $+_c$ rec(r$_p$, Nil $\mapsto$ 1 $+_c$ $\|$Cons($\langle$x, Nil$\rangle$)$\|$
-          , Cons $\mapsto \langle$y,$\langle$ys,rys$\rangle \rangle$. 1 $+_c$ $\|$Cons$\langle$y,force(rys)$\rangle\|$)
+          , Cons $\mapsto \langle$y,$\langle$ys,ri$\rangle \rangle$. 1 $+_c$ $\|$Cons$\langle$y,force(ri)$\rangle\|$)
 \end{lstlisting}
 %
 The cost of the \T{Cons} constructor is zero, and the translation of \T{force}
@@ -68,7 +209,7 @@ is just the translation of its argument.
 %
 \begin{lstlisting}
 r$_c$ $+_c$ rec(r$_p$, Nil $\mapsto$ $\langle$1,Cons$\langle$x$_p$, Nil$\rangle\rangle$
-           , Cons $\mapsto \langle$y,$\langle$ys,rys$\rangle \rangle$. $\langle$1 $+$ rys$_c$,Cons$\langle$y$_p$,rys$_p$$\rangle\rangle$)
+           , Cons $\mapsto \langle$y,$\langle$ys,ri$\rangle \rangle$. $\langle$1 $+$ ri$_c$,Cons$\langle$y$_p$,ri$_p$$\rangle\rangle$)
 \end{lstlisting}
 %
 Putting the pieces together, we get
@@ -78,19 +219,21 @@ $\|$rev xs$\|$ = 1 $+_c$ rec(xs$_p$
                    , Nil $\mapsto$ $\langle$1,Nil$\rangle$
                    , Cons $\mapsto \langle$x,$\langle$xs',r$\rangle \rangle$. 1 $+$ r$_c$ $+_c$
                         rec(r$_p$, Nil $\mapsto$ $\langle$1,Cons$\langle$x$_p$, Nil$\rangle\rangle$
-                             , Cons $\mapsto \langle$y,$\langle$ys,rys$\rangle \rangle$. $\langle$1 $+$ rys$_c$,Cons$\langle$y$_p$,rys$_p$$\rangle\rangle$))
+                             , Cons $\mapsto \langle$y,$\langle$ys,ri$\rangle \rangle$. $\langle$1 $+$ ri$_c$,Cons$\langle$y$_p$,ri$_p$$\rangle\rangle$))
 \end{lstlisting}
 %
 %
 %
 \section{Interpretation}
 %
-We intepret the size of an \T{intlist} to be the number of constructors.
+We intepret the size of an \T{list} to be the number of \T{Cons} constructors.
 %
-$\llbracket$ \T{intlist} $\rrbracket$ = $\mathbb{N}^\infty$\\
-$D^{intlist} = \{\ast\} + \{1\} \times \mathbb{N}^\infty$\\
-$size_{intlist}(\T{Nil}) = 0$\\
-$size_{intlist}(\T{Cons(1,n)}) = 1 + n$\\
+\begin{align*}
+  \llbracket \T{list} \rrbracket &= \mathbb{N}^\infty \\
+  D^{list} &= \{\ast\} + \{1\} \times \mathbb{N}^\infty \\
+  size_{list}(\T{Nil}) &= 0 \\
+  size_{list}(\T{Cons(1,n)}) &= 1 + n
+\end{align*}
 %
 Then $\llbracket \| \T{rev xs} \|_c \rrbracket = 1 + g(\|xs\|_p)$, where
 \[g(n) = \llbracket rec(z, Nil \mapsto 1, Cons \mapsto \langle x, \langle xs',r\rangle \rangle.1 + r_c + h(r_p))\rrbracket \{z \mapsto n\}\]
