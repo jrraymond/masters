@@ -140,12 +140,12 @@ $\|\lambda x.e\| = \langle 0, \lambda x.\|e\|\rangle$.
 %
 \begin{flalign*}
   \|rev\| &= \|\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \\
-          &\quadfive \T{Cons} \mapsto \langle x, \langle xs',r\rangle \rangle. \T{snoc}\ xs\ x)\\
+          &\quadfive \T{Cons} \mapsto \langle x, \langle xs',r\rangle \rangle. \T{snoc}\ \T{force}(r)\ x)\\
           &= \langle 0,\lambda xs.\|\T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \\
-          &\quadfive \T{Cons} \mapsto \langle x, \langle xs',r\rangle \rangle. \T{snoc}\ xs\ x)\|\rangle\\
+          &\quadfive \T{Cons} \mapsto \langle x, \langle xs',r\rangle \rangle. \T{snoc}\ \T{force}(r)\ x)\|\rangle\\
           &\text{Next we apply the \T{rec} translation rule.} \\
           &= \langle 0,\lambda xs.\|xs\|_c +_c \T{rec}(\|xs\|_p, \T{Nil} \mapsto 1 +_c \|\T{Nil}\|, \\
-          &\quadfive \T{Cons} \mapsto \langle x, \langle xs',r\rangle \rangle. 1 +_c \|\T{snoc}\ xs\ x\|)\rangle\\
+          &\quadfive \T{Cons} \mapsto \langle x, \langle xs',r\rangle \rangle. 1 +_c \|\T{snoc}\ \T{force}(r)\ x\|)\rangle\\
           &\text{As before, the translation of the variable $xs$ is $\langle 0, xs\rangle$,}\\
           &\text{and the translation of \T{Nil} is $\langle 0,\T{Nil}\rangle$.} \\
           &= \langle 0,\lambda xs.\langle 0,xs\rangle_c +_c \T{rec}(\langle 0, xs\rangle_p, \T{Nil} \mapsto 1 +_c \langle 0,\T{Nil}\rangle, \\
@@ -154,73 +154,41 @@ $\|\lambda x.e\| = \langle 0, \lambda x.\|e\|\rangle$.
           &= \langle 0,\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \langle 1,\T{Nil}\rangle, \\
           &\quadfive \T{Cons} \mapsto \langle x, \langle xs',r\rangle \rangle. 1 +_c \|\T{snoc}\ xs\ x\|)\rangle\\
           %
-          &\text{Next we translate the application \T{snoc xs x}.}\\
-          &\quad \|\T{snoc}\ xs\ x\| = (1 + \|\T{snoc xs}\|_c + \|x\|c) +_c \|\T{snoc}\ xs\|_p \|x\|_p \\
-          &\quad\text{$x$ is a variable so its translation is $\langle 0,x\rangle$.} \\
-          &\quad \|\T{snoc}\ xs\| = (1 + \|\T{snoc}\|_c + \|xs\|_c) +_c \|\T{snoc}\|_p \|xs\|_p \\
-          &\quadthree \text{$xs$ is also a variable, so its translation is $\langle 0,xs\rangle$. The cost of $\|\T{snoc}\|$ is 0.} \\
-          &\quad \|\T{snoc}\ xs\| = (1 + 0 + 0) +_c \|\T{snoc}\|_p\ xs \\
-          &\quad \|\T{snoc}\ xs\ x\| = (1 + \|\T{snoc xs}\|_c + \|x\|c) +_c \|\T{snoc}\ xs\|_p \|x\|_pi \\
-          &\quadfour = (1 + 1 + (\|\T{snoc}\|_p\ xs)_c) +_c (\|\T{snoc}\|_p\ xs)_p\ x \\
-          &\quad\text{The cost of the partially applied function is 0.} \\
-          &\quadfour = 2 +_c (\|\T{snoc}\|_p\ xs)_p\ x \\
+          &\text{Next we translate the application \T{snoc force(r) x}.}\\
+          &\quad \|\T{snoc}\ \T{force}(r)\ x\| = (1 + \|\T{snoc force}(r)\|_c + \|x\|_c) +_c \|\T{snoc}\ \T{force}(r)\|_p \|x\|_p \\
+          &\quad \|\T{snoc}\ \T{force}(r)\| = (1 + \|\T{snoc}\|_c + \|\T{force}(r)\|_c) +_c \|\T{snoc}\|_p \|\T{force}(r)\|_p \\
           %
+          &\quad\text{Next we translate the \T{force}.} \\
+          &\quadthree \|\T{force}(r)\| = \|r\|_c +_c \|r\|_p \\
+          &\quadthree \text{$r$ is also a variable, so its translation is $\langle 0,xs\rangle$. The cost of $\|\T{snoc}\|$ is 0.} \\
+          &\quadsix = \langle 0,r \rangle_c +_c \langle 0,r\rangle_p = r \\
+          %
+          &\quad \|\T{snoc}\ \T{force}(r)\| = (1 + 0 + r_c) +_c \|\T{snoc}\|_p\ r_p \\
+          &\quad\text{$x$ is a variable so its translation is $\langle 0,x\rangle$.} \\
+          &\quad \|\T{snoc force}(r)\ x\| = (1 + \|\T{snoc force}(r)\|_c + \|x\|_c) +_c \|\T{snoc}\ r\|_p \|x\|_pi \\
+          &\quadfour = (1 + 1 + r_c + (\|\T{snoc}\|_p\ r_p)_c) +_c (\|\T{snoc}\|_p\ r_p)_p\ x \\
+          &\quad\text{The cost of the partially applied function is 0.} \\
+          &\quadfour = (2 + r_c) +_c (\|\T{snoc}\|_p\ r_p)_p\ x \\
+          %
+          &\text{We can use this to complete the translation of the \T{Cons} branch.}\\
           &= \langle 0,\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \langle 1,\T{Nil}\rangle, \\
-          &\quadfive \T{Cons} \mapsto \langle x, \langle xs',r\rangle \rangle. 1 +_c (2 +_c (\|\T{snoc}\|_p\ xs)_p\ x))\rangle\\
+          &\quadfive \T{Cons} \mapsto \langle x, \langle xs',r\rangle \rangle. 1 +_c ((2 + r_c) +_c (\|\T{snoc}\|_p\ r_p)_p\ x)\rangle\\
+          &= \langle 0,\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \langle 1,\T{Nil}\rangle, \\
+          &\quadfive \T{Cons} \mapsto \langle x, \langle xs',r\rangle \rangle. (3 + r_c) +_c (\|\T{snoc}\|_p\ r_p)_p\ x)\rangle\\
 \end{flalign*}
 %
 %
 It is more interesting if we consider the translation of \T{rev} applied to
-some \T{xs:list}.  The translation of this function into the complexity
-language proceeds as follows.  We begin with translating the  outer \T{rec}
-construct.
+some list \T{xs}. The translation of this function into the complexity
+language proceeds as follows. First we apply the rule for translating an
+application.
 %
-\begin{flalign*}
-  \|\T{rev xs}\| &= 1 + \|xs\|_c +_c \T{rec}(\|xs\|_p, \\
-             &\quadthree \T{Nil} \mapsto 1 +_c \|\T{Nil}\|, \\
-             &\quadthree \T{Cons} \mapsto \langle x, \langle xs',r\rangle \rangle. 1 +_c \|\T{rec}(\T{force}(r), \T{Nil} \mapsto \T{Cons} \langle x, \T{Nil} \rangle, \\
-             &\quadten\quadthree \T{Cons}  \mapsto \langle y, \langle ys,ri \rangle \rangle . \T{Cons} \langle y,\T{force}(ri) \rangle)\|)
+\begin{flalign*}\
+  \|\T{rev}\ xs\| &= (1 + \|\T{rev}\|_c + \|xs\|_c) +_c \|\T{rev}\|_p \|xs\|_p \\
+                  &= (1 + \|xs\|_c) +_c \|\T{rev}\|_p\ \|xs\|_p \\
+                  &= (1 + \|xs\|_c) +_c (\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \langle 1,\T{Nil}\rangle, \\
+                  &\quadfive \T{Cons} \mapsto \langle x, \langle xs',r\rangle \rangle. (3 + r_c) +_c (\|\T{snoc}\|_p\ r_p)_p\ x))\ \|xs\|_p
 \end{flalign*}
-%
-The cost of the translation of an \T{list} is zero, and the potential of the
-translation of an \T{list} is the list itself.
-%
-\begin{lstlisting}
-rev xs = 1 $+_c$ rec(xs, Nil $\mapsto$ $\langle$1,Nil$\rangle$ , Cons $\mapsto \langle$x,$\langle$xs',r$\rangle \rangle$. 1 $+_c$ $\|$rec($\dots$)$\|$)
-\end{lstlisting}
-%
-Next we translate the inner \T{rec}.
-%
-\begin{lstlisting}
-$\|$rec(force(r), Nil $\mapsto$ Cons($\langle$x, Nil$\rangle$)
-                , Cons $\mapsto \langle$y,$\langle$ys,ri$\rangle \rangle$. Cons$\langle$y,force(ri)$\rangle$))$\|$
-\end{lstlisting}
-%
-Since \T{x}, \T{xs'}, \T{r} are terms in the complexity language, they do not
-need to be translated.  First we apply the rules for \T{rec} and \T{force}.
-%
-\begin{lstlisting}
-r$_c$ $+_c$ rec(r$_p$, Nil $\mapsto$ 1 $+_c$ $\|$Cons($\langle$x, Nil$\rangle$)$\|$
-          , Cons $\mapsto \langle$y,$\langle$ys,ri$\rangle \rangle$. 1 $+_c$ $\|$Cons$\langle$y,force(ri)$\rangle\|$)
-\end{lstlisting}
-%
-The cost of the \T{Cons} constructor is zero, and the translation of \T{force}
-is just the translation of its argument.
-%
-\begin{lstlisting}
-r$_c$ $+_c$ rec(r$_p$, Nil $\mapsto$ $\langle$1,Cons$\langle$x$_p$, Nil$\rangle\rangle$
-           , Cons $\mapsto \langle$y,$\langle$ys,ri$\rangle \rangle$. $\langle$1 $+$ ri$_c$,Cons$\langle$y$_p$,ri$_p$$\rangle\rangle$)
-\end{lstlisting}
-%
-Putting the pieces together, we get
-%
-\begin{lstlisting}[frame=single]
-$\|$rev xs$\|$ = 1 $+_c$ rec(xs$_p$
-                   , Nil $\mapsto$ $\langle$1,Nil$\rangle$
-                   , Cons $\mapsto \langle$x,$\langle$xs',r$\rangle \rangle$. 1 $+$ r$_c$ $+_c$
-                        rec(r$_p$, Nil $\mapsto$ $\langle$1,Cons$\langle$x$_p$, Nil$\rangle\rangle$
-                             , Cons $\mapsto \langle$y,$\langle$ys,ri$\rangle \rangle$. $\langle$1 $+$ ri$_c$,Cons$\langle$y$_p$,ri$_p$$\rangle\rangle$))
-\end{lstlisting}
 %
 %
 %
@@ -235,9 +203,83 @@ We intepret the size of an \T{list} to be the number of \T{Cons} constructors.
   size_{list}(\T{Cons(1,n)}) &= 1 + n
 \end{align*}
 %
+%
+\subsection{\T{snoc} Interpretation}
+%
+We interpret $\|\T{snoc xs x}\|$. Recall the translation.
+%
+\begin{flalign*}
+  \T{snoc}\ xs\ x &= (2 + \|xs\|_c + \|x\|_c) +_c (\T{snoc}_p\ \|xs\|_p)_p\ \|x\|_p
+\end{flalign*}
+%
+The cost of \T{snoc} is driven by the recursion. We interpret the cost of the
+\T{rec} by defining a recurrence $g(n)$. We add $x \mapsto x$ to the
+environment, where $x$ is the interpretation of $x$.
+%
+\begin{flalign*}
+  g(n) &= \llbracket \T{rec}(xs, \T{Nil} \mapsto \langle 1,\T{Cons} \langle x, \T{Nil} \rangle\rangle, \\
+       &\quadsix \T{Cons}  \mapsto \langle y, \langle ys,r \rangle \rangle .\langle 1 + r_c, \T{Cons} \langle y,r_p\rangle\rangle)\rrbracket \{xs \mapsto n, x \mapsto x\}\\
+       &= \bigvee\limits_{size\ z \leq n} case(z, f_{Nil}, f_{Cons}) \\
+  \text{where}& \\
+  f_{Nil}(\ast) &= \llbracket \langle 1,\T{Cons} \langle x, \T{Nil} \rangle\rangle \rrbracket \{xs \mapsto n, x \mapsto x\}\\
+             &= (1, 1) \\
+  f_{Cons}(1, m) &= \llbracket \langle 1 + r_c, \T{Cons} \langle y,r_p\rangle\rangle \rrbracket \{xs \mapsto n, x \mapsto x, y \mapsto 1, ys \mapsto m, r \mapsto g(m) \} \\
+                 &= (1 + g_c(m), 1 + g_p(m))
+\end{flalign*}
+%
+To eliminate the big maximum operator, we use the same technique as in fast
+reverse, by splitting the big maximum into two cases: $size\ z < n$ and $size\
+z = n$.
+%
+\begin{description}
+  \item[case $n=0$]\hfill \\
+    The only $z$ such that $size\ z \leq 0$ is $\ast$. So $g(0) = f_{Nil}(0) = (1,1)$.
+  \item[case $n>0$]\hfill \\
+    \begin{align*}
+      g(n) &= \bigvee\limits_{size z < n} case(z,f_{Nil},f_{Cons}) \vee \bigvee\limits_{size\ z = n} case(z,f_{Nil},f_{Cons}) \\
+           &= g(n-1) \vee (1 + g_c(n-1), 1 + g_p(n-1)) \\
+           &\text{Since $\leq$ is symmetric, $g(n-1)\leq (g_c(n-1), g_p(n-1))$, and} \\
+           &\text{$(g_c(n-1),g_p(n-1)) < (1 + g_c(n-1),g_p(n-1))$.}\\
+           &\leq (1 + g_c(n-1), 1 + g_p(n-1))
+    \end{align*}
+\end{description}
+%
+The solution to this recurrence is given in lemma \ref{thm:rev_interp}.
+%
+\begin{lemma}
+  $g(n) = (1 + n, 1 + n)$.
+\end{lemma}
+\begin{proof}
+  We prove this by induction on $n$.
+  \begin{description}
+    \item[case $n=0$]\hfill \\
+      $g(0) = (1, 1)$.
+    \item[case $n>0$]\hfill \\
+      \begin{align*}
+        g(n) &= (1 + g_c(n-1), 1 + g_p(n-1)) \\
+             &= (1 + (n,n)_c, 1 + (n,n)_p) \\
+             &= (1 + n, 1 + n)
+      \end{align*}
+  \end{description}
+\end{proof}
+%
+This is a closed form solution for the recurrence describing the complexity of
+the \T{rec} expression in the body of \T{snoc}.
+%
+\subsection{\T{rev} Interpretation}
+%
+Recall the translation of \T{rev xs}.
+\begin{flalign*}
+  \T{rev}\ xs &= (1 + \|xs\|_c) +_c (\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \langle 1,\T{Nil}\rangle, \\
+              &\quadfive \T{Cons} \mapsto \langle x, \langle xs',r\rangle \rangle. (3 + r_c) +_c (\|\T{snoc}\|_p\ r_p)_p\ x))\ \|xs\|_p
+\end{flalign*}
+%
+%==============================================================================
+%
 Then $\llbracket \| \T{rev xs} \|_c \rrbracket = 1 + g(\|xs\|_p)$, where
 \[g(n) = \llbracket rec(z, Nil \mapsto 1, Cons \mapsto \langle x, \langle xs',r\rangle \rangle.1 + r_c + h(r_p))\rrbracket \{z \mapsto n\}\]
 \[h(n) = \llbracket rec(z, Nil \mapsto 1, Cons \mapsto \langle y, \langle ys',r\rangle \rangle.1 + r_c \rrbracket \{z \mapsto n\}\]
 %
 We calculate that $h(0)=1$ and for $n > 0$, $h(n) = 1 + h(n-1)$.
 $g(0) = 1$ and for $n > 0$, $g(n) = 1 + g(n-1) + h(n-1)$
+%
