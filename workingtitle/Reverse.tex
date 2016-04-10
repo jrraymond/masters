@@ -209,7 +209,7 @@ We intepret the size of an \T{list} to be the number of \T{Cons} constructors.
 We interpret $\|\T{snoc xs x}\|$. Recall the translation.
 %
 \begin{flalign*}
-  \T{snoc}\ xs\ x &= (2 + \|xs\|_c + \|x\|_c) +_c (\T{snoc}_p\ \|xs\|_p)_p\ \|x\|_p
+  \|\T{snoc}\ xs\ x\| &= (2 + \|xs\|_c + \|x\|_c) +_c (\|\T{snoc}\|_p\ \|xs\|_p)_p\ \|x\|_p
 \end{flalign*}
 %
 The cost of \T{snoc} is driven by the recursion. We interpret the cost of the
@@ -244,9 +244,10 @@ z = n$.
     \end{align*}
 \end{description}
 %
-The solution to this recurrence is given in lemma \ref{thm:rev_interp}.
+The solution to this recurrence is given in lemma \ref{lem:rev_interp}.
 %
 \begin{lemma}
+  \label{lem:rev_interp}
   $g(n) = (1 + n, 1 + n)$.
 \end{lemma}
 \begin{proof}
@@ -264,7 +265,19 @@ The solution to this recurrence is given in lemma \ref{thm:rev_interp}.
 \end{proof}
 %
 This is a closed form solution for the recurrence describing the complexity of
-the \T{rec} expression in the body of \T{snoc}.
+the \T{rec} expression in the body of \T{snoc}. We use this to produce the
+equation describing the complexity of $\|\T{snoc}\|$.
+%
+\begin{flalign*}
+  snoc(n, x) &= g(n) = (1 + n, 1 + n)
+\end{flalign*}
+%
+%\begin{flalign*}
+%  \llbracket\|\T{snoc}\ xs\ x\|\rrbracket &= \llbracket(2 + \|xs\|_c + \|x\|_c) +_c (\|\T{snoc}\|_p\ \|xs\|_p)_p\ \|x\|_p\rrbracket \\
+%                                          &= (2 + \llbracket\|xs\|_c\rrbracket + \llbracket\|x\|_c\rrbracket) \pplus_c \llbracket(\|\T{snoc}\|_p\ \|xs\|_p)_p \|x\|_p\rrbracket\\
+%                                          &= (2 + \llbracket\|xs\|
+%\end{flalign*}
+%
 %
 \subsection{\T{rev} Interpretation}
 %
@@ -274,12 +287,61 @@ Recall the translation of \T{rev xs}.
               &\quadfive \T{Cons} \mapsto \langle x, \langle xs',r\rangle \rangle. (3 + r_c) +_c (\|\T{snoc}\|_p\ r_p)_p\ x))\ \|xs\|_p
 \end{flalign*}
 %
-%==============================================================================
+We will interpret the \T{rec} construct first.
 %
-Then $\llbracket \| \T{rev xs} \|_c \rrbracket = 1 + g(\|xs\|_p)$, where
-\[g(n) = \llbracket rec(z, Nil \mapsto 1, Cons \mapsto \langle x, \langle xs',r\rangle \rangle.1 + r_c + h(r_p))\rrbracket \{z \mapsto n\}\]
-\[h(n) = \llbracket rec(z, Nil \mapsto 1, Cons \mapsto \langle y, \langle ys',r\rangle \rangle.1 + r_c \rrbracket \{z \mapsto n\}\]
+\begin{flalign*}
+  g(n) &= \llbracket \T{rec}(xs, \T{Nil} \mapsto \langle 1,\T{Nil}\rangle, \\
+       &\quadfive \T{Cons} \mapsto \langle x, \langle xs',r\rangle \rangle. (3 + r_c) +_c (\|\T{snoc}\|_p\ r_p)_p\ x)\rrbracket \{xs \mapsto n\} \\
+       &= \bigvee\limits_{size\ z \leq n} case(z, f_{Nil}, f_{Cons}) \\
+       &\text{where}\\
+  f_{Nil}(\ast) &= \llbracket \langle 1,\T{Nil}\rangle\rrbracket \{xs \mapsto n\} \\
+                &= (1, 0) \\
+  f_{Cons}((1, m)) &= \llbracket (3 + r_c) +_c (\|\T{snoc}\|_p\ r_p\ x)\rrbracket \{xs \mapsto n, x \mapsto 1, r \mapsto g(m)\} \\
+                   &= (3 + g_c(m)) \pplus_c (\llbracket\|\T{snoc}\|_p\rrbracket \{xs \mapsto n, x \mapsto 1, r \mapsto g(m)\}\ g_p(m)\ 1) \\
+                   &= (3 + g_c(m)) \pplus_c snoc(g_p(m), 1) \\
+                   &= (3 + g_c(m) + snoc_c(g_p(m), 1), snoc_p(g_p(m), 1))
+\end{flalign*}
 %
-We calculate that $h(0)=1$ and for $n > 0$, $h(n) = 1 + h(n-1)$.
-$g(0) = 1$ and for $n > 0$, $g(n) = 1 + g(n-1) + h(n-1)$
+To obtain a solution to this recurrence, we apply the same technique as in the
+interpretation of \T{snoc}. We break the recurrence into the case where the
+argument is $0$ and when the argument is greater than $0$. Then we eliminate
+the big maximum operator by breaking the maximum into cases where $size\ z < n$
+and when $size\ z = n$.
 %
+\begin{description}
+  \item[case $n=0$]\hfill \\
+    The only $z$ such that $size\ z \leq 0$ is $\ast$.
+    \begin{align*}
+      g(0) = (1, 0)
+    \end{align*}
+  \item[case $n>0$]\hfill \\
+    \begin{align*}
+      g(n) &= \bigvee\limits_{size\ z \leq n} case(z, f_{Nil}, f_{Cons}) \\
+           &= \bigvee\limits_{size\ z < n} case(z, f_{Nil}, f_{Cons}) \vee \bigvee\limits_{size\ z = n} case(z, f_{Nil}, f_{Cons}) \\
+           &= g(n-1) \vee \bigvee\limits_{size\ z = n} case(z, f_{Nil}, f_{Cons}) \\
+           &= g(n-1) \vee (3 + g_c(n-1) + snoc_c(g_p(n-1), 1), snoc_p(g_p(n-1), 1)) \\
+           &\text{We substitute the definition of $snoc(n, x)$.} \\
+           &= g(n-1) \vee (3 + g_c(n-1) + g_p(n-1) + 1, g_p(n-1) + 1) \\
+           &\text{$g_p(n-1)$ is nonnegative, so we can eliminate the max.} \\
+           &= (4 + g_c(n-1) + g_p(n-1), 1 + g_p(n-1))
+    \end{align*}
+\end{description}
+%
+We use the substitution method to solve the recurrence.
+\begin{lemma}
+  $g(n) = (4n^2 + 1, n)$
+\end{lemma}
+\begin{proof}
+  We prove this by induction on $n$.
+  \begin{description}
+    \item[case $n=0$]\hfill \\
+      $g(0) = (1, 0) = (4\dot0^2 + 1, 0)$.
+    \item[case $n>0$]\hfill \\
+      \begin{align*}
+        g(n) &= (4 + g_c(n-1) + g_p(n-1), 1 + g_p(n-1)) \\
+             &= (4 + (4(n-1)^2 + 1) + n - 1, 1 + n - 1) \\
+             &= (4 + 4n^2 - 8n + 4 + n, n) \\
+             &=TODO: this was wrong
+      \end{align*}
+  \end{description}
+\end{proof}
