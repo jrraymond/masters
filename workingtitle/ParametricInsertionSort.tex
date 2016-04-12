@@ -13,25 +13,25 @@ strings.
 
 We use the familiar \T{list} datatype.
 %
-\begin{align*}
+\begin{flalign*}
   \T{data list} &= \T{Nil of unit | Cons of int $\times$ list}
-\end{align*}
+\end{flalign*}
 %
 The function \T{sort} relies on the function \T{insert}. \T{insert} inserts an
 element into a sorted list.
 %
-\begin{align*}
+\begin{flalign*}
   \T{insert} &= \lambda f.\lambda x.\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \T{Cons} \langle x, \T{Nil}\rangle,\\
              &\quadeight \T{Cons}\mapsto \langle y, \langle ys,r \rangle\rangle.\T{rec}(f\ x\ y, \T{True}\mapsto \T{Cons}\langle x,\T{Cons}\langle y,ys \rangle\rangle, \\
              &\quadten\quadten\quad \T{False}\mapsto \T{Cons}\langle y,\T{force}(r)\rangle))
-\end{align*}
+\end{flalign*}
 %
 The \T{sort} function recurses on the list, using the \T{insert} function to
 insert the head of the list into the recursively sorted tail of the list.
 %
-\begin{align*}
+\begin{flalign*}
   \T{sort} &= \lambda f.\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \T{Cons} \mapsto \langle y,\langle ys,r \rangle\rangle.\T{insert}\ f\ y\ \T{force}(r))
-\end{align*}
+\end{flalign*}
 %
 \section{Translation}
 %
@@ -47,14 +47,14 @@ To translate $f\ x\ y$ we apply the function application rule twice. First we
 apply the rule to $(f\ x)\ y$. Then we apply the rule to $f\ x$. Then we expand
 the $+_c$ macro to simplify the result.
 %
-\begin{align*}
+\begin{flalign*}
 \numberthis \label{eq:fxy}
 \|f\ x\ y\| &= (1 + \|f\ x\|_c + \|y\|_c) +_c \|f\ x\|_p \|y\|_p \\
             &\qquad \|f\ x\| = (1 + \|f\|_c + \|x\|_c) +_c \|f\|_p \|x\|_p \\
             &\quadfour = (1 + \|f\|_c + \|x\|_c + (\|f\|_p \|x\|_p)_c, \|f\|_p \|x\|_p) \\
             &= (1 + (1 + \|f\|_c + \|x\|_c +_c (\|f\|_p \|x\|_p)_c) + \|y\|_c) +_c (\|f\|_p \|x\|_p)_p \|y\|_p \\
             &= (2 + \|f\|_c + \|x\|_c + \|y\|_c + (\|f\|_p \|x\|_p)_c) +_c (\|f\|_p \|x\|_p)_p \|y\|_p
-\end{align*}
+\end{flalign*}
 %
 % BEGIN TRUE BRANCH
 %
@@ -62,57 +62,57 @@ The translation of a datatype is the cost of translating its argument, and
 complexity language constructor applied to the potential of the translated
 argument.
 %
-\begin{align*}
+\begin{flalign*}
   \|\T{Cons}\langle x,\T{Cons}\langle y, rs \rangle\rangle\| &= \langle \|\langle x, \T{Cons} \langle y,ys\rangle\rangle\|_c, \T{Cons}\|\langle x, \T{Cons}\langle y,ys\rangle\|_p\rangle
-\end{align*}
+\end{flalign*}
 %
 The argument to the \T{Cons} constructor is a tuple. The cost of the
 translation of a tuple is the cost of the translation of each element and the
 potential is the tuple of the potentials of the translations of each element.
 %
-\begin{align*}
+\begin{flalign*}
   \|\langle x, \T{Cons}\langle y,ys\rangle\rangle\| &= \langle \|x\|_c + \|\T{Cons}\langle y,ys\rangle\|_c, \langle \|x\|_p,\T{Cons}\langle y,ys\rangle\|_p\rangle\rangle
-\end{align*}
+\end{flalign*}
 %
 The first element of the tuple is a variable, but the second element is another
 \T{list}. So we translate the second element first. To do so we apply the rule
 for translating a datatype.
 %
-\begin{align*}
+\begin{flalign*}
   \|\T{Cons}\langle y,ys\rangle\| &= \langle \|y,ys\|_c, \T{Cons}\|y,ys\|_p\rangle
-\end{align*}
+\end{flalign*}
 %
 The argument to the constructor is a tuple. We apply the rule for translating a
 tuple again. Both element of the tuple are variables, so their translated cost
 is $0$ and their translated potential is their corresponding variable in the
 complexity language.
 %
-\begin{align*}
+\begin{flalign*}
   \|\langle y,ys\rangle\| &= \langle \|y\|_c + \|rs\|_c, \langle\|y\|_p,\|rs\|_p\rangle\rangle \\
                          &= \langle \langle 0,y\rangle_c + \langle 0, rs\rangle_c, \langle \langle0,y\rangle_p, \langle 0,rs\rangle\rangle\rangle \\
                          &= \langle 0, \langle y,ys\rangle\rangle
-\end{align*}
+\end{flalign*}
 %
 We use this to complete the translation of $\T{Cons}\langle y,ys\rangle$.
 %
-\begin{align*}
+\begin{flalign*}
   \|\T{Cons}\langle y,ys\rangle\| &= \langle \|y,ys\|_c, \T{Cons}\|y,ys\|_p\rangle \\
                                   &= \langle 0, \T{Cons}\langle y,ys\rangle\rangle
-\end{align*}
+\end{flalign*}
 %
 We use this result to complete the translation of $\langle x,\T{Cons}\langle y,ys\rangle\rangle$.
 %
-\begin{align*}
+\begin{flalign*}
   \|\langle x, \T{Cons}\langle y,ys\rangle\rangle\| &= \langle \|x\|_c + \|\T{Cons}\langle y,ys\rangle\|_c, \langle \|x\|_p,\T{Cons}\langle y,ys\rangle\|_p\rangle\rangle \\
                                                     &= \langle 0, \langle x,\T{Cons}\langle y,ys\rangle\rangle\rangle
-\end{align*}
+\end{flalign*}
 %
 And finally we use this to complete the translation of $\T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle$.
 %
-\begin{align*}
+\begin{flalign*}
   \|\T{Cons}\langle x,\T{Cons}\langle y,ys \rangle\rangle\| &= \langle \|\langle x, \T{Cons} \langle y,ys\rangle\rangle\|_c, \T{Cons}\|\langle x,\T{Cons}\langle y,ys\rangle\rangle\|_p\rangle \\
                                                             &= \langle 0, \T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle\rangle
-\end{align*}
+\end{flalign*}
 %
 % END TRUE BRANCH
 %
@@ -123,9 +123,9 @@ Next we will translate the \T{False} branch.
 The translation \T{True} and \T{False} branches are given in figures
 \ref{fig:insert_True} and \ref{fig:insert_False} respectively.
 %
-\begin{align*}
+\begin{flalign*}
   \|\T{Cons}\langle y,\T{force}(r)\rangle\| &= \langle \|\langle y,\T{force}(r)\rangle\|_c, \T{Cons}\|\langle y,\T{force}(r)\rangle\|_p\rangle
-\end{align*}
+\end{flalign*}
 %
 To complete this we must first translate the tuple. The two elements of the
 tuple are $y$ and $\T{force}(r)$.  The translation of the variable $y$ is
@@ -134,18 +134,18 @@ $\|r\|_c +_c \|r\|_p$. Like $y$, $r$ is a variable so its translation is
 $\langle 0,r\rangle$. So the translation of $\T{force}(r)$ is $0 +_c r$ which
 simplifies to $r$.
 %
-\begin{align*}
+\begin{flalign*}
   \|\langle y,\T{force}(r)\rangle\| &= \langle \|y\|_c + \|\T{force}(r)\|_c, \langle\|y\|_p,\|\T{force}(r)\|_p\rangle\rangle
                                     &= \langle 0 + r_c, \langle y,r_p\rangle\rangle \\
                                     &= \langle r_c, \langle y,r_p\rangle\rangle
-\end{align*}
+\end{flalign*}
 %
 We substitute this into the translation of $\T{Cons}\langle y,\T{force}(r)\rangle$.
 %
-\begin{align*}
+\begin{flalign*}
   \|\T{Cons}\langle y,\T{force}(r)\rangle\| &= \langle \|\langle y,\T{force}(r)\rangle\|_c, \T{Cons}\|\langle y,\T{force}(r)\rangle\|_p\rangle \\
                                             &= \langle r_c, \T{Cons}\langle y,r_p\rangle\rangle
-\end{align*}
+\end{flalign*}
 %
 % END FALSE BRANCH
 %
@@ -154,7 +154,7 @@ We substitute this into the translation of $\T{Cons}\langle y,\T{force}(r)\rangl
 Next we use the translation of \T{f x y} and the \T{True} and \T{False}
 branches to construct the translation of the inner \T{rec} construct.
 %
-\begin{align*}
+\begin{flalign*}
   \|\T{rec}&(f\ x\ y, \T{True}\mapsto\T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle, \T{False}\mapsto \T{Cons}\langle y,\T{force}(r)\rangle)\| \\
            &= \|f\ x\ y\|_c +_c \T{rec}(\|f\ x\ y\|_p, \T{True}\mapsto 1 +_c \|\T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle\|, \\
            &\quadsix \T{False}\mapsto 1 +_c \|\T{Cons}\langle y,\T{force}(r)\rangle\|) \\
@@ -163,7 +163,7 @@ branches to construct the translation of the inner \T{rec} construct.
            &= (2 + \|f\|_c + \|x\|_c + \|y\|_c + (\|f\|_p \|x\|_p)_c) \\
            &\quadthree +_c \T{rec}((\|f\|_p\ \|x\|_p)_p \|y\|_p, \T{True}\mapsto \langle 1, \T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle\rangle, \\
            &\quadsix \T{False}\mapsto \langle 1 + r_c, \T{Cons}\langle y,r_p\rangle\rangle) \\
-\end{align*}
+\end{flalign*}
 %
 % END INNER REC
 %
@@ -176,10 +176,10 @@ singleton list containing only the element.  This branch is also reached when
 the ordering given by \T{f} dictates \T{x} comes after than everything in the
 list, and should be placed at the back of the list.
 %
-\begin{align*}
+\begin{flalign*}
   \|\T{Cons} \langle x, \T{Nil}\rangle\| &= \langle \|\langle x,\T{Nil}\rangle\|_c,\T{Cons}\|\langle x,\T{Nil}\rangle\|_p\rangle \\
                                          &= \langle 0,\T{Cons}\langle x,\T{Nil}\rangle\rangle
-\end{align*}
+\end{flalign*}
 %
 % END NIL
 %
@@ -190,24 +190,24 @@ branch we recurse on a nonempty list.  We check if \T{x} is comes before the
 head of the list under the ordering given by \T{f}, in which case we are done,
 otherwise we recurse on the tail of the list.
 %
-\begin{align*}
+\begin{flalign*}
   \|\T{rec}&(f\ x\ y, \T{True}\mapsto \T{Cons}\langle x,\T{Cons}\langle y,ys \rangle\rangle, \T{False}\mapsto \T{Cons}\langle y,\T{force}(r)\rangle)\| \\
            &= \|f\ x\ y\|_c +_c \T{rec}(f\ x\ y, \T{True}\mapsto 1 +_c \|\T{Cons}\langle x,\T{Cons}\langle y,ys \rangle\rangle\|)  \\
            &= (2 + \|f\|_c + \|x\|_c + \|y\|_c + (\|f\|_p \|x\|_p)_c) \\
            &\quadthree +_c \T{rec}((\|f\|_p\ \|x\|_p)_p \|y\|_p, \T{True}\mapsto \langle 1, \T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle\rangle, \\
            &\quadsix \T{False}\mapsto \langle 1 + r_c, \T{Cons}\langle y,r_p\rangle\rangle) \\
            &\text{We know that $f, x, $ and $y$ are variables, so their translations have $0$ cost.} \\
-           &= (2 + (f x)_c) \\
+           &= (2 + (f\ x)_c) \\
            &\quadthree +_c \T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \langle 1, \T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle\rangle, \\
            &\quadsix \T{False}\mapsto \langle 1 + r_c, \T{Cons}\langle y,r_p\rangle\rangle)
-\end{align*}
+\end{flalign*}
 %
 % END CONS
 %
 We complete the translation of the outer \T{rec} using the two branches we
 translated.
 %
-\begin{align*}
+\begin{flalign*}
   \|\T{rec}&(xs, \T{Nil} \mapsto \T{Cons} \langle x, \T{Nil}\rangle,\\
              &\quad \T{Cons}\mapsto \langle y, \langle ys,r \rangle\rangle.\T{rec}(f\ x\ y, \T{True}\mapsto \T{Cons}\langle x,\T{Cons}\langle y,ys \rangle\rangle, \\
              &\quadfour \T{False}\mapsto \T{Cons}\langle y,\T{force}(r)\rangle))\| \\
@@ -225,14 +225,14 @@ translated.
              &\quad \T{Cons}\mapsto \langle y, \langle ys,r \rangle\rangle. (3 + (f x)_c) \\
              &\quadthree +_c \T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \langle 1, \T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle\rangle, \\
              &\quadsix \T{False}\mapsto \langle 1 + r_c, \T{Cons}\langle y,r_p\rangle\rangle))) \\
-\end{align*}
+\end{flalign*}
 %
 % END OUTER REC
 %
 The translation of \T{insert} is just three applications of the application
 rule.
 %
-\begin{align*}
+\begin{flalign*}
   \T{insert} &= \|\lambda f.\lambda x.\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \T{Cons} \langle x, \T{Nil}\rangle,\\
              &\quadeight \T{Cons}\mapsto \langle y, \langle ys,r \rangle\rangle.\T{rec}(f\ x\ y, \T{True}\mapsto \T{Cons}\langle x,\T{Cons}\langle y,ys \rangle\rangle, \\
              &\quadten\quadeight \T{False}\mapsto \T{Cons}\langle y,\T{force}(r)\rangle))\| \\
@@ -243,46 +243,45 @@ rule.
              &\quad\quad \T{Cons}\mapsto \langle y, \langle ys,r \rangle\rangle. (3 + (f x)_c) +_c \T{rec}(((f\ x)_p\ y)_p, \\
              &\quadten\quadten \T{True}\mapsto \langle 1, \T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle\rangle, \\
              &\quadten\quadten \T{False}\mapsto \langle 1 + r_c, \T{Cons}\langle y,r_p\rangle\rangle))) \\
-\end{align*}
+\end{flalign*}
 %
 We are interested in the interpretation of applying \T{insert}. So we will give
 a translation of \T{insert f x xs}.
 %
-\begin{align*}
-  \|\T{insert}\ f\ x\ xs\| &= (1 + \|\T{insert}\ f\ x\|_c + \|xs\|_c) +_c \|\T{insert}\ f\ xs\|_p \|xs\|_p \\
-     &= (1 + \|\T{insert} f x\|_c + \|xs\|_c) +_c \|\T{insert} f x\|_p  \|xs\|_p
-     &= (2 + \|\T{insert} f\|_c + \|x\|_c + (\|\T{insert} f\|_p \|x\|_p)_c + \|xs\|_c) +_c \|\T{insert} f\|_p \|x\|_p \|xs\|_p
-     &= (2 + \|\T{insert} f\|_c + \|x\|_c + \|xs\|_c) +_c \|\T{insert} f\|_p \|x\|_p \|xs\|_p
-     &= (3 + \|\T{insert}\|_c + \|f\|_c+ (\|\T{insert}\|_p \|f\|_p \|x\|_p)_c + \|x\|_c  + \|xs\|_c) +_c \|\T{insert}\|_p \|f\|_p \|x\|_p \|xs\|_p
-     &= (3 + \|f\|_c + \|x\|_c + \|xs\|_c) +_c \|\T{insert}\|_p \|f\|_p \|x\|_p \|xs\|_p
-     &= (3 + \|f\|_c + \|x\|_c + \|xs\|_c) +_c \T{rec}(\|xs\|_p,
-     &\quadfour \T{Nil}\mapsto \langle 1,\T{Cons}\langle x,\T{Nil}\rangle\rangle
-     &\quadfour \T{Cons}\mapsto \langle y,\langle ys,r\rangle\rangle.(3 + ((\|f\|_p \|x\|_p)_p  y)_c) +_c \T{rec}((\|f\|_p \|x\|_p)_p  y)_p,
-     &\quadfour \T{True}\mapsto \langle 1, \T{Cons}\langle \|x\|_p,\T{Cons}\langle y,ys\rangle\rangle\rangle
-     &\quadfour \T{False}\mapsto \langle 1 + r_c,\T{Cons}\langle y,r_p\rangle\rangle))
-\end{align*}
+\begin{flalign*}
+  \|\T{insert}\ f\ x\ xs\| &= (1 + \|\T{insert}\ f\ x\|_c + \|xs\|_c) +_c \|\T{insert}\ f\ x\|_p \|xs\|_p \\
+     &= (1 + \|\T{insert}\ f\ x\|_c + \|xs\|_c) +_c \|\T{insert}\ f\ x\|_p  \|xs\|_p \\
+     &= (2 + \|\T{insert}\ f\|_c + \|x\|_c + (\|\T{insert}\ f\|_p \|x\|_p)_c + \|xs\|_c) \\
+     &\quadfour +_c \|\T{insert}\ f\|_p \|x\|_p \|xs\|_p \\
+     &= (2 + (\|\T{insert}\|_p\ f)_c + \|x\|_c + \|xs\|_c) +_c \|\T{insert}\ f\|_p \|x\|_p \|xs\|_p \\
+     &= (3 + \|\T{insert}\|_c + \|f\|_c+ (\|\T{insert}\|_p \|f\|_p \|x\|_p)_c + \|x\|_c + \|xs\|_c) \\
+     &\quadfour +_c \|\T{insert}\|_p \|f\|_p \|x\|_p \|xs\|_p \\
+     &= (3 + \|f\|_c + \|x\|_c + \|xs\|_c) +_c \|\T{insert}\|_p \|f\|_p \|x\|_p \|xs\|_p \\
+     &= (3 + \|f\|_c + \|x\|_c + \|xs\|_c) +_c \T{rec}(\|xs\|_p, \\
+     &\quadfour \T{Nil}\mapsto \langle 1,\T{Cons}\langle x,\T{Nil}\rangle\rangle  \\
+     &\quadfour \T{Cons}\mapsto \langle y,\langle ys,r\rangle\rangle.(3 + ((\|f\|_p \|x\|_p)_p  y)_c) \\
+     &\quadsix +_c \T{rec}((\|f\|_p \|x\|_p)_p  y)_p, \\
+     &\quadeight \T{True}\mapsto \langle 1, \T{Cons}\langle \|x\|_p,\T{Cons}\langle y,ys\rangle\rangle\rangle \\
+     &\quadeight \T{False}\mapsto \langle 1 + r_c,\T{Cons}\langle y,r_p\rangle\rangle))
+\end{flalign*}
 % ======================================
 
 
 \section{Interpretation}
 %
 We well use an interpretation of lists as a pair of their greatest element and
-their length.  Figure \ref{fig:interp_sizes} formalizes this interpretation.
+their length.
 %
-\begin{figure}[H]
-  \caption{Interpretation of lists as lengths}
-  \label{fig:interp_sizes}
-  \begin{align*}
-    \llbracket list \rrbracket &= \mathbb{Z} \times \mathbb{N}^\infty \\
-    D^{list} &= \{\ast\} + \{\mathbb{Z}\} \times \mathbb{N}^\infty \\
-    size_{list} (Nil) &= (-\infty,0) \\
-    size_{list} (Cons(i,(j,n))) &= (max\{i,j\},1 + n)
-  \end{align*}
-\end{figure}
+\begin{align*}
+   \llbracket list \rrbracket &= \mathbb{Z} \times \mathbb{N}^\infty \\
+                     D^{list} &= \{\ast\} + \{\mathbb{Z}\} \times \mathbb{N}^\infty \\
+            size_{list} (\ast) &= (-\infty,0) \\
+  size_{list} ((i,(j,n))) &= (max\{i,j\},1 + n)
+\end{align*}
 %
 We use the mutual ordering on pairs.  That is, $(s,n) \leq (s',n')$ if
 $n \leq n'$ and $s < s'$ or $n < n'$ and $s \leq s'$.
-
+%
 First we interpret the \T{rec}, which drives of the cost of \T{insert}.  As in
 the translation, we break the interpretation up to make it more manageable.  We
 will write $map, \lambda$ and $+_c$ in the semantics, which stand for the
@@ -290,30 +289,47 @@ semantic equivalents of the syntactic \T{map}, $\lambda$ and $+_c$.  The
 definitions of these semantic functions mirror the definitions of their
 syntactic equivalents.  Figures \ref{fig:interp_sizes_inner_rec} and
 \ref{fig:interp_sizes_outer_rec} walk through the interpretation.
+
+First we interpret the inner \T{rec} of $\|\T{insert}\|$.
 %
-\begin{figure}[H]
-  \caption{Interpretation of the inner \T{rec} of \T{insert} with lists abstracted to sizes}
-  \label{fig:interp_sizes_inner_rec}
-  \begin{lstlisting}
-    $\llbracket$rec($($f x$)_p $ y$)_p$,
-       True$\mapsto \langle 1, $Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle\rangle$
-       False$\mapsto \langle1 + $r$_c,$Cons$\langle$y$,$r$_p\rangle\rangle$)$)$ $\rrbracket \xi \{$f$ \mapsto f, $x$ \mapsto x, $y$ \mapsto y, $ys$ \mapsto (i,n), $r$ \mapsto r\}$
-
-    $f_{True} (\langle\rangle) = \llbracket \langle$1,Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle\rangle\rrbracket \xi \{$f$ \mapsto f, $x$ \mapsto x, $y$ \mapsto y, $ys$ \mapsto (i,n), $r$ \mapsto r\}$
-
-           $= (1, (max\{x,y,i\},2 + n))$
-
-    $f_{False} (\langle\rangle) = \llbracket \langle1 + $r$_c,$Cons$\langle$y$,$r$_p\rangle\rangle$)$)$ $\rrbracket \xi \{$f$ \mapsto f, $x$ \mapsto x, $y$ \mapsto y, $ys$ \mapsto (i,n), $r$ \mapsto r\}$
-
-           $= (1 + \pi_0 r, (max\{y,\pi_0\pi_1 r\}, 1 + \pi_1\pi_1 r))$
-
-    $= \bigvee_{size(w) \leq \pi_1(\pi_1(f\ x)\ y)} case(w, (f_{True}, f_{False}))$
-
-    $= \bigvee_{size(w) \leq \pi_1(\pi_1(f\ x)\ y)} case(w, (\lambda \langle\rangle.(1, (max\{x,y,i\},2 + n)), \lambda \langle\rangle.(1 + \pi_0 r, (max\{y,\pi_0\pi_1 r\}, 1 + \pi_1\pi_1 r))$
-
-    $= (1, (max\{x,y,i\},2 + n)) \vee (1 + \pi_0 r, (max\{y,\pi_0\pi_1 r\}, 1 + \pi_1\pi_1 r))$
-  \end{lstlisting}
-\end{figure}
+\begin{flalign*}
+  \llbracket \T{rec}&(((f\ x)_p\ y)_p, \T{True} \mapsto \langle 1, \T{Cons}\langle x, \T{Cons}\langle y,ys\rangle\rangle\rangle, \T{False}\mapsto \langle 1 + r_c,\T{Cons}\langle y,r_p\rangle\rangle)\rrbracket \xi \\
+                    &= \bigvee\limits_{size(z) \leq ((f\ x)_p\ y)_p} case(z, f_{True}, f_{False}) \\
+                    &\text{where} \\
+  \xi &= \{f \mapsto f, x \mapsto x, y\mapsto y, ys\mapsto (j, m), r \mapsto r \} \\
+  f_{True}(\ast) &= \llbracket \langle 1, \T{Cons}\langle x, \T{Cons}\langle y,ys\rangle\rangle\rangle \rrbracket\xi \\
+                 &= (1, \llbracket \T{Cons}\langle x, \T{Cons}\langle y,ys\rangle\rangle\rrbracket)\xi \\
+                 &= (1, (max(x,y,j), 2 + m)) \\
+  f_{False}(\ast) &= \llbracket \langle 1 + r_c,\T{Cons}\langle y,r_p\rangle\rangle\rrbracket \xi \\
+                  &= (1 + r_c, (max(y,\pi_0 r_p), 1 + \pi_1 r_p))
+\end{flalign*}
+%
+Since there are only to $z$, we can simplify the big maximum to a maximum.
+%
+\begin{flalign*}
+  \bigvee\limits_{size(z) \leq ((f\ x)_p\ y)_p} &case(z, f_{True}, f_{False}) \\
+                                   &= (1, (max(x,y,j), 2 + m)) \vee (1 + r_c, (max(y,\pi_0 r_p), 1 + \pi_1 r_p))
+\end{flalign*}
+%
+Using this, we proceed to interpret the outer recurrence.
+%
+\begin{flalign*}
+  g(i, n) &= \llbracket\T{rec}(xs, \T{Nil} \mapsto \langle 1,\T{Cons}\langle x,\T{Nil}\rangle\rangle, \\
+            &\quad \T{Cons}\mapsto \langle y, \langle ys,r \rangle\rangle. (3 + (f x)_c) \\
+            &\quadthree +_c \T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \langle 1, \T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle\rangle, \\
+            &\quadsix \T{False}\mapsto \langle 1 + r_c, \T{Cons}\langle y,r_p\rangle\rangle))\rrbracket \xi \\
+            &\text{where} \\
+  \xi &= \{xs \mapsto (i, n), x \mapsto x\} \\
+  g(i,n) &= \bigvee\limits_{size(z) \leq (i,n)} case(z, f_{Nil}, f_{Cons}) \\
+         &\text{where}\\
+  f_{Nil}(\ast) &= \llbracket \langle 1,\T{Cons}\langle x,\T{Nil}\rangle\rangle \rrbracket \xi \\
+                &= (1, (x, 1)) \\
+  f_{True}(j,m) &= \llbracket (3 + (f\ x)_c) +_c \T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \langle 1, \T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle\rangle, \\
+                &\quadthree \T{False}\mapsto \langle 1 + r_c, \T{Cons}\langle y,r_p\rangle\rangle)\rrbracket \xi \{ y \mapsto j, ys \mapsto (j, m), r \mapsto g(j, m)\} \\
+                &= (3 + (f\ x)_c) \pplus_c \llbracket\T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \langle 1, \T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle\rangle, \\
+                &\quadthree \T{False}\mapsto \langle 1 + r_c, \T{Cons}\langle y,r_p\rangle\rangle)\rrbracket \xi \{ y \mapsto j, ys \mapsto (j, m), r \mapsto g(j, m)\} \\
+                &= (3 + (f\ x)_c) \pplus_c ((1, (max(x,y,j), 2 + m)) \vee (1 + r_c, (max(y,\pi_0 r_p), 1 + \pi_1 r_p)))
+\end{flalign*}
 %
 \begin{figure}[H]
   \caption{Interpretation of \T{rec} in \T{insert}.}
@@ -352,13 +368,13 @@ syntactic equivalents.  Figures \ref{fig:interp_sizes_inner_rec} and
 %
 The initial result is given in equation \ref{eq:insert_initial_recurrence}.
 %
-\begin{align*}
+\begin{flalign*}
   &f_{Nil}(\langle\rangle) = (1,(x,1)) \\
   &f_{Cons}(j,(j,m)) = (4 + \pi_0(\pi_1(f\ x)\ j) + \pi_0g(j,m), \\
   &\ \ \ \ (max\{x,j,\pi_0\pi_1g(j,m)\}, 2+m \vee 1 + \pi_1\pi_1g(j,m))) \\
   \label{eq:insert_initial_recurrence}
   &g(i,n) = \bigvee_{size(z) \leq (i,n)} case(z, (f_{Nil},f_{Cons})) \numberthis
-\end{align*}
+\end{flalign*}
 %
 This recurrence is difficult to work with.  Specifically, we cannot apply
 traditional methods of solving it.  We will manipulate it into a more usable
@@ -378,7 +394,7 @@ those independently.
     \item[case $n=0$]\hfill \\
       $g_c(i,n) = (1, (x, 1))_c = 1$
     \item[case$n>0$]\hfill \\
-      \begin{align*}
+      \begin{flalign*}
         &= \bigvee_{size(z) \leq (i,n)} case(z, (f_{Nil}, f_{Cons})) &&\\
         &= \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} case((j, m), (f_{Nil}, f_{Cons})) &&\\
         &= \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} 4 + ((f\ x)_p\ j)_c + g_c(j, m')) &&\text{where $m' = m - 1$}\\
@@ -387,7 +403,7 @@ those independently.
         &= \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} (4 + ((f\ x)_p\ j)_c) m + 1 &&\\
         &\leq \bigvee_{i < j, m \leq n \text{ or } i \leq j, m < n} (4 + ((f\ x)_p\ i)_c) n + 1 &&\\
         &\leq (4 + ((f\ x)_p\ i)_c) n + 1&&
-      \end{align*}
+      \end{flalign*}
   \end{description}
 \end{proof}
 %
@@ -404,13 +420,13 @@ As expected, we find the cost of insert is bounded by the length of the list and
     \item[case $n=0$]\hfill \\
       $g_p(i,n) = (1, (x, 1))_p = (x, 1)$.
     \item[case $n>0$]\hfill \\
-      \begin{align*}
+      \begin{flalign*}
         &= \bigvee_{size(z) \leq (i,n)} case(z, (f_{Nil}, f_{Cons}) &&\\
         &= \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} (max\{x, j, \pi_0\pi_1g(j, m')\}, 2 + m' \vee 1 + \pi_1\pi_1g(j, m')) && \text{where $m' = m - 1$}\\
         &\leq \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} (max\{x, j\}, 2 + m')&&\text{by the induction hypothesis}\\
         &\leq \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} (max\{x,i\}, 1 + n)&&\\
         &\leq (max\{x,i\}, 1 + n)&&
-      \end{align*}
+      \end{flalign*}
   \end{description}
 \end{proof}
 %
@@ -431,12 +447,12 @@ happens if we try to prove the equality?
     \item[case $n=0$]\hfill \\
       $g_p(i,n) = (1, (x, 1))_p = (x, 1)$.
     \item[case $n>0$]\hfill \\
-      \begin{align*}
+      \begin{flalign*}
         &= \bigvee_{size(z) \leq (i,n)} case(z, (f_{Nil}, f_{Cons}) &&\\
         &= \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} (max\{x, j, \pi_0\pi_1g(j, m')\}, 2 + m' \vee 1 + \pi_1\pi_1g(j, m')) && \text{where $m' = m - 1$}\\
         &= \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} (max\{x, j\}, 2 + m')&&\text{by the induction hypothesis}\\
         &= \bigvee_{j < i, m \leq n} (max\{x, j\}, 1 + m) \vee \bigvee_{j \leq i, m < n} (max\{x, j\}, 1 + m)&&
-      \end{align*}
+      \end{flalign*}
   \end{description}
 \end{proof}
 %
@@ -588,7 +604,7 @@ the potential first.
   \begin{description}
     \item[case $n=0$]$\pi_1g(i,n) = (i, 0)$
     \item[case $n>0$]\hfill \\
-      \begin{align*}
+      \begin{flalign*}
         \pi_1g(i,n) &= \pi_1 \bigvee_{size(z)\leq n} case(z,(\lambda(\langle\rangle).(1,(\neg\infty,0)),\lambda(j,m).4 + \pi_0 g(j,m)) +_c(insert\ f\ j\ \pi_1g(j, m)))\\
         &= \bigvee_{j \leq i, m < n \text{ or } j < i, m \leq n} \pi_1 (insert\ f\ j\ \pi_1g(j', m'))\ \ \ \ \ j' \leq j, m' = m - 1\\
         &\leq \bigvee_{j \leq i, m < n \text{ or } j < i, m \leq n} \pi_1 (insert\ f\ j\ (j', m'))\\
@@ -596,7 +612,7 @@ the potential first.
         &\leq \bigvee_{j \leq i, m < n \text{ or } j < i, m \leq n} (j, m)\\
         &\leq \bigvee_{j \leq i, m < n \text{ or } j < i, m \leq n} (i, n)\\
         &\leq (i, n)
-      \end{align*}
+      \end{flalign*}
   \end{description}
 \end{proof}
 %
@@ -619,7 +635,7 @@ potential of its output. We may solve the recurrence for the cost of \T{sort}.
   \begin{description}
     \item[case $n=0$] $\pi_0 g(i,n) = 1$
     \item[case $n>0$] \hfill \\
-      \begin{align*}
+      \begin{flalign*}
         \pi_0g(i,n) &= \pi_0 \bigvee_{size(z) \leq (i,n)} case(z, (\lambda(\langle\rangle).(1,(\neg\infty,0)),\lambda(j,m).4 + \pi_0 g(j, m)) +_c (insert\ f\ j\ \pi_1g(j, m)))\\
         &= \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} 4 + \pi_0 g(j, m - 1) + \pi_0(insert\ f\ j\ \pi_1g(j, m - 1))\\
         &\leq \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} 4 + \pi_0 g(j, m - 1) + \pi_0(insert\ f\ j\ (j, m - 1))\\
@@ -630,7 +646,7 @@ potential of its output. We may solve the recurrence for the cost of \T{sort}.
         &\leq \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} c_1m^2 - c_1m + 5m + 1\\
         &\leq \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} (4 + \pi_0(\pi_1(f\ i)\ i))n^2 + 5n + 1\\
         &\leq (4 + \pi_0(\pi_1(f\ i)\ i))n^2 + 5n + 1
-      \end{align*}
+      \end{flalign*}
   \end{description}
 \end{proof}
 %
