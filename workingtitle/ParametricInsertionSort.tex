@@ -245,6 +245,8 @@ rule.
              &\quadten\quadten \T{False}\mapsto \langle 1 + r_c, \T{Cons}\langle y,r_p\rangle\rangle))) \\
 \end{flalign*}
 %
+% END INSERT
+%
 We are interested in the interpretation of applying \T{insert}. So we will give
 a translation of \T{insert f x xs}.
 %
@@ -264,6 +266,9 @@ a translation of \T{insert f x xs}.
      &\quadeight \T{True}\mapsto \langle 1, \T{Cons}\langle \|x\|_p,\T{Cons}\langle y,ys\rangle\rangle\rangle \\
      &\quadeight \T{False}\mapsto \langle 1 + r_c,\T{Cons}\langle y,r_p\rangle\rangle))
 \end{flalign*}
+%
+% END INSERT APPLIED
+%
 % ======================================
 
 
@@ -284,7 +289,7 @@ $n \leq n'$ and $s < s'$ or $n < n'$ and $s \leq s'$.
 %
 First we interpret the \T{rec}, which drives of the cost of \T{insert}.  As in
 the translation, we break the interpretation up to make it more manageable.  We
-will write $map, \lambda$ and $+_c$ in the semantics, which stand for the
+will write $map, \llambda$ and $\pplus_c$ in the semantics, which stand for the
 semantic equivalents of the syntactic \T{map}, $\lambda$ and $+_c$.  The
 definitions of these semantic functions mirror the definitions of their
 syntactic equivalents.  Figures \ref{fig:interp_sizes_inner_rec} and
@@ -324,57 +329,37 @@ Using this, we proceed to interpret the outer recurrence.
          &\text{where}\\
   f_{Nil}(\ast) &= \llbracket \langle 1,\T{Cons}\langle x,\T{Nil}\rangle\rangle \rrbracket \xi \\
                 &= (1, (x, 1)) \\
-  f_{True}(j,m) &= \llbracket (3 + (f\ x)_c) +_c \T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \langle 1, \T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle\rangle, \\
+  f_{Cons}(j,m) &= \llbracket (3 + (f\ x)_c) +_c \T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \langle 1, \T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle\rangle, \\
                 &\quadthree \T{False}\mapsto \langle 1 + r_c, \T{Cons}\langle y,r_p\rangle\rangle)\rrbracket \xi \{ y \mapsto j, ys \mapsto (j, m), r \mapsto g(j, m)\} \\
                 &= (3 + (f\ x)_c) \pplus_c \llbracket\T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \langle 1, \T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle\rangle, \\
                 &\quadthree \T{False}\mapsto \langle 1 + r_c, \T{Cons}\langle y,r_p\rangle\rangle)\rrbracket \xi \{ y \mapsto j, ys \mapsto (j, m), r \mapsto g(j, m)\} \\
-                &= (3 + (f\ x)_c) \pplus_c ((1, (max(x,y,j), 2 + m)) \vee (1 + r_c, (max(y,\pi_0 r_p), 1 + \pi_1 r_p)))
+                &= (3 + (f\ x)_c) \pplus_c ((1, (max(x,y,j), 2 + m)) \\
+                &\quadthree \vee (1 + g_c(j,m), (max(y,\pi_0 r_p), 1 + \pi_1 g_p(j,m))))
 \end{flalign*}
 %
-\begin{figure}[H]
-  \caption{Interpretation of \T{rec} in \T{insert}.}
-  \label{fig:interp_sizes_outer_rec}
-  \begin{lstlisting}
-   $g(i,n) = \llbracket$rec(xs,
-        Nil$\mapsto \langle1$,Cons$\langle$x,Nil$\rangle\rangle$
-        Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle$.$(3 + (($f x$)_p $ y$)_c) +_c$rec($($f x$)_p $ y$)_p$,
-                                         True$\mapsto \langle 1, $Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle\rangle$
-                                         False$\mapsto \langle1 + $r$_c,$Cons$\langle$y$,$r$_p\rangle\rangle$)$)\rrbracket \xi \{$f$\mapsto f, $x$\mapsto x,$xs$\mapsto (i,n)\}$
-
-       $f_{Nil}(\langle\rangle) = \llbracket \langle1$,Cons$\langle$x,Nil$\rangle\rangle \rrbracket \xi \{$f$\mapsto f, $x$\mapsto x,$xs$\mapsto (i,n)\}$
-
-       $f_{Nil}(\langle\rangle) = (1,(x,1))$
-
-       $f_{Cons}((j,(j,m))) = \llbracket (3 + $((f x)$_p$ y)$_c) +_c $rec($\dots$)$ \rrbracket \xi $
-            $\{$f$\mapsto f, $x$\mapsto x,$xs$\mapsto (i,n),\langle$y,$\langle$ys,r$\rangle\rangle\mapsto (map^{\mathbb{Z} \times \mathbb{N}^\infty} (\lambda a.(a,\llbracket$rec($w, \dots$)$\rrbracket \xi \{w \mapsto a\}),(j,(j,m))))\}$
-
-           $= \llbracket \dots \rrbracket \xi \{\dots \langle$y,$\langle$ys,r$\rangle\rangle\mapsto (j,map^{\mathbb{N}^\infty} (\lambda a.(a,\llbracket$rec($w, \dots$)$\rrbracket \xi \{w \mapsto a\}),(j,m)))\}$
-
-           $= \llbracket \dots \rrbracket \xi \{\dots \langle$y,$\langle$ys,r$\rangle\rangle\mapsto (j,((j,m),\llbracket$rec($w, \dots$)$\rrbracket \xi \{w \mapsto (j,m)\}))\}$
-
-           $= \llbracket \dots \rrbracket \xi \{\dots \langle$y,$\langle$ys,r$\rangle\rangle\mapsto (j,((j,m),g(j,m)))\}$
-
-           $= (3 + \pi_0(\pi_1(f\ x)\ j)) +_c$
-                $((1,(max\{x,j\},2+m))) \vee (1+\pi_0g(j,m),(max\{j,\pi_0\pi_1g(j,m)\},1 + \pi_1\pi_1g(j,m)))$
-
-           $= (3 + \pi_0(\pi_1(f\ x)\ j)) +_c$
-                $(1 \vee (1+\pi_0g(j,m)), (max\{x,j,\pi_0\pi_1g(j,m)\}, 2 + m \vee 1 + \pi_1\pi_1g(j,m)))$
-
-           $= (4 + \pi_0(\pi_1(f\ x)\ j) + \pi_0g(j,m), (max\{x,j\pi_0\pi_1g(j,m)\}, 2+m \vee 1 + \pi_1\pi_1g(j,m)))$
-
-       $g(i,n) = \bigvee_{size(z) \leq (i,n)} case(z, (f_{Nil},f_{Cons}))$
-  \end{lstlisting}
-\end{figure}
-%
-The initial result is given in equation \ref{eq:insert_initial_recurrence}.
+So the interpretation of $\|\T{insert}\|$ is
 %
 \begin{flalign*}
-  &f_{Nil}(\langle\rangle) = (1,(x,1)) \\
-  &f_{Cons}(j,(j,m)) = (4 + \pi_0(\pi_1(f\ x)\ j) + \pi_0g(j,m), \\
-  &\ \ \ \ (max\{x,j,\pi_0\pi_1g(j,m)\}, 2+m \vee 1 + \pi_1\pi_1g(j,m))) \\
-  \label{eq:insert_initial_recurrence}
-  &g(i,n) = \bigvee_{size(z) \leq (i,n)} case(z, (f_{Nil},f_{Cons})) \numberthis
+  \|\T{insert}\| &= (0, \llambda f.(0,\llambda x.(0,\llambda (i,n).g(i,n)))) %include x in g?
 \end{flalign*}
+%
+%\begin{figure}[H]
+%  \caption{Interpretation of \T{rec} in \T{insert}.}
+%  \label{fig:interp_sizes_outer_rec}
+%  \begin{lstlisting}
+%   $g(i,n) = \llbracket$rec(xs,
+%        Nil$\mapsto \langle1$,Cons$\langle$x,Nil$\rangle\rangle$
+%        Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle$.$(3 + (($f x$)_p $ y$)_c) +_c$rec($($f x$)_p $ y$)_p$,
+%                                         True$\mapsto \langle 1, $Cons$\langle$x,Cons$\langle$y,ys$\rangle\rangle\rangle$
+%                                         False$\mapsto \langle1 + $r$_c,$Cons$\langle$y$,$r$_p\rangle\rangle$)$)\rrbracket \xi \{$f$\mapsto f, $x$\mapsto x,$xs$\mapsto (i,n)\}$
+%
+%       $f_{Nil}(\langle\rangle) = (1,(x,1))$
+%
+%       $f_{Cons}((j,(j,m))) = (4 + \pi_0(\pi_1(f\ x)\ j) + \pi_0g(j,m), (max\{x,j\pi_0\pi_1g(j,m)\}, 2+m \vee 1 + \pi_1\pi_1g(j,m)))$
+%
+%       $g(i,n) = \bigvee_{size(z) \leq (i,n)} case(z, (f_{Nil},f_{Cons}))$
+%  \end{lstlisting}
+%\end{figure}
 %
 This recurrence is difficult to work with.  Specifically, we cannot apply
 traditional methods of solving it.  We will manipulate it into a more usable
@@ -384,7 +369,7 @@ those independently.
 %
 \begin{lemma}
   \label{lem:insert_rec_cost}
-  $g_c(i,n) \leq (4 + ((f\ x)_p\ i)_c n + 1$
+  $g_c(i,n) \leq (3 + ((f\ x)_p\ i)_c n + 1$
 \end{lemma}
 %
 \begin{proof}
@@ -397,12 +382,12 @@ those independently.
       \begin{flalign*}
         &= \bigvee_{size(z) \leq (i,n)} case(z, (f_{Nil}, f_{Cons})) &&\\
         &= \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} case((j, m), (f_{Nil}, f_{Cons})) &&\\
-        &= \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} 4 + ((f\ x)_p\ j)_c + g_c(j, m')) &&\text{where $m' = m - 1$}\\
-        &= \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} 4 + ((f\ x)_p\ j)_c + (4 + ((f\ x)_p\ j)_c)m' + 1 &&\text{by the induction hypothesis}\\
-        &= \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} (4 + ((f\ x)_p\ j)_c) (m' + 1) + 1 &&\\
-        &= \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} (4 + ((f\ x)_p\ j)_c) m + 1 &&\\
-        &\leq \bigvee_{i < j, m \leq n \text{ or } i \leq j, m < n} (4 + ((f\ x)_p\ i)_c) n + 1 &&\\
-        &\leq (4 + ((f\ x)_p\ i)_c) n + 1&&
+        &= \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} 3 + ((f\ x)_p\ j)_c + g_c(j, m')) &&\text{where $m' = m - 1$}\\
+        &= \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} 3 + ((f\ x)_p\ j)_c + (3 + ((f\ x)_p\ j)_c)m' + 1 &&\text{by the induction hypothesis}\\
+        &= \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} (3 + ((f\ x)_p\ j)_c) (m' + 1) + 1 &&\\
+        &= \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} (3 + ((f\ x)_p\ j)_c) m + 1 &&\\
+        &\leq \bigvee_{i < j, m \leq n \text{ or } i \leq j, m < n} (3 + ((f\ x)_p\ i)_c) n + 1 &&\\
+        &\leq (3 + ((f\ x)_p\ i)_c) n + 1&&
       \end{flalign*}
   \end{description}
 \end{proof}
@@ -468,7 +453,7 @@ can express the cost and potential of \T{insert} in terms of its arguments.
 %
 \begin{equation}
   \label{eq:insert_interp}
-  insert\ f\ x\ xs \leq (4 + ((f\ x)_p\ i)_c n + 1, (max\{x, i\}, n+1))
+  insert\ f\ x\ xs \leq (3 + ((f\ x)_p\ i)_c n + 1, (max\{x, i\}, n+1))
 \end{equation}
 %
 
@@ -510,7 +495,7 @@ the \T{Nil} and \T{Cons} branches in the \T{rec} are walked through in figures
 
   $= $Cons$\mapsto\langle$y,$\langle$ys,r$\rangle\rangle. 1 +_c $r$_c +_c 3 +_c \|$insert$\|_p$ f y r$_p$
 
-  $= $Cons$\mapsto\langle$y,$\langle$ys,r$\rangle\rangle. (4 + $r$_c) +_c \|$insert$\|_p$ f y r$_p$
+  $= $Cons$\mapsto\langle$y,$\langle$ys,r$\rangle\rangle. (3 + $r$_c) +_c \|$insert$\|_p$ f y r$_p$
 
   \end{lstlisting}
 \end{figure}
@@ -523,7 +508,7 @@ $\|$sort$\|$ = $\langle0,\lambda$f.$\langle0,\lambda$xs.$\|$rec(xs, Nil$\mapsto$
                         Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle$.insert f y force(r))$\|\rangle\rangle$
 
       = $\langle0,\lambda$f.$\langle0,\lambda$xs.rec(xs, Nil$\mapsto \langle$1,Nil$\rangle$
-                        Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle.4 +_c $r$_c +_c \|$insert$\|_p$ f y r$_p$
+                        Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle.3 +_c $r$_c +_c \|$insert$\|_p$ f y r$_p$
 \end{lstlisting}
 \end{figure}
 %
@@ -540,7 +525,7 @@ $\|$sort f xs$\| = (1 + \|$sort f$\|_c + \|$xs$\|_c) +_c \|$sort f$\|_p \|$xs$\|
           $ = 2 +_c \|$sort$\|_p $f$\|_p \|$xs$\|_p$
 
           $ = 2 +_c $rec($\|$xs$\|_p$, Nil$\mapsto \langle$1,Nil$\rangle$
-                        Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle.(4 + $r$_c) +_c \|$insert$\|_p$ f y r$_p$
+                        Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle.(3 + $r$_c) +_c \|$insert$\|_p$ f y r$_p$
 \end{lstlisting}
 \end{figure}
 %
@@ -556,13 +541,13 @@ walk through of the interpretation of the \T{rec} is given in figure
   \label{fig:sort_rec_interp}
   \begin{lstlisting}
   $g(i, n) = \llbracket $rec($\|$xs$\|_p$, Nil$\mapsto \langle$1,Nil$\rangle$
-                Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle.(4 + $r$_c) +_c \|$insert$\|_p$ f y r$_p$)$\rrbracket \xi \{ xs \mapsto n\}$
+                Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle.(3 + $r$_c) +_c \|$insert$\|_p$ f y r$_p$)$\rrbracket \xi \{ xs \mapsto n\}$
 
      $ = \llbracket $rec($\|$xs$\|_p$, Nil$\mapsto \langle$1,Nil$\rangle$
-                Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle.(4 + $r$_c) +_c \|$insert$\|_p$ f y r$_p$)$\rrbracket \xi \{ xs \mapsto n\}$
+                Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle.(3 + $r$_c) +_c \|$insert$\|_p$ f y r$_p$)$\rrbracket \xi \{ xs \mapsto n\}$
 
      $ = \llbracket $rec($\|$xs$\|_p$, Nil$\mapsto \langle$1,Nil$\rangle$
-                Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle.(4 + $r$_c) +_c \|$insert$\|_p$ f y r$_p$)$\rrbracket \xi \{ xs \mapsto n\}$
+                Cons$\mapsto \langle$y,$\langle$ys,r$\rangle\rangle.(3 + $r$_c) +_c \|$insert$\|_p$ f y r$_p$)$\rrbracket \xi \{ xs \mapsto n\}$
 
      $ = \bigvee_{size(z)\leq n} case(z,(f_{Nil},f_{Cons}))$
 
@@ -575,11 +560,11 @@ walk through of the interpretation of the \T{rec} is given in figure
 
     $ = \llbracket \dots \rrbracket \xi \{\langle$y,$\langle$ys,r$\rangle\rangle\mapsto (j,(m,\llbracket$rec($w, \dots$)$\rrbracket \xi \{w \mapsto m\})) \}$
 
-    $ = \llbracket (4 + $r$_c) +_c \|$insert$\|_p$ f y r$_p \rrbracket \xi \{\langle$y,$\langle$ys,r$\rangle\rangle\mapsto (j,(m,g(j, m)) \}$
+    $ = \llbracket (3 + $r$_c) +_c \|$insert$\|_p$ f y r$_p \rrbracket \xi \{\langle$y,$\langle$ys,r$\rangle\rangle\mapsto (j,(m,g(j, m)) \}$
 
-    $ = (4 + \pi_0 g(j, m)) +_c insert\ f\ j\ \pi_1g(j,m)$
+    $ = (3 + \pi_0 g(j, m)) +_c insert\ f\ j\ \pi_1g(j,m)$
 
-  $g(i, n) = \bigvee_{size(z)\leq n} case(z,(\lambda(\langle\rangle).(1,(\neg\infty,0)),\lambda(j,m).(4 + \pi_0 g(j,m)) +_c insert\ f\ j\ \pi_1g(j, m)))$
+  $g(i, n) = \bigvee_{size(z)\leq n} case(z,(\lambda(\langle\rangle).(1,(\neg\infty,0)),\lambda(j,m).(3 + \pi_0 g(j,m)) +_c insert\ f\ j\ \pi_1g(j, m)))$
   \end{lstlisting}
 \end{figure}
 %
@@ -587,7 +572,7 @@ Equation \ref{eq:sort_interp0_init} shows the initial recurrence extracted.
 %
 \begin{equation}
   \label{eq:sort_interp0_init}
-  g(i,n) = \bigvee_{size(z)\leq (i,n)} case(z,(\lambda(\langle\rangle).(1,(\neg\infty,0),\lambda(j,m).4 + \pi_0 g(j,m)) +_c(insert\ f\ j\ \pi_1g(j, m)))
+  g(i,n) = \bigvee_{size(z)\leq (i,n)} case(z,(\lambda(\langle\rangle).(1,(\neg\infty,0),\lambda(j,m).3 + \pi_0 g(j,m)) +_c(insert\ f\ j\ \pi_1g(j, m)))
 \end{equation}
 %
 Observe that in equation \ref{eq:sort_interp0_init}, the cost is depends on the
@@ -605,7 +590,7 @@ the potential first.
     \item[case $n=0$]$\pi_1g(i,n) = (i, 0)$
     \item[case $n>0$]\hfill \\
       \begin{flalign*}
-        \pi_1g(i,n) &= \pi_1 \bigvee_{size(z)\leq n} case(z,(\lambda(\langle\rangle).(1,(\neg\infty,0)),\lambda(j,m).4 + \pi_0 g(j,m)) +_c(insert\ f\ j\ \pi_1g(j, m)))\\
+        \pi_1g(i,n) &= \pi_1 \bigvee_{size(z)\leq n} case(z,(\lambda(\langle\rangle).(1,(\neg\infty,0)),\lambda(j,m).3 + \pi_0 g(j,m)) +_c(insert\ f\ j\ \pi_1g(j, m)))\\
         &= \bigvee_{j \leq i, m < n \text{ or } j < i, m \leq n} \pi_1 (insert\ f\ j\ \pi_1g(j', m'))\ \ \ \ \ j' \leq j, m' = m - 1\\
         &\leq \bigvee_{j \leq i, m < n \text{ or } j < i, m \leq n} \pi_1 (insert\ f\ j\ (j', m'))\\
         &\leq \bigvee_{j \leq i, m < n \text{ or } j < i, m \leq n} (max\{j, j'\}, m' + 1\\
@@ -627,7 +612,7 @@ potential of its output. We may solve the recurrence for the cost of \T{sort}.
 %
 \begin{lemma}
   \label{lem:sort_interp_cost}
-  $\pi_0g(n) \leq (4 + \pi_0(\pi_1(f\ x)\ i)n^2 + 5n + 1$
+  $\pi_0g(n) \leq (3 + \pi_0(\pi_1(f\ x)\ i)n^2 + 5n + 1$
 \end{lemma}
 %
 \begin{proof}
@@ -636,15 +621,15 @@ potential of its output. We may solve the recurrence for the cost of \T{sort}.
     \item[case $n=0$] $\pi_0 g(i,n) = 1$
     \item[case $n>0$] \hfill \\
       \begin{flalign*}
-        \pi_0g(i,n) &= \pi_0 \bigvee_{size(z) \leq (i,n)} case(z, (\lambda(\langle\rangle).(1,(\neg\infty,0)),\lambda(j,m).4 + \pi_0 g(j, m)) +_c (insert\ f\ j\ \pi_1g(j, m)))\\
-        &= \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} 4 + \pi_0 g(j, m - 1) + \pi_0(insert\ f\ j\ \pi_1g(j, m - 1))\\
-        &\leq \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} 4 + \pi_0 g(j, m - 1) + \pi_0(insert\ f\ j\ (j, m - 1))\\
-        &\leq \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} 4 + \pi_0 g(j, m - 1) + (4 + \pi_0(\pi_1(f\ j)\ j))(m - 1) + 1\\
-        & \text{let $c_1 = (4 + \pi_0(\pi_1(f\ j)\ j))$}\\
-        &\leq \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} 4 + c_1(m-1)^2 + 5(m-1) + 1 + c_1(m - 1) + 1\\
-        &\leq \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} 4 + c_1m^2 - 2c_1m +c_1 + 5m-5 + 1 + c_1m - c_1 + 1\\
+        \pi_0g(i,n) &= \pi_0 \bigvee_{size(z) \leq (i,n)} case(z, (\lambda(\langle\rangle).(1,(\neg\infty,0)),\lambda(j,m).3 + \pi_0 g(j, m)) +_c (insert\ f\ j\ \pi_1g(j, m)))\\
+        &= \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} 3 + \pi_0 g(j, m - 1) + \pi_0(insert\ f\ j\ \pi_1g(j, m - 1))\\
+        &\leq \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} 3 + \pi_0 g(j, m - 1) + \pi_0(insert\ f\ j\ (j, m - 1))\\
+        &\leq \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} 3 + \pi_0 g(j, m - 1) + (3 + \pi_0(\pi_1(f\ j)\ j))(m - 1) + 1\\
+        & \text{let $c_1 = (3 + \pi_0(\pi_1(f\ j)\ j))$}\\
+        &\leq \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} 3 + c_1(m-1)^2 + 5(m-1) + 1 + c_1(m - 1) + 1\\
+        &\leq \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} 3 + c_1m^2 - 2c_1m +c_1 + 5m-5 + 1 + c_1m - c_1 + 1\\
         &\leq \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} c_1m^2 - c_1m + 5m + 1\\
-        &\leq \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} (4 + \pi_0(\pi_1(f\ i)\ i))n^2 + 5n + 1\\
+        &\leq \bigvee_{j < i, m \leq n \text{ or } j \leq i, m < n} (3 + \pi_0(\pi_1(f\ i)\ i))n^2 + 5n + 1\\
         &\leq (4 + \pi_0(\pi_1(f\ i)\ i))n^2 + 5n + 1
       \end{flalign*}
   \end{description}
