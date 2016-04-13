@@ -1,5 +1,6 @@
+\chapter{Sequential Recurrence Extraction Examples}
 % ---------------------------------------- FAST REVERSE ----------------------------------------
-\chapter{Fast Reverse}
+\section{Fast Reverse}
 Fast reverse is an implementation reverse in linear time complexity. 
 A naive implementation of reverse appends the head of the list to recursively
 reversed tail of  the list. Fast reverse instead uses an abstraction to delay
@@ -55,7 +56,7 @@ rev (Cons$\langle$0,Cons$\langle$1, Nil$\rangle\rangle$) $\to$
 \end{lstlisting}
 
 % -------------------- BEGIN REV TRANSLATION SPLIT --------------------   
-\section{Translation}
+\subsection{Translation}
 We will walk through the translation from the source language to the complexity
 language.
 %
@@ -283,7 +284,7 @@ pattern matching syntactic sugar as in the source language.
 %
 % FAST REVESE TRANSLATION USING SYNTACTIC SUGAR
 %
-\section{Syntactic Sugar Translation}
+\subsection{Syntactic Sugar Translation}
 %
 We walk through the same translation of fast reverse, but we use the syntactic
 sugar for matching introducted earlier. Recall the implementation of fast using
@@ -426,7 +427,7 @@ will use the syntactic sugar for the rest of this thesis.
 %
 % ============= FAST REVERSE INTERPRETATION ====================
 %
-\section{Interpretation}
+\subsection{Interpretation}
 %
 The interpretation of \T{rev} is not interesting as the cost of \T{rev} is always null.
 Instead of interpreting \T{rev}, we will interpret \T{rev} applied to a list \T{xs}.

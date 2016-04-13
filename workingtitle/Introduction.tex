@@ -1,7 +1,7 @@
 \chapter{Introduction}
 
 \section{Complexity Analysis}
-\paragraph{}
+
 The efficiency of programs is categorized by how the resource usage of a
 program increases with the input size in the limit.  This is often called the
 asymptotic efficiency or complexity of a program.  Asymptotic efficiency
@@ -9,11 +9,8 @@ abstracts away the details of efficiency, allowing programs to be compared
 without knowledge of specific hardware architecture or the size and shape of
 the programs input (\citet{Cormen2001}).  However, traditional complexity
 analysis is first-order; the asymptotic efficiency of a program is only
-expressed in terms of its input.  For example, traditional analysis of the function
-\T{map:(a -> b) -> [b] -> [a]}, which applies a function to every element in a
-list, assumes the cost of applying its first argument is constant.  \T{map}
-is implemented below in OCaml.
-
+expressed in terms of its input.  Consider the following function.
+%
 \lstset{language=[Objective]Caml}
 \begin{lstlisting}
 let rec map f xs =
@@ -21,63 +18,78 @@ let rec map f xs =
   | [] -> []
   | (x::xs') -> f x :: map f xs'
 \end{lstlisting}
+%
+The function \T{map} applies a function to every element in a list.
+Traditional analysis assumes the cost of applying its first argument is
+constant.
+
 
 Traditional complexity analysis proceeds as follows.  First we write a
-recurrence for the cost.  \[ T(n) = c + T(n-1) \] Then we solve this recurrence
-using the substitution method in \citet{Cormen2001}.  We guess the solution is
-$T(n) = cn$.  We check it by proving $T(n) = cn$ by induction on $n$.
+recurrence for the cost.  \[ T(n) = c + T(n-1) \] The variable $n$ is the
+length of the list and the constant \T{c} is the cost of applying the function
+$f$ to an element of the list and then applying the cons function \T{::}. The
+result is the asymptotic efficiency of \T{map} is linear in the length of the
+list.
 
-\begin{align*}
-  T(n) &= c + T(n-1)\\
-       &= c + c(n-1) \\
-       &= c + cn - c \\
-       &= cn
-\end{align*}
+The are two problems with this approach. The first is that there is no formal
+connection between the implementation of \T{map} and the recurrence $T(n)$. The
+consequence is extraction of the correct recurrence relies on the absence of
+human error, which the author of this thesis can attest the difficulty of
+doing. A formalization of the connection between the source program and
+the recurrence would prevent this. The translation from the source program to
+the recurrence could be done using application of a series of rules and the
+translation could even be automated.
 
-The result is the asymptotic efficiency of \T{map} is linear in
-the length of the list.
-
-If the cost function is has a constant cost, such as fixed width integer
-addition, then this first-order analysis is sufficient.  The cost of mapping a
-constant cost function over a list will increase linearly in the size of the
-list.  However, first-order complexity analysis will not accurately describe
-the cost of mapping a nontrivial function over a list.  Consider insertion
-sort, which is quadratic in the size of its argument.  The cost of mapping this
-function over a list of lists depends not only on the length of the list, but
-also on the length of the sublists.  A more accurate prediction of the cost of
-this function can be obtained by taking into account the cost of insertion
-sort.
+The second is that the analysis assumes the cost of applying the function \T{f} to
+each element in the list has a constant cost. If the cost function is has a
+constant cost, such as fixed width integer addition, then this first-order
+analysis is sufficient.  The cost of mapping a constant cost function over a
+list will increase linearly in the size of the list.  However, first-order
+complexity analysis will not accurately describe the cost of mapping a
+nontrivial function over a list.  Consider insertion sort, which is quadratic
+in the size of its argument.  The cost of mapping this function over a list of
+lists depends not only on the length of the list, but also on the length of the
+sublists.  A more accurate prediction of the cost of this function can be
+obtained by taking into account the cost of insertion sort.
 
 For an example such \T{map}, it is simple enough to change our analysis to
-reflect that applying the functions \T{f} and \T{::} does not have constant
-cost $c$, but instead has cost $c_f + c_{::}$.  Using the same substitution
-method as before, our guess becomes $T(n) = (c_f + c_{::})n$.  We prove our
-guess by induction on $n$.
-%
-\begin{align*}
-  T(n) &= c_f + c_{::} + T(n-1) \\
-       &= c_f + c_{::} + (c_f + c_{::})(n-1) \\
-       &= c_f + c_{::} + (c_f + c_{::})n - c_f - c_{::}  \\
-       &= (c_f + c_{::})n
-\end{align*}
-%
-Our analysis of the cost of \T{map} is now parameterized by the cost \T{f} and
-\T{::}.
+reflect that applying the functions \T{f} does not have constant cost $c$, but
+instead has cost $f_c(x)$, where $x$ is some notion of size of the elements of
+the list. If the elements of the list are fixed width integers, then all $x$
+would be equivalent, and $f_c(x)$ would be constant. If the elements of the
+list are strings or lists than the notion of size could be their
+length. We can no longer interpret the size of lists to be their lengths,
+because then we have no information about the size of the elements we apply $f$
+to. So we interpret lists as their length and their largest element. The
+recurrence for the cost of \T{map} becomes $T(n,x) = (f_c(x) + c)n$. Our
+analysis of the cost of \T{map} is now parameterized by the cost applying \T{f}
+to the elements of the list. However, this does not allow us to analyze the
+composition of functions. For example to analyze the cost of $g \circ f$, we
+need to have a notion of the size of the result of $f$, as well as the cost. We
+need to have a notion of the size of the result of $f$ in order to analyze the
+cost of applying $g$ to the result of applying $f$ to some value.
 
-Although this is sufficient for a function such as \T{map}, where the cost at
-each recursive call of \T{map} does not depend on the result of the recursive
-call on the tail of the argument since, in OCaml, \T{::} is a constant time
-operation.  If the cost of \T{::} was not constant, then our analysis would
-break down because we would need to know the size of the result of the
-recursive call in order to know the cost of \T{::}.
-
-To address this, we can consider the complexity of an expression to be a
-pair of a cost and a potential.  This is the approach taken by
-\citet{Danner2007}.  The cost of an expression an upper bound on the time
-required to evaluate an expression.  The cost can be a natural number or, for
-parallel analysis, a cost graph representing the dependencies between
-sub-computations.  The potential is a measure of the cost of future use of the
-expression.
+The method of extracting recurrences presented in \citet{Danner2013} and
+\citet{Danner2015} addresses these problems. The first problem with traditional
+analysis is there is no formal connection between a program and the recurrence
+for its cost. There is a language which progams are written in, which we will
+refer to as the source language, and a language in which recurrences are
+written in, which we will refer to as the complexity language. In traditional
+complexity analysis, the source language is some programming language and the
+complexity language is mathematics, and there is no formalization of how a
+program in the source language is translated into the complexity language.
+There is also no proof that the mathematical recurrence for the cost of the
+source language program is an upper bound on the cost of executing the source
+language program. \citet{Danner2013} address this problem by formally defining
+a translation from a source language to a complexity language and proving the
+recurrence in the complexity language is an upper bound on the cost of
+executing the source language program. The complexity language is also higher
+order. So if the source language program is higher order, such as \T{map}, the
+recurrence in the complexity language will reflect the cost of applying the
+higher order function. Finally, functions in the complexity language are from
+potentials to complexitys, so the result of applying a function results in both
+a cost of the function and a potential which can be used to analyze the cost of
+applying another function to the result.
 
 \section{Previous Work}
 
@@ -127,7 +139,7 @@ preferable to others depending on what is being analyzed.
 
 This thesis comes in three parts.
 \paragraph{}
-The first part contains a catalog of examples of the extraction of recurrences
+The first chapter contains a catalog of examples of the extraction of recurrences
 from functional programs using the approach given by \citet{Danner2015}. These
 examples illustrate how to apply the method to nontrivial examples. They also
 serve to demonstrate common techniques for solving the extracted recurrences.
@@ -139,7 +151,7 @@ parametric insertion sort, list map, and tree map.
 
 
 \paragraph{}
-The second part extends the analysis to parallel programs. We change costs from
+The second chapter extends the analysis to parallel programs. We change costs from
 from natural numbers to the cost graphs described in \citet{Harper2012PFPL}. A cost
 graph represents the dependencies between subcomputations in a program. The
 nodes of the graph are subcomputations of the program and an edge between two
@@ -152,7 +164,7 @@ run the program. The span is the critical path; the longest number of steps
 from the start to the end of the cost graph.
 
 \paragraph{}
-The third part demonstrates the recurrence for the potential does not depend on
+The third chapter demonstrates the recurrence for the potential does not depend on
 the recurrence for the cost. Consequently, we can extract the recurrence for the
 potential and analyze it independently. This is useful because it is often
 easier to solve the cost and potential recurrences independently than it is to

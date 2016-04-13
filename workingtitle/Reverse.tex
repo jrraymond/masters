@@ -1,4 +1,4 @@
-\chapter{Reverse}
+\section{Reverse}
 %
 Here we present the naive implementation of list reverse. The naive
 implementation reverses a list in quadratic time as opposed to linear time.
@@ -26,11 +26,11 @@ the head of the list to the recursively reversed tail of the list.
 \end{flalign*}
 %
 %
-\section{Translation}
+\subsection{Translation}
 %
 % BEGIN SNOC TRANSLATION ========================================
 %
-\subsection{\T{snoc} Translation}
+\subsubsection{\T{snoc} Translation}
 %
 First we translate the function \T{snoc}. To do so we apply the rule for
 translating an abstraction two times. Recall the rule is
@@ -131,7 +131,7 @@ We substitute this result into our translation of \T{rev}
 %
 % BEGIN REV TRANSLATION
 %
-\subsection{\T{rev} Translation}
+\subsubsection{\T{rev} Translation}
 %
 The translation into the complexity language follows
 %
@@ -192,7 +192,7 @@ application.
 %
 %
 %
-\section{Interpretation}
+\subsection{Interpretation}
 %
 We intepret the size of an \T{list} to be the number of \T{Cons} constructors.
 %
@@ -204,7 +204,7 @@ We intepret the size of an \T{list} to be the number of \T{Cons} constructors.
 \end{align*}
 %
 %
-\subsection{\T{snoc} Interpretation}
+\subsubsection{\T{snoc} Interpretation}
 %
 We interpret $\|\T{snoc xs x}\|$. Recall the translation.
 %
@@ -279,7 +279,7 @@ equation describing the complexity of $\|\T{snoc}\|$.
 %\end{flalign*}
 %
 %
-\subsection{\T{rev} Interpretation}
+\subsubsection{\T{rev} Interpretation}
 %
 Recall the translation of \T{rev xs}.
 \begin{flalign*}
