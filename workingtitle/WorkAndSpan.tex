@@ -1,19 +1,30 @@
-\chapter{Parallel Recurrence Extraction}
+\chapter{Parallel Functional Program Analysis}
+
+We demonstrate the flexibility of the method developed in \citet{Danner2015} by
+extending it to parallel cost semantics.  To analyze the complexity of a
+sequential program, we are only interested in a measure of how many steps
+required to run the program. To analyze the complexity of a parallel program,
+we need a measure which takes into account the extent to which a computation
+may be run on multiple processors.  The cost semantics we use are work and span
+\citet{Harper2012PFPL}.  We give a brief overview of work and span, then
+demonstrate how to alter the semantics and translation function. We state and
+sketch a proof of a bounding theorem stating the translation of a program is an
+upper bound on the cost of executing the program. Finally we give two examples
+of the recurrence extraction and interpretation.
 
 \section{Work and span}
-Work and span is a method of calculating the cost of programs that may be run
-on multiple machines.  The work of a program corresponds to the total number of
-steps needed to run.  The span of a program is the steps in the critical path.
-The critical path is the largest number of steps that must be executed
-sequentially.  The length of the critical path determines how much a program
-can be parallelized.  If the span is equal to the work, than every step in the
-computation depends on the previous step, and the program cannot be
-parallelized.
+Work and span is a method of predicting the running time of programs that may
+be run on arbitrary number of processors. Instead of an approximation of the
+number of steps required to execute a program, work and span instead results in
+a cost graph, a specification of the dependencies between subcomputations of
+the program. The cost graph can be compiled into The work of a program
+corresponds to the total number of steps needed to run.  The span of a program
+is the steps in the critical path.  The critical path is the largest number of
+steps that must be executed sequentially.  The length of the critical path
+determines how much a program can be parallelized.  If the span is equal to the
+work, than every step in the computation depends on the previous step, and the
+program cannot be parallelized.
 
-
-Instead of calculating the cost of program, we will construct a cost graph.
-The cost graph represents dependencies between computations in a program and
-may be used to determine optimal execution strategies.
 
 A cost graph is defined as follows.
 
@@ -45,14 +56,17 @@ The span of a cost graph is defined as
   \end{cases}
 \end{equation*}
 %
-We alter the operational semantics of the source language slightly to reflect
-that the cost of evaluating an expression is a cost graph instead of an
-integer.  Figure \ref{fig:ws_srclang_oper_sem} shows the new operational
-semantics.  For tuples, the subexpressions may be evaluated in parallel, so the
-cost of evaluating a tuple is the cost graphs of the subexpressions connected
-by $\otimes$.  For \T{split}, the second subexpression depends on the result of
-the first subexpression, so the cost of evaluating the \T{split} is the cost
-graphs of the subexpression connected by $\oplus$.
+We alter the operational cost semantics of the source language to produce a cost
+graph instead of a natural number. Figure \ref{fig:ws_srclang_oper_sem} shows
+the new operational cost semantics. For tuples, the subexpressions may be evaluated
+in parallel, so the cost of evaluating a tuple is the cost graphs of the
+subexpressions connected by $\otimes$.  For \T{split}, the second subexpression
+depends on the result of the first subexpression, so the cost of evaluating the
+\T{split} is the cost graphs of the subexpression connected by $\oplus$. In
+every rule except for tuples and function application, $+$ gets replacted with
+$\oplus$. This is because tuples and function application are the two syntactic
+forms which consist of multiple subexpressions whose evaluation does not depend
+on each other.
 %
 \begin{figure}
 \label{fig:ws_srclang_oper_sem}
@@ -115,7 +129,7 @@ graphs of the subexpression connected by $\oplus$.
 \DisplayProof
 \end{figure}
 %
-The complexity translation is given in figure
+The complexity translation is given in Figure
 \ref{fig:ws_complexity_translation}.  The operator $E_0 \oplus_c E_1$ is
 syntactic sugar for $\langle E_0 \oplus E_{1c}, E_{1p} \rangle$.  The
 translation is similar to the original translation except we replace the use of
@@ -159,7 +173,7 @@ We use the same data type \T{list} and \T{map} function as in sequential list ma
   \T{map} = \lambda f. \lambda xs . \T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \T{Cons} \mapsto \langle y \langle ys, y \rangle\rangle. \T{Cons}\langle f\ y, \T{force}(r)\rangle)
 \end{equation*}
 
-The derivation of the complexity expression is given in figure \ref{fig:ws_map_complexity_translation}.
+The derivation of the complexity expression is given in Figure \ref{fig:ws_map_complexity_translation}.
 \begin{figure}
   \label{fig:ws_map_complexity_translation}
   \caption{Work and span complexity translation of \T{map f xs}.}
@@ -210,7 +224,7 @@ We interpret lists as a pair of their largest element and length.
   size_\T{list}((x, (m, n))) &= (max(x, m), 1 + n)
 \end{align*}
 
-The interpretation of the recurser is given in figure \ref{fig:ws_map_interpretation}.
+The interpretation of the recurser is given in Figure \ref{fig:ws_map_interpretation}.
 
 \begin{figure}
   \label{fig:ws_map_interpretation}
