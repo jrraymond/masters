@@ -1,0 +1,170 @@
+\documentclass[25pt, a0paper, landscape, margin=25.4mm]{tikzposter}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[backend=bibtex]{biblatex}
+\usepackage{filecontents}
+
+\bibliography{bibliography}
+\bibstyle{apalike}
+
+\newcommand{\T}[1]{\texttt{#1}}
+
+\makeatletter
+\def\title#1{\gdef\@title{\scalebox{\TP@titletextscale}{%
+\begin{minipage}[t]{\linewidth}
+\centering
+#1
+\par
+\vspace{0.5em}
+\end{minipage}%
+}}}
+\makeatother
+
+\makeatletter
+\renewenvironment{tikzfigure}[1][]{
+  \def \rememberparameter{#1}
+  \vspace{10pt}
+  \refstepcounter{figurecounter}
+  \begin{center}
+  }{
+    \ifx\rememberparameter\@empty
+    \else %nothing
+    \\[10pt]
+    {\Large Fig.~\thefigurecounter: \rememberparameter}
+    \fi
+  \end{center}
+}
+\makeatother
+
+\title{Extraction of Cost Recurrences from Sequential and Parallel Functional Programs}
+\institute{Wesleyan University} % See Section 4.1
+\author{Justin Raymond}
+%\titlegraphic{\includegraphics[height=50pt]{wesleyan_shield.png}}
+
+\usetheme{Simple}  % See Section 5
+
+\begin{document}
+\maketitle  % See Section 4.1
+
+\begin{columns}  % See Section 4.4
+
+\column{0.33}
+%
+% ABSTRACT
+%
+\block{Abstract}{
+  \Large
+Complexity analysis aims to predict the resources, most often time and space,
+which a program requires. Traditional complexity analysis is not compositional,
+often does not address higher order functions, and there is no formal relation
+between programs and the equations that describe their complexity. We build on
+previous work by \cite{Danner2013} and \cite{Danner2015} which formalizes the
+extraction of cost recurrences from higher order functional programs. We use
+the formalization to analyze the time complexity of higher order functional
+programs. We also demonstrate the flexibility of the method by extending it
+to parallel cost semantics.
+}
+\block{Complexity Analysis}{
+\LARGE
+The higher order function \T{fold} reduces a list to a single element using a
+combining function.
+%
+\begin{align*}
+  \T{fold} &= \lambda f\ z\ xs.\T{rec}(xs,\T{Nil} \mapsto z, \\
+           &\qquad \T{Cons}\mapsto (x,xs',r).f\ x\ \T{force}(r))
+\end{align*}
+%
+\normalfont
+To analyze the complexity of \T{fold}, we write down a recurrence $T(n)$ which
+reflects the number of steps to execute the \T{fold} applied to a function $f$,
+a seed value $z$, and a list $xs$.
+%
+\[ T(n) = c_f + T(n-1) \]
+%
+The closed form solution is $T(n) = c_f\ n$. The method we used to write the
+recurrence for the program was informal. The analysis is not composable: we
+cannot use our results to analyze \T{map f $\circ$ fold g z}. The analysis also
+assumes the cost of applying $f$ to each item in the list is constant.
+}
+%
+% Higher Order Complexity Analysis
+%
+\column{0.33}
+\block{Higher Order Complexity Analysis}{
+  \LARGE
+  Instead of considering the complexity of a program as a cost, we consider it
+  as a pair of a cost and a potential.  The cost is a bound on the steps
+  required to run the program. The potential is a measure of the cost of future
+  use of the program.
+  %
+  \begin{tikzfigure}[The type of the translation function.]
+    $\|\tau\| = \textbf{C} \times \langle\!\langle \tau \rangle\!\rangle$
+  \end{tikzfigure}
+  %
+  To formally extract a recurrence from a program, we translate it from its
+  original "source" language into a "complexity" language. We then interpret
+  the complexity language program in a denotational semantics to obtain the
+  recurrence.
+  %
+  \begin{tikzfigure}[The translation of a tuple.]
+    $\|\langle e_0,e_1\rangle\| = \langle \|e_0\|_c + \|e_1\|_c, \langle \|e_0\|_p \|e_1\|_p\rangle\rangle$
+  \end{tikzfigure}
+  %
+  This is a formal process for extracting a recurrence for the cost of executing
+  a program, and the recurrence is a bound on the cost of executing the program.
+
+  Since the analysis of a program results in a measure of future use of the
+  program, we can compose analysis of programs to analyze the composition of
+  the programs as well analyze higher-order programs.
+}
+\block{References}{
+  \printbibliography[heading=none]
+}
+%
+% Parallel Complexity Analysis
+%
+\column{0.33}
+\block{Parallel Complexity Analysis}{
+  \LARGE
+  To analyze the complexity of a parallel program we use a specification that is
+  agnostic to the details of how to schedule subcomputations, that is the
+  analysis does not depend on the number of processors available. Instead of
+  representing costs as natural numbers, we represent a cost as a graph which
+  describes the dependencies between subcomputations of the program.
+  %
+  \begin{tikzfigure}[Cost graph definition]
+    $\textbf{C} = 0\ |\ 1\ |\ \textbf{C} \oplus \textbf{C}\ |\ \textbf{C} \otimes \textbf{C}$
+  \end{tikzfigure}
+
+  Two measures can be extracted from the cost
+  graph: work, the total amount of steps to execute a program, and span, the length
+  of the critical path of the program execution. The predicted running time of
+  a program with work $w$ and span $s$ on $p$ processors is given by Brent's
+  Theorem:
+  \[
+    O(max(\frac{w}{p}, s))
+  \]
+  %
+  The translation rules must be altered to produce cost graphs instead of
+  natural numbers.
+  %
+  \begin{tikzfigure}[Parallel Translation of a tuple]
+      $\|\langle e_0,e_1\rangle\| = \langle \|e_0\|_c \otimes \|e_1\|_c, \langle \|e_0\|_p,\|e_1\|_p\rangle\rangle$
+  \end{tikzfigure}
+  %
+  The steps to execute the source language program is bounded by the
+  recurrence in the translated complexity language program.
+  %
+  \begin{tikzfigure}[Bounding Theorem]
+    If $\gamma \vdash e : \tau$, then $e \sqsubseteq \|e\|$
+  \end{tikzfigure}
+  %
+  $\sqsubseteq$ is a binary  logical relation stating the cost of executing
+  the program $e$ is bounded by the cost of $\|e\|$.
+}
+
+\end{columns}
+
+
+\end{document}

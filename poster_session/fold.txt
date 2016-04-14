@@ -1,0 +1,2 @@
+  fold = \f.\z.\xs.rec(xs, Nil -> z,
+                           Cons -> (x,xs',r).f x force(r))
