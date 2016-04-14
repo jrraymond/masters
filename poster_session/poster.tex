@@ -78,7 +78,7 @@ combining function.
 \normalfont
 To analyze the complexity of \T{fold}, we write down a recurrence $T(n)$ which
 reflects the number of steps to execute the \T{fold} applied to a function $f$,
-a seed value $z$, and a list $xs$.
+a seed value $z$, and a list $xs$ of length $n$.
 %
 \[ T(n) = c_f + T(n-1) \]
 %
@@ -116,7 +116,7 @@ assumes the cost of applying $f$ to each item in the list is constant.
 
   Since the analysis of a program results in a measure of future use of the
   program, we can compose analysis of programs to analyze the composition of
-  the programs as well analyze higher-order programs.
+  the programs as well analyze higher order programs.
 }
 \block{References}{
   \printbibliography[heading=none]
@@ -128,7 +128,7 @@ assumes the cost of applying $f$ to each item in the list is constant.
 \block{Parallel Complexity Analysis}{
   \LARGE
   To analyze the complexity of a parallel program we use a specification that is
-  agnostic to the details of how to schedule subcomputations, that is the
+  agnostic to the details of how to schedule subcomputations; that is the
   analysis does not depend on the number of processors available. Instead of
   representing costs as natural numbers, we represent a cost as a graph which
   describes the dependencies between subcomputations of the program.
