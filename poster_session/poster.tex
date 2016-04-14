@@ -4,6 +4,7 @@
 \usepackage{amssymb}
 \usepackage[backend=bibtex]{biblatex}
 \usepackage{filecontents}
+\usepackage{color}
 
 \bibliography{bibliography}
 \bibstyle{apalike}
@@ -37,9 +38,24 @@
 }
 \makeatother
 
+\settitle{
+\centering
+\vbox{
+\color{white}
+\vspace*{2em}
+\centering
+{\bfseries\sffamily\fontsize{60pt}{72pt}\selectfont\@title\par}
+\vspace*{0.1em}{\LARGE\sffamily \@author \par}
+\vspace*{0.1em}{\Large\sffamily Advisor: Professor Norman Danner \par}
+\vspace*{0.1em}{\large\sffamily \@institute\par}
+%\@titlegraphic \\
+%[\TP@titlegraphictotitledistance]
+}}
+
 \title{Extraction of Cost Recurrences from Sequential and Parallel Functional Programs}
 \institute{Wesleyan University} % See Section 4.1
 \author{Justin Raymond}
+%\advisor{Professor Norman Danner}
 %\titlegraphic{\includegraphics[height=50pt]{wesleyan_shield.png}}
 
 \usetheme{Simple}  % See Section 5
