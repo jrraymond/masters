@@ -1,24 +1,30 @@
 \chapter{Parallel Recurrence Extraction}
 
 \section{Work and span}
-Work and span is a method of calculating the cost of programs that may be run on multiple machines.
-The work of a program corresponds to the total number of steps needed to run.
-The span of a program is the steps in the critical path.
-The critical path is the largest number of steps that must be executed sequentially.
-The length of the critical path determines how much a program can be parallelized.
-If the span is equal to the work, than every step in the computation depends on the previous step, and the program cannot be parallelized.
+Work and span is a method of calculating the cost of programs that may be run
+on multiple machines.  The work of a program corresponds to the total number of
+steps needed to run.  The span of a program is the steps in the critical path.
+The critical path is the largest number of steps that must be executed
+sequentially.  The length of the critical path determines how much a program
+can be parallelized.  If the span is equal to the work, than every step in the
+computation depends on the previous step, and the program cannot be
+parallelized.
+
 
 Instead of calculating the cost of program, we will construct a cost graph.
-The cost graph represents dependencies between computations in a program and may be used to determine optimal execution strategies.
+The cost graph represents dependencies between computations in a program and
+may be used to determine optimal execution strategies.
 
 A cost graph is defined as follows.
 
-\[ \mathcal{C} ::= 0 | 1 | \mathcal{C} \oplus \mathcal{C} | \mathcal{C} \otimes \mathcal{C} \]
+\[ \mathcal{C} ::= 0\ |\  1\ |\  \mathcal{C} \oplus \mathcal{C}\ |\  \mathcal{C} \otimes \mathcal{C} \]
 
-The operator $\oplus$ connects to cost graphs who must be combined sequentially.
-The operator $\otimes$ connects cost graphs which may be combined in parallel.
+The operator $\oplus$ connects to cost graphs who must be combined
+sequentially.  The operator $\otimes$ connects cost graphs which may be
+combined in parallel.
 
 The work of a cost graph is defined as 
+%
 \begin{equation*}
   work(c) = \begin{cases}
     0 &\text{if } c = 0 \\
@@ -27,8 +33,9 @@ The work of a cost graph is defined as
     work(c_0) + work(c_1) &\text{if } c = c_0 \oplus c_1
   \end{cases}
 \end{equation*}
-
+%
 The span of a cost graph is defined as
+%
 \begin{equation*}
   span(c) = \begin{cases}
     0 &\text{if } c = 0 \\
@@ -37,14 +44,16 @@ The span of a cost graph is defined as
     span(c_0) + span(c_1) &\text{if } c = c_0 \oplus c_1
   \end{cases}
 \end{equation*}
-
-
-We alter the operational semantics of the source language slightly to reflect that the cost of evaluating an expression is a cost graph instead of an integer.
-Figure \ref{fig:ws_srclang_oper_sem} shows the new operational semantics.
-For tuples, the subexpressions may be evaluated in parallel, so the cost of evaluating a tuple is the cost graphs of the subexpressions connected by $\otimes$.
-For \T{split}, the second subexpression depends on the result of the first subexpression, so the cost of evaluating the \T{split} is the cost graphs of the subexpression connected by $\oplus$.
-
-
+%
+We alter the operational semantics of the source language slightly to reflect
+that the cost of evaluating an expression is a cost graph instead of an
+integer.  Figure \ref{fig:ws_srclang_oper_sem} shows the new operational
+semantics.  For tuples, the subexpressions may be evaluated in parallel, so the
+cost of evaluating a tuple is the cost graphs of the subexpressions connected
+by $\otimes$.  For \T{split}, the second subexpression depends on the result of
+the first subexpression, so the cost of evaluating the \T{split} is the cost
+graphs of the subexpression connected by $\oplus$.
+%
 \begin{figure}
 \label{fig:ws_srclang_oper_sem}
 \caption{Source language operational semantics}
@@ -105,14 +114,15 @@ For \T{split}, the second subexpression depends on the result of the first subex
 \BinaryInfC{$let(e_0, x.e_1) \downarrow^{n_0 \oplus n_1} v$}
 \DisplayProof
 \end{figure}
-
-
-The complexity translation is given in figure \ref{fig:ws_complexity_translation}.
-The operator $E_0 \oplus_c E_1$ is syntactic sugar for $\langle E_0 \oplus E_{1c}, E_{1p} \rangle$.
-The translation is similar to the original translation except we replace the use of $+$ and $+_c$ with $\oplus$ and $\oplus_c$.
-In the tuple case and function application case we use $\otimes$ since the arguments do not depend on each other and may be computed in parallel.
-
-
+%
+The complexity translation is given in figure
+\ref{fig:ws_complexity_translation}.  The operator $E_0 \oplus_c E_1$ is
+syntactic sugar for $\langle E_0 \oplus E_{1c}, E_{1p} \rangle$.  The
+translation is similar to the original translation except we replace the use of
+$+$ and $+_c$ with $\oplus$ and $\oplus_c$.  In the tuple case and function
+application case we use $\otimes$ since the arguments do not depend on each
+other and may be computed in parallel.
+%
 \begin{figure}
   \label{fig:ws_complexity_translation}
   \caption{Work and span translation from source language to compleity language}
@@ -131,7 +141,7 @@ In the tuple case and function application case we use $\otimes$ since the argum
     \|let(e_0, x.e_1)\| &= \|e_0\|_c \oplus_c \|e_1\|[\|e_0\|_p/x]
   \end{align*}
 \end{figure}
-
+%
 \section{Bounding Relation}
 TODO
 
