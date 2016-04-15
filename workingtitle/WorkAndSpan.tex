@@ -34,7 +34,7 @@ The operator $\oplus$ connects to cost graphs who must be combined
 sequentially.  The operator $\otimes$ connects cost graphs which may be
 combined in parallel.
 
-The work of a cost graph is defined as 
+The work of a cost graph is defined as
 %
 \begin{equation*}
   work(c) = \begin{cases}
@@ -71,34 +71,49 @@ on each other.
 \begin{figure}
 \label{fig:ws_srclang_oper_sem}
 \caption{Source language operational semantics}
+
+\bigskip
+
 \AxiomC{$e_0 \downarrow^{n_0} v_0$}
 \AxiomC{$e_1 \downarrow^{n_1} v_1$}
 \BinaryInfC{$\langle e_0, e_1 \rangle \downarrow^{n_0 \otimes n_1} \langle v_0, v_1 \rangle$}
 \DisplayProof
-
+%
+\quad
+%
 \AxiomC{$e_0 \downarrow^{n_0} \langle v_0, v_1 \rangle$}
 \AxiomC{$e_1[v_0/x_0, v_1/x_1] \downarrow^{n_1} v$}
 \BinaryInfC{$split(e_0, x_0.x_1.e_1) \downarrow^{n_0 \oplus n_1} v$}
 \DisplayProof
+
+\bigskip
 
 \AxiomC{$e_0 \downarrow^{n_0} \lambda x.e_0'$}
 \AxiomC{$e_1 \downarrow^{n_1} v_1$}
 \AxiomC{$e_0'[v_1/x] \downarrow^n v$}
 \TrinaryInfC{$e_0\ e_1 \downarrow^{(n_0 \otimes n_1) \oplus n \oplus 1} v$}
 \DisplayProof
-
+%
+\quad
+%
 \AxiomC{}
 \UnaryInfC{$delay(e) \downarrow^0 delay(e)$}
 \DisplayProof
+
+\bigskip
 
 \AxiomC{$e \downarrow^{n_0} delay(e_0)$}
 \AxiomC{$e_0 \downarrow^{n_1} v$}
 \BinaryInfC{$force(e) \downarrow^{n_0 \oplus n_1} v$}
 \DisplayProof
-
+%
+\quad
+%
 \AxiomC{$e \downarrow^n v$}
 \UnaryInfC{$C e \downarrow^n C v$}
 \DisplayProof
+
+\bigskip
 
 \AxiomC{$e \downarrow^{n_0} C v_0$}
 \AxiomC{$map^{\phi_C}(y.\langle y, delay(rec(y, \overline{C \mapsto x.e_C}))\rangle, v_0) \downarrow^{n_1} v_1$}
@@ -106,23 +121,33 @@ on each other.
 \TrinaryInfC{$rec(e, \overline{C \mapsto x.e_C}) \downarrow^{1 \oplus n_0 \oplus n_1 \oplus n_2} v$}
 \DisplayProof
 
+\bigskip
+
 \AxiomC{}
 \UnaryInfC{$map^t(x.v, v_0) \downarrow^0 v[v_0/x]$}
 \DisplayProof
-
+%
+\quad
+%
 \AxiomC{}
 \UnaryInfC{$map^\tau(x.v, v_0) \downarrow^0 v_0$}
 \DisplayProof
+
+\bigskip
 
 \AxiomC{$map^{\phi_0}(x.v, v_0) \downarrow^{n_0} v_0'$}
 \AxiomC{$map^{\phi_1}(x.v, v_1) \downarrow^{n_1} v_1'$}
 \BinaryInfC{$map^{\phi_0 \times \phi_1}(x.v, \langle v_0, v_1 \rangle) \downarrow^{n_0 \otimes n_1} \langle v_0', v_1'\rangle$}
 \DisplayProof
 
+\bigskip
+
 \AxiomC{}
 \UnaryInfC{$map^{\tau \to \phi}(x.v, \lambda y.e) \downarrow^0 \lambda y.let(e, z.map^\phi(x.v, z))$}
 \DisplayProof
-
+%
+\quad
+%
 \AxiomC{$e_0 \downarrow^{n_0} v_0$}
 \AxiomC{$e_1[v_0/x] \downarrow^{n_1} v$}
 \BinaryInfC{$let(e_0, x.e_1) \downarrow^{n_0 \oplus n_1} v$}
@@ -157,8 +182,60 @@ other and may be computed in parallel.
 \end{figure}
 %
 \section{Bounding Relation}
-TODO
-
+%
+We mutually define the following relations.
+\begin{enumerate}
+  \item $e \sqsubseteq_\tau E, \emptyset \vdash_\phi e : \tau$ and $\emptyset \vdash_{\|\psi\|} E : \|\tau\|$
+  \item $v \sqsubseteq_\tau^{val} E, $ where $\emptyset \vdash v : \tau$ and $\emptyset \vdash_{\|\psi\|} E : \llangle \tau \rrangle$
+  \item $v \sqsubseteq_{\phi,R}^{val} E, $ where $ \emptyset \vdash_\psi v : \phi[\gamma]$ and $\emptyset \vdash_{\|\psi\|} E : \llangle \phi \rrangle[\delta]$
+  \item $e \sqsubseteq_{\phi,R} E$, where $\emptyset \vdash_\psi e : \phi[\delta]$ and $\emptyset \vdash_{\|\psi\|} E : \|\phi\|[\delta]$
+\end{enumerate}
+%
+The $R$ parameterizes the relation. The mutual definitions are given below.
+%
+\begin{enumerate}
+  \item We define $e \sqsubseteq_\tau E$ as if $e \downarrow^n v$, then
+    \begin{itemize}
+      \item $n \leq E_c$
+      \item $v \sqsubseteq_\tau^{val} E_p$.
+    \end{itemize}
+  \item We define $v \sqsubseteq_\tau^{val} E$ as
+    \begin{itemize}
+      \item $v \sqsubseteq_{unit}^{val} E$ always.
+      \item $\langle v_0,v_1 \rangle \sqsubseteq_{\tau_0 \times \tau_1}^{val} E$ iff $v_0 \sqsubseteq_{\tau_0}^{val} \pi_0 E$ and $v_1 \sqsubseteq_{\tau_2}^{val} \pi_1 E$.
+      \item $\T{delay}(e) \sqsubseteq_{\T{susp }\tau}^{val}$ if $e \sqsubseteq_\tau E$.
+      \item $v \sqsubseteq_\delta^{val} E$ is inductively defined by
+        \begin{prooftree}
+          \AxiomC{$\textbf{C} : \phi \to \delta \in \psi$}
+          \AxiomC{$v \sqsubseteq_{\phi, -\sqsubseteq_\delta^{val}-}^{val} E'$}
+          \AxiomC{$\textbf{C}\ E' \leq_\delta E$}
+          \TrinaryInfC{$\textbf{C}\ v \sqsubseteq_\delta^{val} E$}
+        \end{prooftree}
+      \item $\lambda x.e \sqsubseteq^{val}_{\tau \to \phi,R} E$ if for all $v$ and $E_0$, if $v \sqsubseteq_\tau^{val} E_0$, then $e[v/x] \sqsubseteq_{\phi,R}(E\ E_0)$
+    \end{itemize}
+  \item We define $v \sqsubseteq_{\phi,R}^{val} E_p$ as
+    \begin{itemize}
+      \item $v \sqsubseteq_{t,R}^{val} E $ if $R(v,E)$
+      \item $v \sqsubseteq_{\tau,R}^{val} E$ if $v \sqsubseteq_\tau^{val} E$.
+      \item $\langle v_0,v_1\rangle \sqsubseteq_{\phi_0\times\phi_1,R}^{val} E$ if $v_0 \sqsubseteq_{\phi_0,R}^{val} \pi_0 E$ and $v_1 \sqsubseteq_{\phi_0,R}^{val} \pi_1 E$
+    \end{itemize}
+  \item We define as $e \sqsubseteq_{\phi,R} E$ as if $e \downarrow^n v$, then
+    \begin{itemize}
+      \item $n \leq E_c$
+      \item $v \sqsubseteq_{\phi,R}^{val} E_p$
+    \end{itemize}
+\end{enumerate}
+%
+The statement of the bounding theorem is the same.
+%
+\begin{theorem}
+  If $\gamma \vdash e : \tau, $ then $e \sqsubseteq_\tau \|e\|$.
+\end{theorem}
+\begin{proof}
+  The proof is by induction on the derivation of $\gamma \vdash e : \tau$ and
+  is identical to the proof given in \citet{Danner2015} so is not included
+  here.
+\end{proof}
 
 \section{Parallel List Map}
 If we revisit \T{map} using the work and span translation, we will get a different result.
@@ -247,16 +324,16 @@ The interpretation of the recurser is given in Figure \ref{fig:ws_map_interpreta
       %putting branches together
       &\quad g(f, (m, n)) = \\
       &\qquad \bigvee\limits_{(m_1, n_1) \leq (m, n)} case((m_1, n_1), \T{Nil} \mapsto (1, (0, 0)), \\
-      &\quadfour \T{Cons} \mapsto (1 \oplus ((1 \oplus (f\ m)_c) \otimes g_c(f, (m, n-1))), ((f\ m)_p, \pi_1 g_p(f, (m, n-1))))) 
+      &\quadfour \T{Cons} \mapsto (1 \oplus ((1 \oplus (f\ m)_c) \otimes g_c(f, (m, n-1))), ((f\ m)_p, \pi_1 g_p(f, (m, n-1)))))
   \end{split}\]
 \end{figure}
 
-The result is 
+The result is
 \begin{equation*}
   \begin{split}
   &g(f, (m, n)) = \\
   &\quad \bigvee\limits_{(m_1, n_1) \leq (m, n)} case((m_1, n_1), \T{Nil} \mapsto (1, (0, 0)), \\
-  &\quadfour \T{Cons} \mapsto (1 \oplus ((1 \oplus (f\ y)_c) \otimes g_c(f, (m, n-1))), ((f\ y)_p, \pi_1 g_p(f, (m, n-1))))) 
+  &\quadfour \T{Cons} \mapsto (1 \oplus ((1 \oplus (f\ y)_c) \otimes g_c(f, (m, n-1))), ((f\ y)_p, \pi_1 g_p(f, (m, n-1)))))
   \end{split}
 \end{equation*}
 
@@ -297,7 +374,7 @@ The costs change from cost graphs to a tuple of the work and the span.
   &\quadfive\quadfour \T{Nil} \mapsto ((1, 1), (0, 0)), \\
   &\quadfive\quadfour \T{Cons} \mapsto ((2 + \pi_0(f\ y)_c + \pi_0 g_c(f, (m, n-1)), \\
   &\quadfive\quadten                     1 + max(1 + \pi_1(f\ y)_c, \pi_1 g_c(f, (m, n-1)))), \\
-  &\quadfive\quadeight                  ((f\ y)_p, \pi_1 g_p(f, (m, n-1))))) 
+  &\quadfive\quadeight                  ((f\ y)_p, \pi_1 g_p(f, (m, n-1)))))
   \end{split}
 \end{equation*}
 
@@ -312,7 +389,7 @@ $\pi_0 g_c(f, (m, n)) \leq 1 + (2 + \pi_0(f\ m)_c)n$
   \begin{description}
     \item[case $n=0$]\mbox{}\\[-1.5\baselineskip]
       \begin{align*}
-      \pi_0 g_c(f, (m, 0)) = \pi_0((1, 1), (0, 0))_c = \pi_0(1, 1) = 1 
+      \pi_0 g_c(f, (m, 0)) = \pi_0((1, 1), (0, 0))_c = \pi_0(1, 1) = 1
       \end{align*}
     \item[case $n>0$]\mbox{}\\[-1.5\baselineskip]
       \[\begin{split}
@@ -340,7 +417,7 @@ $\pi_0 g_c(f, (m, n)) \leq 1 + (2 + \pi_0(f\ m)_c)n$
   \begin{description}
     \item[case $n=0$]\mbox{}\\[-1.5\baselineskip]
       \begin{align*}
-      \pi_1 g_c(f, (m, 0)) = \pi_1((1, 1), (0, 0))_c = \pi_1(1, 1) = 1 
+      \pi_1 g_c(f, (m, 0)) = \pi_1((1, 1), (0, 0))_c = \pi_1(1, 1) = 1
       \end{align*}
     \item[case $n>0$]\mbox{}\\[-1.5\baselineskip]
       \[\begin{split}
@@ -450,7 +527,3 @@ We interpret trees as the number of \T{N} constructors and the maximum label.
 \[ \begin{split}
 \end{split} \]
 \end{figure}
-
-
-\subsection*{Source Language}
-Recall the definition of the tree data type and the function map.
