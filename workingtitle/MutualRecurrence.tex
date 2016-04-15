@@ -201,23 +201,31 @@ The next lemma states that if the arguments to $map$ are related, then $map$ pre
   So $\forall k, \langle k, map^T(x.E_p, E_{0p}) \rangle \sim_{\Phi[\tau_1]} map^T(x.E', E_0')$.
 
   Case $\Phi = \Phi_0 \times \Phi_1$.
-  Then $map^{\Phi_0 \times \Phi_1}(x. E_p, E_{0p}) = \langle map^{\Phi_0}(x. E_p, \pi_0 E_{0p}), map^{\Phi_1}(x. E_p, \pi_1 E_{0p}) \rangle$.
-  Similarly $map^{\Phi_0 \times \Phi_1}(x. E', E_0') = \langle map^{\Phi_0}(x. E', \pi_0 E_0'), map^{\Phi_1}(x. E', \pi_1 E_0') \rangle$.
-  By definition, $\forall k, \langle k, \pi_0 E_{0p} \rangle \sim_{\Phi_0[\tau_0]} \pi_0 E_0'$.
-  By the induction hypothesis, $\forall k, \langle k, map^{\Phi_0}(x. E_p, \pi_0 E_{0p}) \sim_{\Phi_0[\tau_1]} map^{\Phi_0[\tau_1]}(x. E', E_0')$.
-  By definition, $\forall k, \langle k, \pi_1 E_{0p} \rangle \sim_{\Phi_1[\tau_0]} \pi_1 E_0'$.
-  By the induction hypothesis, $\forall k, \langle k, map^{\Phi_1}(x. E_p, \pi_1 E_{0p}) \sim_{\Phi_1[\tau_1]} map^{\Phi_1[\tau_1]}(x. E', E_0')$.
-  So by definition, $\forall k, \langle k, \langle map^{\Phi_0}(x. E_p, \pi_0 E_{0p}), map^{\Phi_1}(x. E_p, \pi_1 E_{0p}) \rangle \rangle \sim_{\Phi[\tau_1]} \langle \langle map^{\Phi_0[\tau_1]}(x. E', E_0'), map^{\Phi_1[\tau_1]}(x. E', E_0') \rangle \rangle$.
+  Then \\
+  $map^{\Phi_0 \times \Phi_1}(x. E_p, E_{0p}) = \langle map^{\Phi_0}(x. E_p, \pi_0 E_{0p}), map^{\Phi_1}(x. E_p, \pi_1 E_{0p}) \rangle$.\\
+  Similarly $map^{\Phi_0 \times \Phi_1}(x. E', E_0') = \langle map^{\Phi_0}(x. E', \pi_0 E_0'), map^{\Phi_1}(x. E', \pi_1 E_0') \rangle$.\\
+  By definition, $\forall k, \langle k, \pi_0 E_{0p} \rangle \sim_{\Phi_0[\tau_0]} \pi_0 E_0'$.\\
+  By the induction hypothesis, $\forall k, \langle k, map^{\Phi_0}(x. E_p, \pi_0 E_{0p}) \sim_{\Phi_0[\tau_1]} map^{\Phi_0[\tau_1]}(x. E', E_0')$.\\
+  By definition, $\forall k, \langle k, \pi_1 E_{0p} \rangle \sim_{\Phi_1[\tau_0]} \pi_1 E_0'$.\\
+  By the induction hypothesis, $\forall k, \langle k, map^{\Phi_1}(x. E_p, \pi_1 E_{0p}) \sim_{\Phi_1[\tau_1]} map^{\Phi_1[\tau_1]}(x. E', E_0')$.\\
+  So by definition,
+  \begin{align*}
+    &\forall k, \langle k, \langle map^{\Phi_0}(x. E_p, \pi_0 E_{0p}), map^{\Phi_1}(x. E_p, \pi_1 E_{0p}) \rangle \rangle \sim_{\Phi[\tau_1]}  \\
+    &\langle \langle map^{\Phi_0[\tau_1]}(x. E', E_0'), map^{\Phi_1[\tau_1]}(x. E', E_0') \rangle \rangle
+  \end{align*}
 
   Case $T \to \Phi$.
-  Then $map^{T \to \Phi}(x. E_p, E_{0p}) = \lambda y.map^\Phi(x.E_p, E_{0p}\ y)$ and $map^{T \to \Phi}(x. E', E_0') = \lambda y.map^\Phi(x.E', E_0'\ y)$.
+  Then $map^{T \to \Phi}(x. E_p, E_{0p}) = \lambda y.map^\Phi(x.E_p, E_{0p}\ y)$ \\
+  and $map^{T \to \Phi}(x. E', E_0') = \lambda y.map^\Phi(x.E', E_0'\ y)$.
   Let $E_1 : T$.
-  Then $\lambda y.map^\Phi(x.E_p, E_{0p}\ y)\ E_1 \to map^\Phi(x.E_p, E_{0p}\ E_1)$.
+  Then \\
+  $\lambda y.map^\Phi(x.E_p, E_{0p}\ y)\ E_1 \to map^\Phi(x.E_p, E_{0p}\ E_1)$.
   Similarly, $\lambda y.map^\Phi(x.E', E_0'\ y)\ E_1' \to map^\Phi(x. E', E_0'\ E_1')$.
   Since $E_0 \sim E_0'$ and $E_1 \sim E_1'$, we have $E_{0p}\ E_1 \sim E_0'\ E_1'$.
   So by our induction hypothesis, $map^\Phi(x.E_p, E_{0p}\ E_1) \sim map^\Phi(x. E', E_0'\ E_1')$.
   So by \ref{lem:relatedstepback}, $\lambda y.map^\Phi(x.E_p, E_{0p}\ y)\ E_1 \sim \lambda y.map^\Phi(x.E', E_0'\ y)\ E_1'$.
-  So by definition, $\lambda y.map^\Phi(x.E_p, E_{0p}\ y) \sim \lambda y.map^\Phi(x.E', E_0'\ y)$.
+  So by definition, \\
+  $\lambda y.map^\Phi(x.E_p, E_{0p}\ y) \sim \lambda y.map^\Phi(x.E', E_0'\ y)$.\\
   So $map^{T \to \Phi}(x. E_p, E_{0p}) \sim map^{T \to \Phi}(x. E', E_0')$.
 \end{proof}
 %
