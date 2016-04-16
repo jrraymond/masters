@@ -451,8 +451,7 @@ The result is
 %  \end{cases}
 %\end{equation*}
 We compile the recurrence down to the work and the span to make it easier to
-manipulate.  The costs change from cost graphs to a tuple of the work and the
-span.
+manipulate.
 %
 \begin{equation*}
   \begin{split}
@@ -531,10 +530,11 @@ Compare these results with sequential map.
 
 
 \section{Parallel Tree Map}
-A program which is embarrasingly parallel is tree map.
-When a function $f$ is mapped over a tree $t$, each application of $f$ to the label at each node can be done independently.
-Furthermore, the tree data structure itself is dividable by construction.
-Dividing the work requires only destruction of the node constructor to yield the left and right subtrees.
+A program which is embarrasingly parallel is tree map.  When a function $f$ is
+mapped over a tree $t$, each application of $f$ to the label at each node can
+be done independently.  Furthermore, the tree data structure itself is
+dividable by construction.  Dividing the work requires only destruction of the
+node constructor to yield the left and right subtrees.
 
 We will use \T{int} labelled binary trees.
 \begin{equation*}

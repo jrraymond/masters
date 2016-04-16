@@ -7,8 +7,29 @@ given later in this thesis. We use the familiar \T{list} datatype.
 \begin{align*}
 \T{list } &= \T{Nil of unit | Cons of int $\times$ list}
 \end{align*}
-
+%
+The \T{map} function recurses on the list, applying its first argument to each
+element.
+%
+\begin{equation*}
+  \T{map} = \lambda f. \lambda xs . \T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \T{Cons} \mapsto \langle y \langle ys, y \rangle\rangle. \T{Cons}\langle f\ y, \T{force}(r)\rangle)
+\end{equation*}
 
 \subsection{Translation}
+The translation
+\begin{align*}
+  &\text{We apply the rule for translating an abstraction twice.}\\
+  \|\T{map}\| &= \|\lambda f. \lambda xs . \T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \T{Cons} \mapsto \langle y \langle ys, y \rangle\rangle. \T{Cons}\langle f\ y, \T{force}(r)\rangle)\| \\
+              &= \langle 0, \lambda f. \langle 0, \lambda xs . \T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \T{Cons} \mapsto \langle y \langle ys, y \rangle\rangle. \T{Cons}\langle f\ y, \T{force}(r)\rangle)\rangle\rangle \\
+              &\text{We apply the rule for translating a \T{rec} construct. We use $\|xs\| = \langle 0,xs\rangle$.}\\
+              &= \langle 0, \lambda f. \langle 0, \lambda xs .\T{rec}(xs, \T{Nil} \mapsto 1 +_c \|\T{Nil}\|, \\
+              &\quadten \T{Cons} \mapsto \langle y \langle ys, y \rangle\rangle.1 +_c \|\T{Cons}\langle f\ y, \T{force}(r)\rangle\|)\rangle\rangle \\
+              &\text{The translation of \T{Nil} is $\langle 0, \T{Nil}\rangle$.}\\
+              &\|\T{Cons}\langle f\ x,\T{force}(r)\rangle\| = \langle \|\langle f\ x,\T{force}(r)\rangle_c, \T{Cons}\|\langle f\ x,\T{force}(r)\rangle\|\rangle \\
+              &\quad \|\langle f\ x,\T{force}(r)\rangle\| = \langle\|f\ x\|_c + \|\T{force}(r)\|_c, \langle \|f\ x\|_p,\|\T{force}(r)\|_p\rangle\rangle \\
+              &\quadthree \|f\ x\| = (1 + \|f\|_c + \|x\|_c) +_c \|f\|_p\|x\|_p = \langle 1 + (f\ x)_c, (f\ x)_p\rangle \\
+              &\quadthree \|\T{force}(r)\| = \langle 0,r\rangle +_c \langle 0,r\rangle_p = r \\
+              &= \langle 0, \lambda f. \langle 0, \lambda xs . \T{rec}(xs, \T{Nil} \mapsto \langle 1,\T{Nil}\rangle, \T{Cons} \mapsto \langle y \langle ys, y \rangle\rangle.1 +_c \|\T{Cons}\langle f\ y, \T{force}(r)\rangle\|)\rangle\rangle \\
+\end{align*}
 
 \subsection{Interpretation}
