@@ -13,3 +13,38 @@ Tree \T{map f t} applies the function \T{f} to every label in the tree \T{t}.
 \begin{align*}
   \T{map} &= \lambda f.\lambda t.\T{rec}(t, \T{E} \mapsto \T{E}, \T{N} \mapsto \LP x,\LP t_0,r_0\RP,\LP t_1,r_1\RP\RP. \T{N}\LP f\ x, \T{force}(r_0), \T{force}(r_1)\RP)
 \end{align*}
+
+\subsection{Translation}
+The translation
+\begin{align*}
+  &\text{We apply the abstraction rule twice.} \\
+  \|\T{map}\| &= \LP 0,\lambda f.\LP 0,\lambda t.\|\T{rec}(t, \T{E} \mapsto \T{E},\\
+              &\quadsix\T{N} \mapsto \LP x,\LP t_0,r_0\RP,\LP t_1,r_1\RP\RP.\T{N}\LP f\ x,\T{force}(r_0),\T{force}(r_1)\RP)\|\RP\RP \\
+              &\text{We apply the recursor translation rule.} \\
+              &= \LP 0,\lambda f.\LP 0,\lambda t.\|t\|_c +_c \T{rec}(\|t\|_p, \T{E} \mapsto 1 +_c \|\T{E}\|,\\
+              &\quadsix \T{N} \mapsto \LP x,\LP t_0,r_0\RP,\LP t_1,r_1\RP\RP.1 +_c \|\T{N}\LP f\ x,\T{force}(r_0),\T{force}(r_1)\RP\|)\RP\RP \\
+  %
+              &\text{The translation of the variable $t$ is $\LP 0,t\RP$.} \\
+              &\text{The translation of the constructor \T{E} with $\LP\RP$ as its argument is $\LP 0,\T{E}\RP$.} \\
+              &\text{The translation of the constructor \T{N}$\LP e\RP$ is $\LP \|e\|_c,\T{N}\LP\|e\|_p\RP\RP$.} \\
+  %
+              &\text{$f$ and $x$ are variables, so their translations are $\LP 0,f\RP$ and $\LP 0,x\RP$ respectively.}\\
+              &\quadthree \|f\ x\| = \LP 1 + \|f\|_c + \|x\|_c +_c \|f\|_p\|x\|_p = \LP 1 + (f\ x)_c,(f\ x)_c\RP \\
+              &\text{$r_0$ and $r_1$ are also variables.} \\
+              &\quadthree \|\T{force}(r_i)\| = \|r_i\|_c +_c \|r_i\|_p = \LP 0,r_i\RP +_c \LP 0,r_i\RP = r_i \\
+  %
+              &\text{We use this result to translate the argument to the \T{N} constructor.} \\
+              &\quadthree \|\LP f\ x,\T{force}(r_0),\T{force}(r_1)\RP\| = \\
+              &\quadsix \LP \|f\ x\|_c + \|\T{force}(r_0)\|_c + \|\T{force}(r_1)\|_c, \\
+              &\quadseven \LP \|f\ x\|_p,\|\T{force}(r_0)\|_p\RP,\|\T{force}(r_1)\|_p\RP\RP \\
+              &\quadthree = \LP 1 + (f\ x)_c + r_{0c} + r_{1c},\LP (f\ x)_p, r_{0p}, r_{1p}\RP\RP\\
+  %
+              &\text{We use to translate the \T{N} constructor.} \\
+              &\T{N}\LP f\ x,\T{force}(r_0),\T{force}(r_1)\RP = \LP 1 + (f\ x)_c + r_{0c} + r_{1c}, \T{N}\LP(f\ x)_p,r_{0p},r_{1p}\RP\RP \\
+  %
+              &\text{We use this to complete the translation of \T{map}.} \\
+              &= \LP 0,\lambda f.\LP 0,\lambda t.\T{rec}(t, \T{E} \mapsto \LP 1,\T{E}\RP,\\
+              &\quadfive \T{N} \mapsto \LP x,\LP t_0,r_0\RP,\LP t_1,r_1\RP\RP.\LP 2 + (f\ x)_c + r_{0c} + r_{1c}, \T{N}\LP (f\ x)_p,r_{0p},r_{1p}\RP\RP)\RP\RP \\
+\end{align*}
+
+\subsection{Interpretation}
