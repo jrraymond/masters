@@ -56,8 +56,8 @@ We will translate \T{map} applied to some function \T{f} and a list \T{xs}.
 We interpret lists as a pair of their largest element and length.
 %
 \begin{align*}
-  \llbracket \T{list} \rrbracket &= \mathbb{Z} \times \mathbb{N} \\
-  D^\T{list} &= \{*\} + (\llbracket \mathbb{Z} \rrbracket \times \llbracket \T{list} \rrbracket) \\
+  \LB \T{list} \RB &= \mathbb{Z} \times \mathbb{N} \\
+  D^\T{list} &= \{*\} + (\LB \mathbb{Z} \RB \times \LB \T{list} \RB) \\
   size_\T{list}(*) &= (0, 0) \\
   size_\T{list}((x, (m, n))) &= (max(x, m), 1 + n)
 \end{align*}
@@ -66,13 +66,13 @@ The recursor of \T{map} drives the cost, so we will interpret the recursor
 first.
 %
 \begin{align*}
-  g(i, n) &= \llbracket \T{rec}(xs, \T{Nil} \mapsto \LP 1,\T{Nil}\RP, \\
-       &\quadfive \T{Cons} \mapsto \LP 2 + (f\ x)_c + r_c,\T{Cons}\LP (f\ x)_p,r_p\RP\RP \rrbracket \{xs \mapsto n, f \mapsto f\}\\
+  g(i, n) &= \LB \T{rec}(xs, \T{Nil} \mapsto \LP 1,\T{Nil}\RP, \\
+       &\quadfive \T{Cons} \mapsto \LP 2 + (f\ x)_c + r_c,\T{Cons}\LP (f\ x)_p,r_p\RP\RP \RB \{xs \mapsto n, f \mapsto f\}\\
        &= \bigvee\limits_{size(z) \leq n} case(z, f_{Nil}, f_{Cons}) \\
        &\text{where} \\
-  f_{Nil}(\ast) &= \llbracket \LP 1,\T{Nil}\RP\rrbracket \\
+  f_{Nil}(\ast) &= \LB \LP 1,\T{Nil}\RP\RB \\
                 &= (1,0) \\
-  f_{Cons}(i, m) &= \llbracket \LP 2 + (f\ x)_c + r_c,\T{Cons}\LP (f\ x)_p,r_p\RP\RP\rrbracket \xi\\
+  f_{Cons}(i, m) &= \LB \LP 2 + (f\ x)_c + r_c,\T{Cons}\LP (f\ x)_p,r_p\RP\RP\RB \xi\\
                  &\qquad \text{where } \xi = \{xs \mapsto n, f \mapsto f, y \mapsto i, ys \mapsto m, r \mapsto g(i, m) \} \\
                  &= (2 + (f\ i)_c + g_c(i,m), (max((f\ i)_p, \pi_0g_p(i,m)), 1 + \pi_1 g_p(i,m)))
 \end{align*}
@@ -141,20 +141,20 @@ We obtain a closed form of the solution for the potential of the recursor.
 Using the results from lemmas \ref{lem:listmap_g_cost} and
 \ref{lem:listmap_g_potential}, we interpret the translation of \T{map f xs}.
 Recall the translation is $(2 + \|f\|_c + \|xs\|_c) +_c (\|\T{map}\|_p\ \|f\|_p)_p \|xs\|_p$.
-So the interpretation is $2 \pplus_c (\llbracket\|\T{map}\|\rrbracket f)_p (i,n)$,
+So the interpretation is $2 \pplus_c (\LB\|\T{map}\|\RB f)_p (i,n)$,
 where $(i,n)$ is the interpretation of $xs$ and we assume $f$ and $xs$ have $0$
 cost.
 %
 \begin{lemma}
   \label{lem:listmap_cost}
-  $\llbracket\|\T{map f xs}\|_c\rrbracket = 3 + (2 + (f\ i)_c)n$ where $f$ is the
+  $\LB\|\T{map f xs}\|_c\RB = 3 + (2 + (f\ i)_c)n$ where $f$ is the
   interpretation of the translation of \T{f} and $(i,n)$ is the interpretation
   of the translation of \T{xs}.
 \end{lemma}
 %
 \begin{lemma}
   \label{lem:listmap_potential}
-  $\llbracket\|\T{map f xs}\|_p\rrbracket = ((f\ i)_p,n)$ where $f$ is the
+  $\LB\|\T{map f xs}\|_p\RB = ((f\ i)_p,n)$ where $f$ is the
   interpretation of the translation of \T{f} and $(i,n)$ is the interpretation
   of the translation of \T{xs}.
 \end{lemma}

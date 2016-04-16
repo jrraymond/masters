@@ -448,7 +448,7 @@ function in the following denotational semantics. We intepret the size of an
 \T{list} to be the number of list constructors.
 %
 \begin{flalign*}
-  \llbracket \T{list} \rrbracket &= \mathbb{N}^\infty\\
+  \LB \T{list} \RB &= \mathbb{N}^\infty\\
   D^{list} &= \{\ast\} + \{1\} \times \mathbb{N}^\infty\\
   size_{list}(\T{Nil}) &= 1\\
   size_{list}(\T{Cons(1,n)}) &= 1 + n\\
@@ -466,13 +466,13 @@ The recurrence $g(n)$ is the interpretation of the auxilary function $R(xs)$,
 where $n$ is the interpretation of $xs$.
 %
 \begin{flalign*}
-  &g(n) = \llbracket R(xs) \rrbracket \{xs \mapsto n\} \\
-  &= \bigvee\limits_{size\ z \leq \llbracket xs \rrbracket \{xs \mapsto n\}} case(z, f_C, f_N) \\
+  &g(n) = \LB R(xs) \RB \{xs \mapsto n\} \\
+  &= \bigvee\limits_{size\ z \leq \LB xs \RB \{xs \mapsto n\}} case(z, f_C, f_N) \\
   &\text{where} \\
-  &f_{Nil}(x) = \llbracket \LP 1, \lambda a. \LP 0, a\RP\RP \rrbracket \{xs \mapsto n\} \\
+  &f_{Nil}(x) = \LB \LP 1, \lambda a. \LP 0, a\RP\RP \RB \{xs \mapsto n\} \\
   &\qquad = (1, \llambda a.(0, a)) \\
-  &f_{Cons}(b) = \llbracket \LP 1, \lambda a.(1 + \pi_1\pi_1 b_c) +_c \pi_1\pi_1 b_p\ \T{Cons}\LP \pi_0 b, a \RP \RP \rrbracket \\
-  &\quadfive \{xs \mapsto n, b \mapsto map^{\Phi_{Cons}}(\llambda d.(d, \llbracket R(w) \rrbracket \{ w \mapsto d, xs \mapsto n \}), b) \} \\
+  &f_{Cons}(b) = \LB \LP 1, \lambda a.(1 + \pi_1\pi_1 b_c) +_c \pi_1\pi_1 b_p\ \T{Cons}\LP \pi_0 b, a \RP \RP \RB \\
+  &\quadfive \{xs \mapsto n, b \mapsto map^{\Phi_{Cons}}(\llambda d.(d, \LB R(w) \RB \{ w \mapsto d, xs \mapsto n \}), b) \} \\
 \end{flalign*}
 %
 Let us take a moment to analyze the semantic $map$. The definition mirrors the
@@ -482,31 +482,31 @@ projections of the
 tuple.
 %
 \begin{flalign*}
-  &\qquad map^{\Phi_{Cons}}(\llambda d.(d, \llbracket R(w) \rrbracket \{ w \mapsto d \}), b) \\
-  &\qquad = (map^{int}(\llambda d.(d, \llbracket R(w) \rrbracket \{w \mapsto d\}), \pi_0 b), \\
-  &\quadfour map^{list}(\llambda d.(d, \llbracket R(w) \rrbracket \{w \mapsto d\}), \pi_1 b)) \\
+  &\qquad map^{\Phi_{Cons}}(\llambda d.(d, \LB R(w) \RB \{ w \mapsto d \}), b) \\
+  &\qquad = (map^{int}(\llambda d.(d, \LB R(w) \RB \{w \mapsto d\}), \pi_0 b), \\
+  &\quadfour map^{list}(\llambda d.(d, \LB R(w) \RB \{w \mapsto d\}), \pi_1 b)) \\
   %
   &\text{The definition of $map$ over $int$ is $map^{int}(\llambda x.V_0, V_1) = V_1$.}\\
-  &\qquad = (\pi_0 b, map^{list}(\llambda d.(d, \llbracket R(w) \rrbracket \{w \mapsto d\}), \pi_1 b)) \\
+  &\qquad = (\pi_0 b, map^{list}(\llambda d.(d, \LB R(w) \RB \{w \mapsto d\}), \pi_1 b)) \\
   %
   &\text{The definition of $map$ over a recursive occurence of a }\\
   &\text{a datatype is $map^T(\llambda x.V_0,V_1) = V_0[V_1/x]$.} \\
-  &\qquad = (\pi_0 b, (\pi_1 b, \llbracket R(w) \rrbracket \{w \mapsto \pi_1 b\})) \\
+  &\qquad = (\pi_0 b, (\pi_1 b, \LB R(w) \RB \{w \mapsto \pi_1 b\})) \\
   %
-  &\text{Observe that we can substitute $g(\pi_1 b)$ for $\llbracket R(w) \rrbracket \{w \mapsto \pi_1 b\}$.} \\
+  &\text{Observe that we can substitute $g(\pi_1 b)$ for $\LB R(w) \RB \{w \mapsto \pi_1 b\}$.} \\
   &\qquad = (\pi_0 b, (\pi_1 b, g(\pi_1 b))) \\
 \end{flalign*}
 %
 Let us resume our interpretation of \T{rec(...)}.
 %
 \begin{flalign*}
-  &f_{Cons}(b) = \llbracket \LP 1, \lambda a.(1 + \pi_1\pi_1 b_c) +_c \pi_1\pi_1 b_p\ \T{Cons}\LP \pi_0 b, a \RP \RP \rrbracket \\
-  &\quadfive \{xs \mapsto n, b \mapsto map^{\Phi_{Cons}}(\llambda d.(d, \llbracket R(w) \rrbracket \{ w \mapsto d\}), b) \} \\
-  &\quad = \llbracket \LP 1, \lambda a.(1 + \pi_1\pi_1 b_c) +_c \pi_1\pi_1 b_p\ \T{Cons}\LP \pi_0 b, a \RP \RP \rrbracket \\
+  &f_{Cons}(b) = \LB \LP 1, \lambda a.(1 + \pi_1\pi_1 b_c) +_c \pi_1\pi_1 b_p\ \T{Cons}\LP \pi_0 b, a \RP \RP \RB \\
+  &\quadfive \{xs \mapsto n, b \mapsto map^{\Phi_{Cons}}(\llambda d.(d, \LB R(w) \RB \{ w \mapsto d\}), b) \} \\
+  &\quad = \LB \LP 1, \lambda a.(1 + \pi_1\pi_1 b_c) +_c \pi_1\pi_1 b_p\ \T{Cons}\LP \pi_0 b, a \RP \RP \RB \\
   &\quadfive \{xs \mapsto n, b \mapsto (\pi_0 b, (\pi_1 b, g(\pi_1 b))) \} \\
-  &\quad = (1, \llbracket \lambda a.(1 + \pi_1\pi_1 b_c) +_c \pi_1\pi_1 b_p\ \T{Cons}\LP \pi_0 b, a \RP \rrbracket \\
+  &\quad = (1, \LB \lambda a.(1 + \pi_1\pi_1 b_c) +_c \pi_1\pi_1 b_p\ \T{Cons}\LP \pi_0 b, a \RP \RB \\
   &\quadfive \{xs \mapsto n, b \mapsto (\pi_0 b, (\pi_1 b, g(\pi_1 b))) \}) \\
-  &\quad = (1, \llambda a. \llbracket (1 + \pi_1\pi_1 b_c) +_c \pi_1\pi_1 b_p\ \T{Cons}\LP \pi_0 b, a \RP \rrbracket \\
+  &\quad = (1, \llambda a. \LB (1 + \pi_1\pi_1 b_c) +_c \pi_1\pi_1 b_p\ \T{Cons}\LP \pi_0 b, a \RP \RB \\
   &\quadfive \{xs \mapsto n, b \mapsto (\pi_0 b, (\pi_1 b, g(\pi_1 b))), a \mapsto a \}) \\
   &\quad = (1, \llambda a. (1 + g_c(\pi_1 b)) \pplus_c g_p(\pi_1 b)\ (1 + a))\\
 \end{flalign*}
@@ -753,15 +753,15 @@ We can obtain an interpretation of $\|\T{rev xs}\|$ by substituting our
 interpretation of the auxilary function.
 %
 \begin{flalign*}
-  &\text{Let $n = \llbracket \|xs\| \rrbracket.$}\\
-  \llbracket\|\T{rev xs}\|\rrbracket &= \llbracket 1 +_c (\lambda xs. 1 +_c \T{rec}(xs, \T{Nil} \mapsto \LP 1, \lambda a. \LP 0, a \RP \RP\\
-  &\qquad \T{Cons}\mapsto \LP x, \LP xs', r\RP\RP. \LP 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\LP x, a \RP \RP)\ \T{Nil})\ xs \rrbracket \{xs \mapsto n\}  \\
-  &= 1 \pplus_c \llbracket \lambda xs. 1 +_c \T{rec}(xs, \T{Nil} \mapsto \LP 1, \lambda a. \LP 0, a \RP \RP\\
-  &\qquad \T{Cons}\mapsto \LP x, \LP xs', r\RP\RP. \LP 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\LP x, a \RP \RP)\ \T{Nil} \rrbracket \{xs \mapsto n\}\ n  \\
-  &= 1 \pplus_c (\llambda xs. \llbracket 1 +_c \T{rec}(xs, \T{Nil} \mapsto \LP 1, \lambda a. \LP 0, a \RP \RP\\
-  &\qquad \T{Cons}\mapsto \LP x, \LP xs', r\RP\RP. \LP 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\LP x, a \RP \RP)\ \T{Nil}\rrbracket \{xs \mapsto n\})\ n  \\
-  &= 1 \pplus_c (\llambda xs. 1 \pplus_c \llbracket \T{rec}(xs, \T{Nil} \mapsto \LP 1, \lambda a. \LP 0, a \RP \RP\\
-  &\qquad \T{Cons}\mapsto \LP x, \LP xs', r\RP\RP. \LP 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\LP x, a \RP \RP)\rrbracket \{xs \mapsto n\}\ 0)\ n  \\
+  &\text{Let $n = \LB \|xs\| \RB.$}\\
+  \LB\|\T{rev xs}\|\RB &= \LB 1 +_c (\lambda xs. 1 +_c \T{rec}(xs, \T{Nil} \mapsto \LP 1, \lambda a. \LP 0, a \RP \RP\\
+  &\qquad \T{Cons}\mapsto \LP x, \LP xs', r\RP\RP. \LP 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\LP x, a \RP \RP)\ \T{Nil})\ xs \RB \{xs \mapsto n\}  \\
+  &= 1 \pplus_c \LB \lambda xs. 1 +_c \T{rec}(xs, \T{Nil} \mapsto \LP 1, \lambda a. \LP 0, a \RP \RP\\
+  &\qquad \T{Cons}\mapsto \LP x, \LP xs', r\RP\RP. \LP 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\LP x, a \RP \RP)\ \T{Nil} \RB \{xs \mapsto n\}\ n  \\
+  &= 1 \pplus_c (\llambda xs. \LB 1 +_c \T{rec}(xs, \T{Nil} \mapsto \LP 1, \lambda a. \LP 0, a \RP \RP\\
+  &\qquad \T{Cons}\mapsto \LP x, \LP xs', r\RP\RP. \LP 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\LP x, a \RP \RP)\ \T{Nil}\RB \{xs \mapsto n\})\ n  \\
+  &= 1 \pplus_c (\llambda xs. 1 \pplus_c \LB \T{rec}(xs, \T{Nil} \mapsto \LP 1, \lambda a. \LP 0, a \RP \RP\\
+  &\qquad \T{Cons}\mapsto \LP x, \LP xs', r\RP\RP. \LP 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\LP x, a \RP \RP)\RB \{xs \mapsto n\}\ 0)\ n  \\
   &= 1 \pplus_c (\llambda xs. 1 \pplus_c h(xs,0))\ n  \\
   &= 1 \pplus_c (1 \pplus_c h(n,0)) \\
   &= 1 \pplus_c (1 \pplus_c (2n,n)) \\

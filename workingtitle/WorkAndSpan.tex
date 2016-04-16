@@ -380,8 +380,8 @@ The complexity language translation is
 We interpret lists as a pair of their largest element and length.
 %
 \begin{align*}
-  \llbracket \T{list} \rrbracket &= \mathbb{Z} \times \mathbb{N} \\
-  D^\T{list} &= \{*\} + (\llbracket \mathbb{Z} \rrbracket \times \llbracket \T{list} \rrbracket) \\
+  \LB \T{list} \RB &= \mathbb{Z} \times \mathbb{N} \\
+  D^\T{list} &= \{*\} + (\LB \mathbb{Z} \RB \times \LB \T{list} \RB) \\
   size_\T{list}(*) &= (0, 0) \\
   size_\T{list}((x, (m, n))) &= (max(x, m), 1 + n)
 \end{align*}
@@ -393,18 +393,18 @@ The interpretation of the recursor is given in Figure \ref{fig:ws_map_interpreta
   \caption{Interpretation of recursor in \T{map}}
   \[\begin{split}
       &\quad \text{Let } \eta = \{ xs \mapsto (0, (m, n)), f \mapsto (0, f)\}\\
-      &\quad g(f, (m, n)) = \llbracket \T{rec}(xs_p, \T{Nil} \mapsto \LP 1, \T{Nil}\RP,\\
-      &\quadten \T{Cons} \mapsto \LP y, \LP ys, r \RP \RP . \LP 1 \oplus (1 \oplus (f_p\ y)_c \otimes r_c), \T{Cons}\LP (f_p\ y)_p, r_p\RP\RP) \rrbracket \eta\\
-      &\qquad = \bigvee\limits_{(m_1, n_1) \leq (m, n)} case((m_1, n_1), \T{Nil} \mapsto \llbracket \LP 1, \T{Nil} \RP \rrbracket \eta, \\
-      &\quadten \T{N} \mapsto \LP y, \LP ys, r \RP \RP . \llbracket \LP 1 \oplus ((1 \oplus (f_p\ y)_c) \otimes r_c), \T{Cons} \LP (f_p\ y)_p, r_p \RP \RP \rrbracket \eta_c) \\
+      &\quad g(f, (m, n)) = \LB \T{rec}(xs_p, \T{Nil} \mapsto \LP 1, \T{Nil}\RP,\\
+      &\quadten \T{Cons} \mapsto \LP y, \LP ys, r \RP \RP . \LP 1 \oplus (1 \oplus (f_p\ y)_c \otimes r_c), \T{Cons}\LP (f_p\ y)_p, r_p\RP\RP) \RB \eta\\
+      &\qquad = \bigvee\limits_{(m_1, n_1) \leq (m, n)} case((m_1, n_1), \T{Nil} \mapsto \LB \LP 1, \T{Nil} \RP \RB \eta, \\
+      &\quadten \T{N} \mapsto \LP y, \LP ys, r \RP \RP . \LB \LP 1 \oplus ((1 \oplus (f_p\ y)_c) \otimes r_c), \T{Cons} \LP (f_p\ y)_p, r_p \RP \RP \RB \eta_c) \\
       &\qquad \text{where } \eta_c = \{xs \mapsto (0, (m, n)), f \mapsto (0, f), y \mapsto m, ys \mapsto (0, (m, n)), \\
       &\quadeight r \mapsto g(f, (m, n-1)))\} \\
       %Nil branch
       &\quadthree \text{\T{Nil} branch} \\
-      &\quadthree \llbracket \LP 1, \T{Nil} \RP \rrbracket \eta = (\llbracket 1 \rrbracket \eta , \llbracket \T{Nil} \rrbracket \eta) = (1, (0, 0)) \\
+      &\quadthree \LB \LP 1, \T{Nil} \RP \RB \eta = (\LB 1 \RB \eta , \LB \T{Nil} \RB \eta) = (1, (0, 0)) \\
       %Cons branch
       &\quadthree \text{\T{Cons} branch} \\
-      &\quadthree  \llbracket \LP 1 \oplus ((1 \oplus (f_p\ m)_c) \otimes r_c), \T{Cons} \LP (f_p\ m)_p, r_p \RP \RP \rrbracket \eta_c \\
+      &\quadthree  \LB \LP 1 \oplus ((1 \oplus (f_p\ m)_c) \otimes r_c), \T{Cons} \LP (f_p\ m)_p, r_p \RP \RP \RB \eta_c \\
       &\quadfour = (1 \oplus ((1 \oplus (f\ m)_c) \otimes g_c(f, (m, n-1))), ((f\ m)_p, \pi_1 g_p(f, (m, n-1)))) \\
       %putting branches together
       &\quad g(f, (m, n)) = \\
@@ -607,8 +607,8 @@ The result is shown in equation \ref{eq:ws_treemap_complexity}.
 
 We interpret trees as the number of \T{N} constructors and the maximum label.
 \begin{align*}
-  \llbracket tree \rrbracket &= \mathbb{Z} \times \mathbb{Z} \\
-  D_\T{tree} &= \{\ast\} + \mathbb{Z} \times \llbracket \T{tree} \rrbracket \times \llbracket \T{tree} \rrbracket \\
+  \LB tree \RB &= \mathbb{Z} \times \mathbb{Z} \\
+  D_\T{tree} &= \{\ast\} + \mathbb{Z} \times \LB \T{tree} \RB \times \LB \T{tree} \RB \\
   size_\T{tree}(\ast) &= (0, 0) \\
   size_\T{tree}(x, (m_0, n_0), (m_1, n_1)) &= (max(x, m_0, m_1), 1 + n_0 + n_1)
 \end{align*}

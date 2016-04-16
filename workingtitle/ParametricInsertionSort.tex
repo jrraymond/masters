@@ -314,7 +314,7 @@ We well use an interpretation of lists as a pair of their greatest element and
 their length.
 %
 \begin{align*}
-   \llbracket list \rrbracket &= \mathbb{Z} \times \mathbb{N}^\infty \\
+   \LB list \RB &= \mathbb{Z} \times \mathbb{N}^\infty \\
                      D^{list} &= \{\ast\} + \{\mathbb{Z}\} \times \mathbb{N}^\infty \\
             size_{list} (\ast) &= (-\infty,0) \\
   size_{list} ((i,(j,n))) &= (max\{i,j\},1 + n)
@@ -333,14 +333,14 @@ syntactic equivalents.
 First we interpret the inner \T{rec} of $\|\T{insert}\|$.
 %
 \begin{flalign*}
-  \llbracket \T{rec}&(((f\ x)_p\ y)_p, \T{True} \mapsto \LP 1, \T{Cons}\LP x, \T{Cons}\LP y,ys\RP\RP\RP, \T{False}\mapsto \LP 1 + r_c,\T{Cons}\LP y,r_p\RP\RP)\rrbracket \xi \\
+  \LB \T{rec}&(((f\ x)_p\ y)_p, \T{True} \mapsto \LP 1, \T{Cons}\LP x, \T{Cons}\LP y,ys\RP\RP\RP, \T{False}\mapsto \LP 1 + r_c,\T{Cons}\LP y,r_p\RP\RP)\RB \xi \\
                     &= \bigvee\limits_{size(z) \leq ((f\ x)_p\ y)_p} case(z, f_{True}, f_{False}) \\
                     &\text{where} \\
   \xi &= \{f \mapsto f, x \mapsto x, y\mapsto j, ys\mapsto (j, m), r \mapsto r \} \\
-  f_{True}(\ast) &= \llbracket \LP 1, \T{Cons}\LP x, \T{Cons}\LP y,ys\RP\RP\RP \rrbracket\xi \\
-                 &= (1, \llbracket \T{Cons}\LP x, \T{Cons}\LP y,ys\RP\RP\rrbracket)\xi \\
+  f_{True}(\ast) &= \LB \LP 1, \T{Cons}\LP x, \T{Cons}\LP y,ys\RP\RP\RP \RB\xi \\
+                 &= (1, \LB \T{Cons}\LP x, \T{Cons}\LP y,ys\RP\RP\RB)\xi \\
                  &= (1, (max(x,j), 2 + m)) \\
-  f_{False}(\ast) &= \llbracket \LP 1 + r_c,\T{Cons}\LP y,r_p\RP\RP\rrbracket \xi \\
+  f_{False}(\ast) &= \LB \LP 1 + r_c,\T{Cons}\LP y,r_p\RP\RP\RB \xi \\
                   &= (1 + r_c, (max(j,\pi_0 r_p), 1 + \pi_1 r_p))
 \end{flalign*}
 %
@@ -354,20 +354,20 @@ Since there are only two $z$, we can simplify the big maximum to a maximum.
 Using this, we proceed to interpret the outer recurrence.
 %
 \begin{flalign*}
-  g(i, n) &= \llbracket\T{rec}(xs, \T{Nil} \mapsto \LP 1,\T{Cons}\LP x,\T{Nil}\RP\RP, \\
+  g(i, n) &= \LB\T{rec}(xs, \T{Nil} \mapsto \LP 1,\T{Cons}\LP x,\T{Nil}\RP\RP, \\
             &\quad \T{Cons}\mapsto \LP y, \LP ys,r \RP\RP. (3 + (f x)_c) \\
             &\quadthree +_c \T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \LP 1, \T{Cons}\LP x,\T{Cons}\LP y,ys\RP\RP\RP, \\
-            &\quadsix \T{False}\mapsto \LP 1 + r_c, \T{Cons}\LP y,r_p\RP\RP))\rrbracket \xi \\
+            &\quadsix \T{False}\mapsto \LP 1 + r_c, \T{Cons}\LP y,r_p\RP\RP))\RB \xi \\
             &\text{where} \\
   \xi &= \{xs \mapsto (i, n), x \mapsto x\} \\
   g(i,n) &= \bigvee\limits_{size(z) \leq (i,n)} case(z, f_{Nil}, f_{Cons}) \\
          &\text{where}\\
-  f_{Nil}(\ast) &= \llbracket \LP 1,\T{Cons}\LP x,\T{Nil}\RP\RP \rrbracket \xi \\
+  f_{Nil}(\ast) &= \LB \LP 1,\T{Cons}\LP x,\T{Nil}\RP\RP \RB \xi \\
                 &= (1, (x, 1)) \\
-  f_{Cons}(j,m) &= \llbracket (4 + (f\ x)_c) +_c \T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \LP 1, \T{Cons}\LP x,\T{Cons}\LP y,ys\RP\RP\RP, \\
-                &\quadthree \T{False}\mapsto \LP 1 + r_c, \T{Cons}\LP y,r_p\RP\RP)\rrbracket \xi \{ y \mapsto j, ys \mapsto (j, m), r \mapsto g(j, m)\} \\
-                &= (4 + (f\ x)_c) \pplus_c \llbracket\T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \LP 1, \T{Cons}\LP x,\T{Cons}\LP y,ys\RP\RP\RP, \\
-                &\quadthree \T{False}\mapsto \LP 1 + r_c, \T{Cons}\LP y,r_p\RP\RP)\rrbracket \xi \{ y \mapsto j, ys \mapsto (j, m), r \mapsto g(j, m)\} \\
+  f_{Cons}(j,m) &= \LB (4 + (f\ x)_c) +_c \T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \LP 1, \T{Cons}\LP x,\T{Cons}\LP y,ys\RP\RP\RP, \\
+                &\quadthree \T{False}\mapsto \LP 1 + r_c, \T{Cons}\LP y,r_p\RP\RP)\RB \xi \{ y \mapsto j, ys \mapsto (j, m), r \mapsto g(j, m)\} \\
+                &= (4 + (f\ x)_c) \pplus_c \LB\T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \LP 1, \T{Cons}\LP x,\T{Cons}\LP y,ys\RP\RP\RP, \\
+                &\quadthree \T{False}\mapsto \LP 1 + r_c, \T{Cons}\LP y,r_p\RP\RP)\RB \xi \{ y \mapsto j, ys \mapsto (j, m), r \mapsto g(j, m)\} \\
                 &= (4 + (f\ x)_c) \pplus_c ((1, (max(x,j), 2 + m)) \\
                 &\quadthree \vee (1 + g_c(j,m), (max(j,\pi_0 g_p(j,m)), 1 + \pi_1 g_p(j,m))))
 \end{flalign*}
@@ -462,16 +462,16 @@ cost and potential of applying \T{sort} to a comparison function $f$ and a list
 $xs$.
 %
 \begin{flalign*}
-  g(i, n) &= \llbracket \T{rec}(xs, \T{Nil} \mapsto \LP 1,\T{Nil} \RP,  \\
-          &\quadthree \T{Cons} \mapsto \LP y, \LP ys,r \RP\RP.(4 + r _c) +_c ((\|\T{insert}\|_p f)_p y)_p r_p) \rrbracket \{ xs \mapsto (i, n), f\mapsto f\} \\
+  g(i, n) &= \LB \T{rec}(xs, \T{Nil} \mapsto \LP 1,\T{Nil} \RP,  \\
+          &\quadthree \T{Cons} \mapsto \LP y, \LP ys,r \RP\RP.(4 + r _c) +_c ((\|\T{insert}\|_p f)_p y)_p r_p) \RB \{ xs \mapsto (i, n), f\mapsto f\} \\
           &= \bigvee\limits_{size(z)\leq n} case(z, f_{Nil}, f_{Cons}) \\
   %
           &\text{where}\\
-  f_{Nil} &= \llbracket \LP 1,\T{Nil}\RP \rrbracket \{ xs \mapsto (i,n)\} \\
+  f_{Nil} &= \LB \LP 1,\T{Nil}\RP \RB \{ xs \mapsto (i,n)\} \\
           &= (1, (-\infty,0)) \\
-f_{Cons} &= \llbracket (4 + r _c) +_c ((\|\T{insert}\|_p f)_p y)_p r_p) \rrbracket \xi \\
+f_{Cons} &= \LB (4 + r _c) +_c ((\|\T{insert}\|_p f)_p y)_p r_p) \RB \xi \\
          &\text{where}\quad \xi = \{xs \mapsto (i,n), f \mapsto f, y \mapsto j, ys \mapsto (j,m), r \mapsto g(j,m)\} \\
-         &= (4 + g_c(j,m)) \pplus_c ((\llbracket\|\T{insert}\|_p\rrbracket\xi\ f)_p j)_p g_p(j,m) \\
+         &= (4 + g_c(j,m)) \pplus_c ((\LB\|\T{insert}\|_p\RB\xi\ f)_p j)_p g_p(j,m) \\
          &= (5 + g_c(j,m)) \pplus_c (((f\ j)_p\ j)_c g_p(j,m), (max\{j,j\},g_p(j, m)+1)) \\
          &= (5 + g_c(j,m) + (f\ j)_p\ j)_c g_p(j,m), (max\{j,j\},g_p(j,m) + 1))
 \end{flalign*}

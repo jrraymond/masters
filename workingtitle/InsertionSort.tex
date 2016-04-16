@@ -40,7 +40,7 @@ The translation of the function \T{sort} is shown below.
 We will interpret lists as their lengths.
 %
 \begin{align*}
-    \llbracket list \rrbracket &= \mathbb{N}^\infty \\
+    \LB list \RB &= \mathbb{N}^\infty \\
     D^{list} &= \{\ast\} + \{1\} \times \mathbb{N}^\infty \\
     size_{list} (\ast) &= 0 \\
     size_{list} ((1,n)) &= 1 + n
@@ -91,7 +91,7 @@ The interpretation of \T{sort} is:
 %
 \begin{equation}
   \label{eq:sort_interp0_init}
-  g(n) = \bigvee_{size(z)\leq n} case(z,(\lambda(\LP\RP).(1,0),\lambda(1,m).3 + g_c(m)) +_c \llbracket\|\T{insert}\|\rrbracket\ 1\ g_p(m))
+  g(n) = \bigvee_{size(z)\leq n} case(z,(\lambda(\LP\RP).(1,0),\lambda(1,m).3 + g_c(m)) +_c \LB\|\T{insert}\|\RB\ 1\ g_p(m))
 \end{equation}
 %
 The recurrence with the big maximum operator eliminated is:
@@ -100,7 +100,7 @@ The recurrence with the big maximum operator eliminated is:
   \label{eq:sort_rec_final}
   g(n) = \begin{cases}
     (1,0) & n=0 \\
-    (3 + g_c(n-1) + (\llbracket\|\T{insert}\|\rrbracket\ 1\ g_p(n-1))_c, (\llbracket\|\T{insert}\|\rrbracket\ 1\ g_p(n-1))) & n > 0
+    (3 + g_c(n-1) + (\LB\|\T{insert}\|\RB\ 1\ g_p(n-1))_c, (\LB\|\T{insert}\|\RB\ 1\ g_p(n-1))) & n > 0
   \end{cases}
 \end{equation}
 %
@@ -111,7 +111,7 @@ Let $p = \pi_1 \circ g$.
   \label{eq:sort_rec_potential}
   p(n) = \begin{cases}
     0 & n=0 \\
-  (\llbracket\|\T{insert}\|\rrbracket\ 1\ g_p(n-1))) & n > 0
+  (\LB\|\T{insert}\|\RB\ 1\ g_p(n-1))) & n > 0
   \end{cases}
 \end{equation}
 %
@@ -129,7 +129,7 @@ Let $c = \pi_0 \circ g$.
   \label{eq:sort_rec_cost}
   c(n) = \begin{cases}
     1 & n=0 \\
-    3 + g_c(n-1) + (\llbracket\|\T{insert}\|\rrbracket\ 1\ g_p(n-1) & n > 0
+    3 + g_c(n-1) + (\LB\|\T{insert}\|\RB\ 1\ g_p(n-1) & n > 0
   \end{cases}
 \end{equation}
 %
