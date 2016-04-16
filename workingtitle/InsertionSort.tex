@@ -14,9 +14,9 @@ $\mathcal{O}(n^2)$.
 \end{flalign*}
 %
 \begin{flalign*}
-  \T{insert} &= \lambda x.\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \T{Cons}\langle x,\T{Nil}\rangle, \\
-             &\quadthree \T{Cons} \mapsto \langle y,\langle ys,r \rangle\rangle.\T{rec}(x \leq y, \T{True} \mapsto \T{Cons} \langle x,\T{Cons}\langle y,ys\rangle\rangle, \\
-             &\quadsix \T{False} \mapsto \T{Cons} \langle y,\T{force}(r)\rangle))
+  \T{insert} &= \lambda x.\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \T{Cons}\LP x,\T{Nil}\RP, \\
+             &\quadthree \T{Cons} \mapsto \LP y,\LP ys,r \RP\RP.\T{rec}(x \leq y, \T{True} \mapsto \T{Cons} \LP x,\T{Cons}\LP y,ys\RP\RP, \\
+             &\quadsix \T{False} \mapsto \T{Cons} \LP y,\T{force}(r)\RP))
 \end{flalign*}
 %
 \subsection{Translation}
@@ -24,14 +24,14 @@ $\mathcal{O}(n^2)$.
 The translation of the function \T{insert} is shown below.
 %
 \begin{flalign*}
-  \T{sort} &= \lambda xs.\T{rec}(xs,\T{Nil} \mapsto \T{Nil}, \T{Cons} \mapsto \langle y,\langle ys,r\rangle\rangle.\T{insert}\ y\ \T{force}(r))
+  \T{sort} &= \lambda xs.\T{rec}(xs,\T{Nil} \mapsto \T{Nil}, \T{Cons} \mapsto \LP y,\LP ys,r\RP\RP.\T{insert}\ y\ \T{force}(r))
 \end{flalign*}
 %
 The translation of the function \T{sort} is shown below.
 %
 \begin{flalign*}
-  \|\T{sort}\| &= \langle 0,\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \\
-               &\quadthree \T{Cons} \mapsto \langle y,\langle ys,r\rangle\rangle.(3 + r_c) +_c (\|\T{insert}\|_p\ y)_p r_p)
+  \|\T{sort}\| &= \LP 0,\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \\
+               &\quadthree \T{Cons} \mapsto \LP y,\LP ys,r\RP\RP.(3 + r_c) +_c (\|\T{insert}\|_p\ y)_p r_p)
 \end{flalign*}
 %
 
@@ -91,7 +91,7 @@ The interpretation of \T{sort} is:
 %
 \begin{equation}
   \label{eq:sort_interp0_init}
-  g(n) = \bigvee_{size(z)\leq n} case(z,(\lambda(\langle\rangle).(1,0),\lambda(1,m).3 + g_c(m)) +_c \llbracket\|\T{insert}\|\rrbracket\ 1\ g_p(m))
+  g(n) = \bigvee_{size(z)\leq n} case(z,(\lambda(\LP\RP).(1,0),\lambda(1,m).3 + g_c(m)) +_c \llbracket\|\T{insert}\|\rrbracket\ 1\ g_p(m))
 \end{equation}
 %
 The recurrence with the big maximum operator eliminated is:
@@ -138,7 +138,7 @@ Let $c = \pi_0 \circ g$.
 %This recurrence is difficult to work with.
 %Specifically, we cannot apply traditional methods of solving it.
 %We will manipulate it into a more usable form by eliminating the arbitrary maximum.
-%Observe that for $n=0$, $g(n) = f_{Nil}(\langle\rangle) = (1,1)$.
+%Observe that for $n=0$, $g(n) = f_{Nil}(\LP\RP) = (1,1)$.
 %For $n>0$,
 %\begin{align*}
 %  g(n) &= \bigvee_{size(z) \leq n} case(z, (f_{Nil},f_{Cons})) &&\\
@@ -245,14 +245,14 @@ Let $c = \pi_0 \circ g$.
 %Equation \ref{eq:sort_interp0_init} shows the initial recurrence extracted.
 %\begin{equation}
 %  \label{eq:sort_interp0_init}
-%  g(n) = \bigvee_{size(z)\leq n} case(z,(\lambda(\langle\rangle).(1,0),\lambda(1,m).4 + \pi_0 g(m)) +_c insert\ f\ 1\ \pi_1g(m))
+%  g(n) = \bigvee_{size(z)\leq n} case(z,(\lambda(\LP\RP).(1,0),\lambda(1,m).4 + \pi_0 g(m)) +_c insert\ f\ 1\ \pi_1g(m))
 %\end{equation}
 %
 %We work the recurrence into a more recognisable form using some manipulation of the big max operator and some facts about $insert$.
 %Observe for $n=0$, $g(n) = (1,0)$ and for $n>0$
 %\begin{align*}
-%  g(n) &= \bigvee_{size(z)\leq n} case(z,(\lambda(\langle\rangle).(1,0),\lambda(1,m).4 + \pi_0 g(m)) +_c insert\ f\ 1\ \pi_1g(m)) \\
-%  &= g(n-1) \vee \bigvee_{size(z) = n} case(z,(\lambda(\langle\rangle).(1,0),\lambda(1,m).4 + \pi_0 g(m)) +_c insert\ f\ 1\ \pi_1g(m)) \\
+%  g(n) &= \bigvee_{size(z)\leq n} case(z,(\lambda(\LP\RP).(1,0),\lambda(1,m).4 + \pi_0 g(m)) +_c insert\ f\ 1\ \pi_1g(m)) \\
+%  &= g(n-1) \vee \bigvee_{size(z) = n} case(z,(\lambda(\LP\RP).(1,0),\lambda(1,m).4 + \pi_0 g(m)) +_c insert\ f\ 1\ \pi_1g(m)) \\
 %  &= g(n-1) \vee (4 + \pi_0 g(n-1)) +_c insert\ f\ 1\ \pi_1g(n-1) \\
 %  &= g(n-1) \vee (4 + \pi_0 g(n-1) + \pi_0 (insert\ f\ 1\ \pi_1g(n-1)), \pi_1 (insert\ f\ 1\ \pi_1g(n-1))) \\
 %  &\text{since $\pi_0 (insert\ f\ 1\ m) > 0$ and $\pi_1 (insert\ f\ 1\ m) = 1 + m$} \\

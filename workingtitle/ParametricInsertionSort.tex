@@ -21,16 +21,16 @@ The function \T{sort} relies on the function \T{insert}. \T{insert} inserts an
 element into a sorted list.
 %
 \begin{flalign*}
-  \T{insert} &= \lambda f.\lambda x.\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \T{Cons} \langle x, \T{Nil}\rangle,\\
-             &\quadeight \T{Cons}\mapsto \langle y, \langle ys,r \rangle\rangle.\T{rec}(f\ x\ y, \T{True}\mapsto \T{Cons}\langle x,\T{Cons}\langle y,ys \rangle\rangle, \\
-             &\quadten\quadten\quad \T{False}\mapsto \T{Cons}\langle y,\T{force}(r)\rangle))
+  \T{insert} &= \lambda f.\lambda x.\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \T{Cons} \LP x, \T{Nil}\RP,\\
+             &\quadeight \T{Cons}\mapsto \LP y, \LP ys,r \RP\RP.\T{rec}(f\ x\ y, \T{True}\mapsto \T{Cons}\LP x,\T{Cons}\LP y,ys \RP\RP, \\
+             &\quadten\quadten\quad \T{False}\mapsto \T{Cons}\LP y,\T{force}(r)\RP))
 \end{flalign*}
 %
 The \T{sort} function recurses on the list, using the \T{insert} function to
 insert the head of the list into the recursively sorted tail of the list.
 %
 \begin{flalign*}
-  \T{sort} &= \lambda f.\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \T{Cons} \mapsto \langle y,\langle ys,r \rangle\rangle.\T{insert}\ f\ y\ \T{force}(r))
+  \T{sort} &= \lambda f.\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \T{Cons} \mapsto \LP y,\LP ys,r \RP\RP.\T{insert}\ f\ y\ \T{force}(r))
 \end{flalign*}
 %
 \subsection{Translation of \T{insert}}
@@ -52,7 +52,7 @@ complexity language constructor applied to the potential of the translated
 argument.
 %
 \begin{flalign*}
-  \|\T{Cons}\langle x,\T{Cons}\langle y, rs \rangle\rangle\| &= \langle \|\langle x, \T{Cons} \langle y,ys\rangle\rangle\|_c, \T{Cons}\|\langle x, \T{Cons}\langle y,ys\rangle\|_p\rangle
+  \|\T{Cons}\LP x,\T{Cons}\LP y, rs \RP\RP\| &= \LP \|\LP x, \T{Cons} \LP y,ys\RP\RP\|_c, \T{Cons}\|\LP x, \T{Cons}\LP y,ys\RP\|_p\RP
 \end{flalign*}
 %
 The argument to the \T{Cons} constructor is a tuple. The cost of the
@@ -60,7 +60,7 @@ translation of a tuple is the cost of the translation of each element and the
 potential is the tuple of the potentials of the translations of each element.
 %
 \begin{flalign*}
-  \|\langle x, \T{Cons}\langle y,ys\rangle\rangle\| &= \langle \|x\|_c + \|\T{Cons}\langle y,ys\rangle\|_c, \langle \|x\|_p,\T{Cons}\langle y,ys\rangle\|_p\rangle\rangle
+  \|\LP x, \T{Cons}\LP y,ys\RP\RP\| &= \LP \|x\|_c + \|\T{Cons}\LP y,ys\RP\|_c, \LP \|x\|_p,\T{Cons}\LP y,ys\RP\|_p\RP\RP
 \end{flalign*}
 %
 The first element of the tuple is a variable, but the second element is another
@@ -68,7 +68,7 @@ The first element of the tuple is a variable, but the second element is another
 for translating a datatype.
 %
 \begin{flalign*}
-  \|\T{Cons}\langle y,ys\rangle\| &= \langle \|y,ys\|_c, \T{Cons}\|y,ys\|_p\rangle
+  \|\T{Cons}\LP y,ys\RP\| &= \LP \|y,ys\|_c, \T{Cons}\|y,ys\|_p\RP
 \end{flalign*}
 %
 The argument to the constructor is a tuple. We apply the rule for translating a
@@ -77,30 +77,30 @@ is $0$ and their translated potential is their corresponding variable in the
 complexity language.
 %
 \begin{flalign*}
-  \|\langle y,ys\rangle\| &= \langle \|y\|_c + \|rs\|_c, \langle\|y\|_p,\|rs\|_p\rangle\rangle \\
-                         &= \langle \langle 0,y\rangle_c + \langle 0, rs\rangle_c, \langle \langle0,y\rangle_p, \langle 0,rs\rangle\rangle\rangle \\
-                         &= \langle 0, \langle y,ys\rangle\rangle
+  \|\LP y,ys\RP\| &= \LP \|y\|_c + \|rs\|_c, \LP\|y\|_p,\|rs\|_p\RP\RP \\
+                         &= \LP \LP 0,y\RP_c + \LP 0, rs\RP_c, \LP \LP0,y\RP_p, \LP 0,rs\RP\RP\RP \\
+                         &= \LP 0, \LP y,ys\RP\RP
 \end{flalign*}
 %
-We use this to complete the translation of $\T{Cons}\langle y,ys\rangle$.
+We use this to complete the translation of $\T{Cons}\LP y,ys\RP$.
 %
 \begin{flalign*}
-  \|\T{Cons}\langle y,ys\rangle\| &= \langle \|y,ys\|_c, \T{Cons}\|y,ys\|_p\rangle \\
-                                  &= \langle 0, \T{Cons}\langle y,ys\rangle\rangle
+  \|\T{Cons}\LP y,ys\RP\| &= \LP \|y,ys\|_c, \T{Cons}\|y,ys\|_p\RP \\
+                                  &= \LP 0, \T{Cons}\LP y,ys\RP\RP
 \end{flalign*}
 %
-We use this result to complete the translation of $\langle x,\T{Cons}\langle y,ys\rangle\rangle$.
+We use this result to complete the translation of $\LP x,\T{Cons}\LP y,ys\RP\RP$.
 %
 \begin{flalign*}
-  \|\langle x, \T{Cons}\langle y,ys\rangle\rangle\| &= \langle \|x\|_c + \|\T{Cons}\langle y,ys\rangle\|_c, \langle \|x\|_p,\T{Cons}\langle y,ys\rangle\|_p\rangle\rangle \\
-                                                    &= \langle 0, \langle x,\T{Cons}\langle y,ys\rangle\rangle\rangle
+  \|\LP x, \T{Cons}\LP y,ys\RP\RP\| &= \LP \|x\|_c + \|\T{Cons}\LP y,ys\RP\|_c, \LP \|x\|_p,\T{Cons}\LP y,ys\RP\|_p\RP\RP \\
+                                                    &= \LP 0, \LP x,\T{Cons}\LP y,ys\RP\RP\RP
 \end{flalign*}
 %
-And finally we use this to complete the translation of $\T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle$.
+And finally we use this to complete the translation of $\T{Cons}\LP x,\T{Cons}\LP y,ys\RP\RP$.
 %
 \begin{flalign*}
-  \|\T{Cons}\langle x,\T{Cons}\langle y,ys \rangle\rangle\| &= \langle \|\langle x, \T{Cons} \langle y,ys\rangle\rangle\|_c, \T{Cons}\|\langle x,\T{Cons}\langle y,ys\rangle\rangle\|_p\rangle \\
-                                                            &= \langle 0, \T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle\rangle
+  \|\T{Cons}\LP x,\T{Cons}\LP y,ys \RP\RP\| &= \LP \|\LP x, \T{Cons} \LP y,ys\RP\RP\|_c, \T{Cons}\|\LP x,\T{Cons}\LP y,ys\RP\RP\|_p\RP \\
+                                                            &= \LP 0, \T{Cons}\LP x,\T{Cons}\LP y,ys\RP\RP\RP
 \end{flalign*}
 %
 % END TRUE BRANCH
@@ -110,27 +110,27 @@ And finally we use this to complete the translation of $\T{Cons}\langle x,\T{Con
 Next we will translate the \T{False} branch.
 %
 \begin{flalign*}
-  \|\T{Cons}\langle y,\T{force}(r)\rangle\| &= \langle \|\langle y,\T{force}(r)\rangle\|_c, \T{Cons}\|\langle y,\T{force}(r)\rangle\|_p\rangle
+  \|\T{Cons}\LP y,\T{force}(r)\RP\| &= \LP \|\LP y,\T{force}(r)\RP\|_c, \T{Cons}\|\LP y,\T{force}(r)\RP\|_p\RP
 \end{flalign*}
 %
 To complete this we must first translate the tuple. The two elements of the
 tuple are $y$ and $\T{force}(r)$.  The translation of the variable $y$ is
-$\langle 0, y\rangle$. The translation of $\T{force}(r)$ is
+$\LP 0, y\RP$. The translation of $\T{force}(r)$ is
 $\|r\|_c +_c \|r\|_p$. Like $y$, $r$ is a variable so its translation is
-$\langle 0,r\rangle$. So the translation of $\T{force}(r)$ is $0 +_c r$ which
+$\LP 0,r\RP$. So the translation of $\T{force}(r)$ is $0 +_c r$ which
 simplifies to $r$.
 %
 \begin{flalign*}
-  \|\langle y,\T{force}(r)\rangle\| &= \langle \|y\|_c + \|\T{force}(r)\|_c, \langle\|y\|_p,\|\T{force}(r)\|_p\rangle\rangle \\
-                                    &= \langle 0 + r_c, \langle y,r_p\rangle\rangle \\
-                                    &= \langle r_c, \langle y,r_p\rangle\rangle
+  \|\LP y,\T{force}(r)\RP\| &= \LP \|y\|_c + \|\T{force}(r)\|_c, \LP\|y\|_p,\|\T{force}(r)\|_p\RP\RP \\
+                                    &= \LP 0 + r_c, \LP y,r_p\RP\RP \\
+                                    &= \LP r_c, \LP y,r_p\RP\RP
 \end{flalign*}
 %
-We substitute this into the translation of $\T{Cons}\langle y,\T{force}(r)\rangle$.
+We substitute this into the translation of $\T{Cons}\LP y,\T{force}(r)\RP$.
 %
 \begin{flalign*}
-  \|\T{Cons}\langle y,\T{force}(r)\rangle\| &= \langle \|\langle y,\T{force}(r)\rangle\|_c, \T{Cons}\|\langle y,\T{force}(r)\rangle\|_p\rangle \\
-                                            &= \langle r_c, \T{Cons}\langle y,r_p\rangle\rangle
+  \|\T{Cons}\LP y,\T{force}(r)\RP\| &= \LP \|\LP y,\T{force}(r)\RP\|_c, \T{Cons}\|\LP y,\T{force}(r)\RP\|_p\RP \\
+                                            &= \LP r_c, \T{Cons}\LP y,r_p\RP\RP
 \end{flalign*}
 %
 % END FALSE BRANCH
@@ -157,14 +157,14 @@ We use the translation of \T{f x y} and the \T{True} and \T{False}
 branches to construct the translation of the inner \T{rec} construct.
 %
 \begin{flalign*}
-  \|\T{rec}&(f\ x\ y, \T{True}\mapsto\T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle, \T{False}\mapsto \T{Cons}\langle y,\T{force}(r)\rangle)\| \\
-           &= \|f\ x\ y\|_c +_c \T{rec}(\|f\ x\ y\|_p, \T{True}\mapsto 1 +_c \|\T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle\|, \\
-           &\quadsix \T{False}\mapsto 1 +_c \|\T{Cons}\langle y,\T{force}(r)\rangle\|) \\
-           &= \|f\ x\ y\|_c +_c \T{rec}(\|f\ x\ y\|_p, \T{True}\mapsto 1 +_c \langle 0, \T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle\rangle, \\
-           &\quadsix \T{False}\mapsto 1 +_c \langle r_c, \T{Cons}\langle y,r_p\rangle\rangle) \\
+  \|\T{rec}&(f\ x\ y, \T{True}\mapsto\T{Cons}\LP x,\T{Cons}\LP y,ys\RP\RP, \T{False}\mapsto \T{Cons}\LP y,\T{force}(r)\RP)\| \\
+           &= \|f\ x\ y\|_c +_c \T{rec}(\|f\ x\ y\|_p, \T{True}\mapsto 1 +_c \|\T{Cons}\LP x,\T{Cons}\LP y,ys\RP\RP\|, \\
+           &\quadsix \T{False}\mapsto 1 +_c \|\T{Cons}\LP y,\T{force}(r)\RP\|) \\
+           &= \|f\ x\ y\|_c +_c \T{rec}(\|f\ x\ y\|_p, \T{True}\mapsto 1 +_c \LP 0, \T{Cons}\LP x,\T{Cons}\LP y,ys\RP\RP\RP, \\
+           &\quadsix \T{False}\mapsto 1 +_c \LP r_c, \T{Cons}\LP y,r_p\RP\RP) \\
            &= (2 + \|f\|_c + \|x\|_c + \|y\|_c + (\|f\|_p \|x\|_p)_c) \\
-           &\quadthree +_c \T{rec}((\|f\|_p\ \|x\|_p)_p \|y\|_p, \T{True}\mapsto \langle 1, \T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle\rangle, \\
-           &\quadsix \T{False}\mapsto \langle 1 + r_c, \T{Cons}\langle y,r_p\rangle\rangle) \\
+           &\quadthree +_c \T{rec}((\|f\|_p\ \|x\|_p)_p \|y\|_p, \T{True}\mapsto \LP 1, \T{Cons}\LP x,\T{Cons}\LP y,ys\RP\RP\RP, \\
+           &\quadsix \T{False}\mapsto \LP 1 + r_c, \T{Cons}\LP y,r_p\RP\RP) \\
 \end{flalign*}
 %
 % END INNER REC
@@ -175,8 +175,8 @@ Next we translate the \T{Nil} and \T{Cons} branches of the outer \T{rec} of
 \T{insert}. In this branch we append the element to an empty list.
 %
 \begin{flalign*}
-  \|\T{Cons} \langle x, \T{Nil}\rangle\| &= \langle \|\langle x,\T{Nil}\rangle\|_c,\T{Cons}\|\langle x,\T{Nil}\rangle\|_p\rangle \\
-                                         &= \langle 0,\T{Cons}\langle x,\T{Nil}\rangle\rangle
+  \|\T{Cons} \LP x, \T{Nil}\RP\| &= \LP \|\LP x,\T{Nil}\RP\|_c,\T{Cons}\|\LP x,\T{Nil}\RP\|_p\RP \\
+                                         &= \LP 0,\T{Cons}\LP x,\T{Nil}\RP\RP
 \end{flalign*}
 %
 % END NIL
@@ -189,15 +189,15 @@ head of the list under the ordering given by \T{f}, in which case we are done,
 otherwise we recurse on the tail of the list.
 %
 \begin{flalign*}
-  \|\T{rec}&(f\ x\ y, \T{True}\mapsto \T{Cons}\langle x,\T{Cons}\langle y,ys \rangle\rangle, \T{False}\mapsto \T{Cons}\langle y,\T{force}(r)\rangle)\| \\
-           &= \|f\ x\ y\|_c +_c \T{rec}(f\ x\ y, \T{True}\mapsto 1 +_c \|\T{Cons}\langle x,\T{Cons}\langle y,ys \rangle\rangle\|)  \\
+  \|\T{rec}&(f\ x\ y, \T{True}\mapsto \T{Cons}\LP x,\T{Cons}\LP y,ys \RP\RP, \T{False}\mapsto \T{Cons}\LP y,\T{force}(r)\RP)\| \\
+           &= \|f\ x\ y\|_c +_c \T{rec}(f\ x\ y, \T{True}\mapsto 1 +_c \|\T{Cons}\LP x,\T{Cons}\LP y,ys \RP\RP\|)  \\
            &= (2 + \|f\|_c + \|x\|_c + \|y\|_c + (\|f\|_p \|x\|_p)_c) \\
-           &\quadthree +_c \T{rec}((\|f\|_p\ \|x\|_p)_p \|y\|_p, \T{True}\mapsto \langle 1, \T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle\rangle, \\
-           &\quadsix \T{False}\mapsto \langle 1 + r_c, \T{Cons}\langle y,r_p\rangle\rangle) \\
+           &\quadthree +_c \T{rec}((\|f\|_p\ \|x\|_p)_p \|y\|_p, \T{True}\mapsto \LP 1, \T{Cons}\LP x,\T{Cons}\LP y,ys\RP\RP\RP, \\
+           &\quadsix \T{False}\mapsto \LP 1 + r_c, \T{Cons}\LP y,r_p\RP\RP) \\
            &\text{We know that $f, x, $ and $y$ are variables, so their translations have $0$ cost.} \\
            &= (2 + (f\ x)_c) \\
-           &\quadthree +_c \T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \langle 1, \T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle\rangle, \\
-           &\quadsix \T{False}\mapsto \langle 1 + r_c, \T{Cons}\langle y,r_p\rangle\rangle)
+           &\quadthree +_c \T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \LP 1, \T{Cons}\LP x,\T{Cons}\LP y,ys\RP\RP\RP, \\
+           &\quadsix \T{False}\mapsto \LP 1 + r_c, \T{Cons}\LP y,r_p\RP\RP)
 \end{flalign*}
 %
 % END CONS
@@ -206,23 +206,23 @@ We complete the translation of the outer \T{rec} using the translated \T{Nil}
 and \T{Cons}.
 %
 \begin{flalign*}
-  \|\T{rec}&(xs, \T{Nil} \mapsto \T{Cons} \langle x, \T{Nil}\rangle,\\
-             &\quad \T{Cons}\mapsto \langle y, \langle ys,r \rangle\rangle.\T{rec}(f\ x\ y, \T{True}\mapsto \T{Cons}\langle x,\T{Cons}\langle y,ys \rangle\rangle, \\
-             &\quadfour \T{False}\mapsto \T{Cons}\langle y,\T{force}(r)\rangle))\| \\
-             &= \|xs\|_c +_c \T{rec}(\|xs\|_p, \T{Nil} \mapsto 1 +_c \|\T{Cons} \langle x, \T{Nil}\rangle\|,\\
-             &\quad \T{Cons}\mapsto \langle y, \langle ys,r \rangle\rangle. 1 +_c \|\T{rec}(f\ x\ y, \T{True}\mapsto \T{Cons}\langle x,\T{Cons}\langle y,ys \rangle\rangle, \\
-             &\quadfour \T{False}\mapsto \T{Cons}\langle y,\T{force}(r)\rangle)\|)\| \\
+  \|\T{rec}&(xs, \T{Nil} \mapsto \T{Cons} \LP x, \T{Nil}\RP,\\
+             &\quad \T{Cons}\mapsto \LP y, \LP ys,r \RP\RP.\T{rec}(f\ x\ y, \T{True}\mapsto \T{Cons}\LP x,\T{Cons}\LP y,ys \RP\RP, \\
+             &\quadfour \T{False}\mapsto \T{Cons}\LP y,\T{force}(r)\RP))\| \\
+             &= \|xs\|_c +_c \T{rec}(\|xs\|_p, \T{Nil} \mapsto 1 +_c \|\T{Cons} \LP x, \T{Nil}\RP\|,\\
+             &\quad \T{Cons}\mapsto \LP y, \LP ys,r \RP\RP. 1 +_c \|\T{rec}(f\ x\ y, \T{True}\mapsto \T{Cons}\LP x,\T{Cons}\LP y,ys \RP\RP, \\
+             &\quadfour \T{False}\mapsto \T{Cons}\LP y,\T{force}(r)\RP)\|)\| \\
              %
              &\text{We substitute in our translations of the branches. Also note that $xs$}\\
-             &\text{is a variable, so its translation is $\langle 0,xs\rangle$.} \\
-             &= \T{rec}(xs, \T{Nil} \mapsto 1 +_c \langle 0,\T{Cons}\langle x,\T{Nil}\rangle\rangle, \\
-             &\quad \T{Cons}\mapsto \langle y, \langle ys,r \rangle\rangle. 1 +_c ((2 + (f x)_c) \\
-             &\quadthree +_c \T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \langle 1, \T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle\rangle, \\
-             &\quadsix \T{False}\mapsto \langle 1 + r_c, \T{Cons}\langle y,r_p\rangle\rangle))) \\
-             &= \T{rec}(xs, \T{Nil} \mapsto \langle 1,\T{Cons}\langle x,\T{Nil}\rangle\rangle, \\
-             &\quad \T{Cons}\mapsto \langle y, \langle ys,r \rangle\rangle. (3 + (f x)_c) \\
-             &\quadthree +_c \T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \langle 1, \T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle\rangle, \\
-             &\quadsix \T{False}\mapsto \langle 1 + r_c, \T{Cons}\langle y,r_p\rangle\rangle))) \\
+             &\text{is a variable, so its translation is $\LP 0,xs\RP$.} \\
+             &= \T{rec}(xs, \T{Nil} \mapsto 1 +_c \LP 0,\T{Cons}\LP x,\T{Nil}\RP\RP, \\
+             &\quad \T{Cons}\mapsto \LP y, \LP ys,r \RP\RP. 1 +_c ((2 + (f x)_c) \\
+             &\quadthree +_c \T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \LP 1, \T{Cons}\LP x,\T{Cons}\LP y,ys\RP\RP\RP, \\
+             &\quadsix \T{False}\mapsto \LP 1 + r_c, \T{Cons}\LP y,r_p\RP\RP))) \\
+             &= \T{rec}(xs, \T{Nil} \mapsto \LP 1,\T{Cons}\LP x,\T{Nil}\RP\RP, \\
+             &\quad \T{Cons}\mapsto \LP y, \LP ys,r \RP\RP. (3 + (f x)_c) \\
+             &\quadthree +_c \T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \LP 1, \T{Cons}\LP x,\T{Cons}\LP y,ys\RP\RP\RP, \\
+             &\quadsix \T{False}\mapsto \LP 1 + r_c, \T{Cons}\LP y,r_p\RP\RP))) \\
 \end{flalign*}
 %
 % END OUTER REC
@@ -231,16 +231,16 @@ The translation of \T{insert} is just three applications of the application
 rule.
 %
 \begin{flalign*}
-  \T{insert} &= \|\lambda f.\lambda x.\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \T{Cons} \langle x, \T{Nil}\rangle,\\
-             &\quadeight \T{Cons}\mapsto \langle y, \langle ys,r \rangle\rangle.\T{rec}(f\ x\ y, \T{True}\mapsto \T{Cons}\langle x,\T{Cons}\langle y,ys \rangle\rangle, \\
-             &\quadten\quadeight \T{False}\mapsto \T{Cons}\langle y,\T{force}(r)\rangle))\| \\
-             &= \langle 0, \lambda f. \langle 0, \lambda x.\langle 0,\lambda xs.\|\T{rec}(xs, \T{Nil} \mapsto \T{Cons} \langle x, \T{Nil}\rangle,\\
-             &\quadeight \T{Cons}\mapsto \langle y, \langle ys,r \rangle\rangle.\T{rec}(f\ x\ y, \T{True}\mapsto \T{Cons}\langle x,\T{Cons}\langle y,ys \rangle\rangle, \\
-             &\quadten\quadeight \T{False}\mapsto \T{Cons}\langle y,\T{force}(r)\rangle))\|\rangle\rangle\rangle \\
-             &= \langle 0, \lambda f. \langle 0, \lambda x.\langle 0,\lambda xs. \T{rec}(xs, \T{Nil} \mapsto \langle 1,\T{Cons}\langle x,\T{Nil}\rangle\rangle, \\
-             &\quad\quad \T{Cons}\mapsto \langle y, \langle ys,r \rangle\rangle. (3 + (f x)_c) +_c \T{rec}(((f\ x)_p\ y)_p, \\
-             &\quadten\quadten \T{True}\mapsto \langle 1, \T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle\rangle, \\
-             &\quadten\quadten \T{False}\mapsto \langle 1 + r_c, \T{Cons}\langle y,r_p\rangle\rangle))) \\
+  \T{insert} &= \|\lambda f.\lambda x.\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \T{Cons} \LP x, \T{Nil}\RP,\\
+             &\quadeight \T{Cons}\mapsto \LP y, \LP ys,r \RP\RP.\T{rec}(f\ x\ y, \T{True}\mapsto \T{Cons}\LP x,\T{Cons}\LP y,ys \RP\RP, \\
+             &\quadten\quadeight \T{False}\mapsto \T{Cons}\LP y,\T{force}(r)\RP))\| \\
+             &= \LP 0, \lambda f. \LP 0, \lambda x.\LP 0,\lambda xs.\|\T{rec}(xs, \T{Nil} \mapsto \T{Cons} \LP x, \T{Nil}\RP,\\
+             &\quadeight \T{Cons}\mapsto \LP y, \LP ys,r \RP\RP.\T{rec}(f\ x\ y, \T{True}\mapsto \T{Cons}\LP x,\T{Cons}\LP y,ys \RP\RP, \\
+             &\quadten\quadeight \T{False}\mapsto \T{Cons}\LP y,\T{force}(r)\RP))\|\RP\RP\RP \\
+             &= \LP 0, \lambda f. \LP 0, \lambda x.\LP 0,\lambda xs. \T{rec}(xs, \T{Nil} \mapsto \LP 1,\T{Cons}\LP x,\T{Nil}\RP\RP, \\
+             &\quad\quad \T{Cons}\mapsto \LP y, \LP ys,r \RP\RP. (3 + (f x)_c) +_c \T{rec}(((f\ x)_p\ y)_p, \\
+             &\quadten\quadten \T{True}\mapsto \LP 1, \T{Cons}\LP x,\T{Cons}\LP y,ys\RP\RP\RP, \\
+             &\quadten\quadten \T{False}\mapsto \LP 1 + r_c, \T{Cons}\LP y,r_p\RP\RP))) \\
 \end{flalign*}
 %
 % END INSERT
@@ -258,11 +258,11 @@ a translation of \T{insert f x xs}.
      &\quadfour +_c \|\T{insert}\|_p \|f\|_p \|x\|_p \|xs\|_p \\
      &= (3 + \|f\|_c + \|x\|_c + \|xs\|_c) +_c \|\T{insert}\|_p \|f\|_p \|x\|_p \|xs\|_p \\
      &= (3 + \|f\|_c + \|x\|_c + \|xs\|_c) +_c \T{rec}(\|xs\|_p, \\
-     &\quadfour \T{Nil}\mapsto \langle 1,\T{Cons}\langle x,\T{Nil}\rangle\rangle  \\
-     &\quadfour \T{Cons}\mapsto \langle y,\langle ys,r\rangle\rangle.(3 + ((\|f\|_p \|x\|_p)_p  y)_c) \\
+     &\quadfour \T{Nil}\mapsto \LP 1,\T{Cons}\LP x,\T{Nil}\RP\RP  \\
+     &\quadfour \T{Cons}\mapsto \LP y,\LP ys,r\RP\RP.(3 + ((\|f\|_p \|x\|_p)_p  y)_c) \\
      &\quadsix +_c \T{rec}((\|f\|_p \|x\|_p)_p  y)_p, \\
-     &\quadeight \T{True}\mapsto \langle 1, \T{Cons}\langle \|x\|_p,\T{Cons}\langle y,ys\rangle\rangle\rangle \\
-     &\quadeight \T{False}\mapsto \langle 1 + r_c,\T{Cons}\langle y,r_p\rangle\rangle))
+     &\quadeight \T{True}\mapsto \LP 1, \T{Cons}\LP \|x\|_p,\T{Cons}\LP y,ys\RP\RP\RP \\
+     &\quadeight \T{False}\mapsto \LP 1 + r_c,\T{Cons}\LP y,r_p\RP\RP))
 \end{flalign*}
 %
 % END INSERT APPLIED
@@ -274,29 +274,29 @@ a translation of \T{insert f x xs}.
 We walk through the translation of \T{sort}. Recall the definition of \T{sort}.
 %
 \begin{flalign*}
-  \T{sort} &= \lambda f.\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \T{Cons} \mapsto \langle y,\langle ys,r \rangle\rangle.\T{insert}\ f\ y\ \T{force}(r))
+  \T{sort} &= \lambda f.\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \T{Cons} \mapsto \LP y,\LP ys,r \RP\RP.\T{insert}\ f\ y\ \T{force}(r))
 \end{flalign*}
 %
 The translation of \T{sort} begins with two applications of the rule for translating abstractions.
 %
 \begin{flalign*}
-  \|\T{sort}\| &= \| \lambda f.\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \T{Cons} \mapsto \langle y,\langle ys,r \rangle\rangle.\T{insert}\ f\ y\ \T{force}(r))\| \\
-               &= \langle 0, \lambda f.\langle 0,\lambda xs.\|\T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \\
-               &\quadthree \T{Cons} \mapsto \langle y,\langle ys,r \rangle\rangle.\T{insert}\ f\ y\ \T{force}(r))\|\rangle\rangle \\
-               &= \langle 0, \lambda f.\langle 0,\lambda xs.\|xs\|_c +_c \T{rec}(\|xs\|_p, \T{Nil} \mapsto 1 +_c \|\T{Nil}\|, \\
-               &\quadthree \T{Cons} \mapsto \langle y,\langle ys,r \rangle\rangle.1 +_c \|\T{insert}\ f\ y\ \T{force}(r)\|)\rangle\rangle \\
-               &\text{As $xs$ is a variable, $\|xs\| = \langle 0,xs \rangle$.} \\
-               &\text{We have seen before $\|\T{Nil}\| = \langle 0,\T{Nil}\rangle$.}\\
-               &= \langle 0, \lambda f.\langle 0,\lambda xs.\T{rec}(xs, \T{Nil} \mapsto 1 +_c \langle 0,\T{Nil}\rangle, \\
-               &\quadthree \T{Cons} \mapsto \langle y,\langle ys,r \rangle\rangle.1 +_c \|\T{insert}\ f\ y\ \T{force}(r)\|)\rangle\rangle \\
+  \|\T{sort}\| &= \| \lambda f.\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \T{Cons} \mapsto \LP y,\LP ys,r \RP\RP.\T{insert}\ f\ y\ \T{force}(r))\| \\
+               &= \LP 0, \lambda f.\LP 0,\lambda xs.\|\T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \\
+               &\quadthree \T{Cons} \mapsto \LP y,\LP ys,r \RP\RP.\T{insert}\ f\ y\ \T{force}(r))\|\RP\RP \\
+               &= \LP 0, \lambda f.\LP 0,\lambda xs.\|xs\|_c +_c \T{rec}(\|xs\|_p, \T{Nil} \mapsto 1 +_c \|\T{Nil}\|, \\
+               &\quadthree \T{Cons} \mapsto \LP y,\LP ys,r \RP\RP.1 +_c \|\T{insert}\ f\ y\ \T{force}(r)\|)\RP\RP \\
+               &\text{As $xs$ is a variable, $\|xs\| = \LP 0,xs \RP$.} \\
+               &\text{We have seen before $\|\T{Nil}\| = \LP 0,\T{Nil}\RP$.}\\
+               &= \LP 0, \lambda f.\LP 0,\lambda xs.\T{rec}(xs, \T{Nil} \mapsto 1 +_c \LP 0,\T{Nil}\RP, \\
+               &\quadthree \T{Cons} \mapsto \LP y,\LP ys,r \RP\RP.1 +_c \|\T{insert}\ f\ y\ \T{force}(r)\|)\RP\RP \\
                &\text{We can use our translation of \T{insert} applied to three arguments.} \\
-               &= \langle 0, \lambda f.\langle 0,\lambda xs.\T{rec}(xs, \T{Nil} \mapsto 1 +_c \langle 0,\T{Nil}\rangle, \\
-               &\quad \T{Cons} \mapsto \langle y,\langle ys,r \rangle\rangle.(4 + \|f\|_c + \|y\|_c + \|force(r)\|_c) \\
-               &\quadthree +_c ((\|\T{insert}\|_p \|f\|_p)_p \|y\|_p)_p \|force(r)\|_p)\rangle\rangle \\
-               &\text{The variables $f$, $y$, and $r$ translate to $\langle 0,f\rangle$, $\langle 0,y\rangle$, and $\langle 0,r\rangle$ respectively.}\\
+               &= \LP 0, \lambda f.\LP 0,\lambda xs.\T{rec}(xs, \T{Nil} \mapsto 1 +_c \LP 0,\T{Nil}\RP, \\
+               &\quad \T{Cons} \mapsto \LP y,\LP ys,r \RP\RP.(4 + \|f\|_c + \|y\|_c + \|force(r)\|_c) \\
+               &\quadthree +_c ((\|\T{insert}\|_p \|f\|_p)_p \|y\|_p)_p \|force(r)\|_p)\RP\RP \\
+               &\text{The variables $f$, $y$, and $r$ translate to $\LP 0,f\RP$, $\LP 0,y\RP$, and $\LP 0,r\RP$ respectively.}\\
                &\text{The expression $\T{force}(r)$ translates to $\|r\|_c +_c \|r\|$, which is just $r$.} \\
-               &= \langle 0, \lambda f.\langle 0,\lambda xs.\T{rec}(xs, \T{Nil} \mapsto 1 +_c \langle 0,\T{Nil}\rangle, \\
-               &\quad \T{Cons} \mapsto \langle y,\langle ys,r \rangle\rangle.(4 + r_c) +_c ((\|\T{insert}\|_p f)_p y)_p r_p)\rangle\rangle
+               &= \LP 0, \lambda f.\LP 0,\lambda xs.\T{rec}(xs, \T{Nil} \mapsto 1 +_c \LP 0,\T{Nil}\RP, \\
+               &\quad \T{Cons} \mapsto \LP y,\LP ys,r \RP\RP.(4 + r_c) +_c ((\|\T{insert}\|_p f)_p y)_p r_p)\RP\RP
 \end{flalign*}
 %
 We also give the translation of \T{sort} applied to two arguments.
@@ -333,14 +333,14 @@ syntactic equivalents.
 First we interpret the inner \T{rec} of $\|\T{insert}\|$.
 %
 \begin{flalign*}
-  \llbracket \T{rec}&(((f\ x)_p\ y)_p, \T{True} \mapsto \langle 1, \T{Cons}\langle x, \T{Cons}\langle y,ys\rangle\rangle\rangle, \T{False}\mapsto \langle 1 + r_c,\T{Cons}\langle y,r_p\rangle\rangle)\rrbracket \xi \\
+  \llbracket \T{rec}&(((f\ x)_p\ y)_p, \T{True} \mapsto \LP 1, \T{Cons}\LP x, \T{Cons}\LP y,ys\RP\RP\RP, \T{False}\mapsto \LP 1 + r_c,\T{Cons}\LP y,r_p\RP\RP)\rrbracket \xi \\
                     &= \bigvee\limits_{size(z) \leq ((f\ x)_p\ y)_p} case(z, f_{True}, f_{False}) \\
                     &\text{where} \\
   \xi &= \{f \mapsto f, x \mapsto x, y\mapsto j, ys\mapsto (j, m), r \mapsto r \} \\
-  f_{True}(\ast) &= \llbracket \langle 1, \T{Cons}\langle x, \T{Cons}\langle y,ys\rangle\rangle\rangle \rrbracket\xi \\
-                 &= (1, \llbracket \T{Cons}\langle x, \T{Cons}\langle y,ys\rangle\rangle\rrbracket)\xi \\
+  f_{True}(\ast) &= \llbracket \LP 1, \T{Cons}\LP x, \T{Cons}\LP y,ys\RP\RP\RP \rrbracket\xi \\
+                 &= (1, \llbracket \T{Cons}\LP x, \T{Cons}\LP y,ys\RP\RP\rrbracket)\xi \\
                  &= (1, (max(x,j), 2 + m)) \\
-  f_{False}(\ast) &= \llbracket \langle 1 + r_c,\T{Cons}\langle y,r_p\rangle\rangle\rrbracket \xi \\
+  f_{False}(\ast) &= \llbracket \LP 1 + r_c,\T{Cons}\LP y,r_p\RP\RP\rrbracket \xi \\
                   &= (1 + r_c, (max(j,\pi_0 r_p), 1 + \pi_1 r_p))
 \end{flalign*}
 %
@@ -354,20 +354,20 @@ Since there are only two $z$, we can simplify the big maximum to a maximum.
 Using this, we proceed to interpret the outer recurrence.
 %
 \begin{flalign*}
-  g(i, n) &= \llbracket\T{rec}(xs, \T{Nil} \mapsto \langle 1,\T{Cons}\langle x,\T{Nil}\rangle\rangle, \\
-            &\quad \T{Cons}\mapsto \langle y, \langle ys,r \rangle\rangle. (3 + (f x)_c) \\
-            &\quadthree +_c \T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \langle 1, \T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle\rangle, \\
-            &\quadsix \T{False}\mapsto \langle 1 + r_c, \T{Cons}\langle y,r_p\rangle\rangle))\rrbracket \xi \\
+  g(i, n) &= \llbracket\T{rec}(xs, \T{Nil} \mapsto \LP 1,\T{Cons}\LP x,\T{Nil}\RP\RP, \\
+            &\quad \T{Cons}\mapsto \LP y, \LP ys,r \RP\RP. (3 + (f x)_c) \\
+            &\quadthree +_c \T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \LP 1, \T{Cons}\LP x,\T{Cons}\LP y,ys\RP\RP\RP, \\
+            &\quadsix \T{False}\mapsto \LP 1 + r_c, \T{Cons}\LP y,r_p\RP\RP))\rrbracket \xi \\
             &\text{where} \\
   \xi &= \{xs \mapsto (i, n), x \mapsto x\} \\
   g(i,n) &= \bigvee\limits_{size(z) \leq (i,n)} case(z, f_{Nil}, f_{Cons}) \\
          &\text{where}\\
-  f_{Nil}(\ast) &= \llbracket \langle 1,\T{Cons}\langle x,\T{Nil}\rangle\rangle \rrbracket \xi \\
+  f_{Nil}(\ast) &= \llbracket \LP 1,\T{Cons}\LP x,\T{Nil}\RP\RP \rrbracket \xi \\
                 &= (1, (x, 1)) \\
-  f_{Cons}(j,m) &= \llbracket (4 + (f\ x)_c) +_c \T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \langle 1, \T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle\rangle, \\
-                &\quadthree \T{False}\mapsto \langle 1 + r_c, \T{Cons}\langle y,r_p\rangle\rangle)\rrbracket \xi \{ y \mapsto j, ys \mapsto (j, m), r \mapsto g(j, m)\} \\
-                &= (4 + (f\ x)_c) \pplus_c \llbracket\T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \langle 1, \T{Cons}\langle x,\T{Cons}\langle y,ys\rangle\rangle\rangle, \\
-                &\quadthree \T{False}\mapsto \langle 1 + r_c, \T{Cons}\langle y,r_p\rangle\rangle)\rrbracket \xi \{ y \mapsto j, ys \mapsto (j, m), r \mapsto g(j, m)\} \\
+  f_{Cons}(j,m) &= \llbracket (4 + (f\ x)_c) +_c \T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \LP 1, \T{Cons}\LP x,\T{Cons}\LP y,ys\RP\RP\RP, \\
+                &\quadthree \T{False}\mapsto \LP 1 + r_c, \T{Cons}\LP y,r_p\RP\RP)\rrbracket \xi \{ y \mapsto j, ys \mapsto (j, m), r \mapsto g(j, m)\} \\
+                &= (4 + (f\ x)_c) \pplus_c \llbracket\T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \LP 1, \T{Cons}\LP x,\T{Cons}\LP y,ys\RP\RP\RP, \\
+                &\quadthree \T{False}\mapsto \LP 1 + r_c, \T{Cons}\LP y,r_p\RP\RP)\rrbracket \xi \{ y \mapsto j, ys \mapsto (j, m), r \mapsto g(j, m)\} \\
                 &= (4 + (f\ x)_c) \pplus_c ((1, (max(x,j), 2 + m)) \\
                 &\quadthree \vee (1 + g_c(j,m), (max(j,\pi_0 g_p(j,m)), 1 + \pi_1 g_p(j,m))))
 \end{flalign*}
@@ -462,12 +462,12 @@ cost and potential of applying \T{sort} to a comparison function $f$ and a list
 $xs$.
 %
 \begin{flalign*}
-  g(i, n) &= \llbracket \T{rec}(xs, \T{Nil} \mapsto \langle 1,\T{Nil} \rangle,  \\
-          &\quadthree \T{Cons} \mapsto \langle y, \langle ys,r \rangle\rangle.(4 + r _c) +_c ((\|\T{insert}\|_p f)_p y)_p r_p) \rrbracket \{ xs \mapsto (i, n), f\mapsto f\} \\
+  g(i, n) &= \llbracket \T{rec}(xs, \T{Nil} \mapsto \LP 1,\T{Nil} \RP,  \\
+          &\quadthree \T{Cons} \mapsto \LP y, \LP ys,r \RP\RP.(4 + r _c) +_c ((\|\T{insert}\|_p f)_p y)_p r_p) \rrbracket \{ xs \mapsto (i, n), f\mapsto f\} \\
           &= \bigvee\limits_{size(z)\leq n} case(z, f_{Nil}, f_{Cons}) \\
   %
           &\text{where}\\
-  f_{Nil} &= \llbracket \langle 1,\T{Nil}\rangle \rrbracket \{ xs \mapsto (i,n)\} \\
+  f_{Nil} &= \llbracket \LP 1,\T{Nil}\RP \rrbracket \{ xs \mapsto (i,n)\} \\
           &= (1, (-\infty,0)) \\
 f_{Cons} &= \llbracket (4 + r _c) +_c ((\|\T{insert}\|_p f)_p y)_p r_p) \rrbracket \xi \\
          &\text{where}\quad \xi = \{xs \mapsto (i,n), f \mapsto f, y \mapsto j, ys \mapsto (j,m), r \mapsto g(j,m)\} \\

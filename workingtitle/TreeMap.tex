@@ -1,4 +1,15 @@
 \section{Sequential Tree Map}
 
 This example is presented for comparison with the parallel tree map given in
-chapter 4,
+chapter 4.
+We use \T{int} labelled binary trees.
+%
+\begin{equation*}
+  \T{datatype tree} = \T{E of Unit | N of int$\times$tree$\times$tree}
+\end{equation*}
+%
+Tree \T{map f t} applies the function \T{f} to every label in the tree \T{t}.
+%
+\begin{align*}
+  \T{map} &= \lambda f.\lambda t.\T{rec}(t, \T{E} \mapsto \T{E}, \T{N} \mapsto \LP x,\LP t_0,r_0\RP,\LP t_1,r_1\RP\RP. \T{N}\LP f\ x, \T{force}(r_0), \T{force}(r_1)\RP)
+\end{align*}

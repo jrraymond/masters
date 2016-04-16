@@ -537,15 +537,19 @@ dividable by construction.  Dividing the work requires only destruction of the
 node constructor to yield the left and right subtrees.
 
 We will use \T{int} labelled binary trees.
+%
 \begin{equation*}
   \T{datatype tree} = \T{E of Unit | N of int$\times$tree$\times$tree}
 \end{equation*}
 
-\T{map} simply deconstructs each node, applies the function to the label, recuses on the children, and reconstructs a node using the results.
+%
+\T{map} simply deconstructs each node, applies the function to the label,
+recuses on the children, and reconstructs a node using the results.
+%
 \begin{equation*}
   \T{map} = \lambda f.\lambda t.\T{rec}(t, \T{E} \mapsto \T{E}, \T{N} \mapsto \langle x, \langle t_0, r_0 \rangle, \langle t_1, r_1 \rangle\rangle.\T{N} \langle f\ x, \T{force}(r_0), \T{force}(r_1)\rangle)
 \end{equation*}
-
+%
 \begin{figure}
   \label{fig:ws_treemap_complexity_translation}
   \caption{Complexity translation of \T{map f t}}
