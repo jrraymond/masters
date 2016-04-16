@@ -1,30 +1,43 @@
 \chapter{Parallel Functional Program Analysis}
 
 We demonstrate the flexibility of the method developed in \citet{Danner2015} by
-extending it to parallel cost semantics.  To analyze the complexity of a
-sequential program, we are only interested in a measure of how many steps
-required to run the program. To analyze the complexity of a parallel program,
-we need a measure which takes into account the extent to which a computation
-may be run on multiple processors.  The cost semantics we use are work and span
-\citet{Harper2012PFPL}.  We give a brief overview of work and span, then
-demonstrate how to alter the semantics and translation function. We state and
-sketch a proof of a bounding theorem stating the translation of a program is an
-upper bound on the cost of executing the program. Finally we give two examples
-of the recurrence extraction and interpretation.
+extending it to parallel cost semantics. We introduce a parallel operational
+cost semantics for the source language, alter the translation into the
+complexity language to produce a new notion of cost, and then prove the
+bounding theorem for the new complexity translation function.  Finally we give
+two examples of the recurrence extraction and interpretation.
+
+
+To analyze the complexity of a sequential program, we are only interested in a
+measure of the steps required to run the program. To analyze the complexity of
+a parallel program, we need a measure which takes into account the extent to
+which a computation may be run on multiple processors.  The cost semantics we
+use are work and span \citet{Harper2012PFPL}.  We give a brief overview of work
+and span.
+
 
 \section{Work and span}
 Work and span is a method of predicting the running time of programs that may
-be run on arbitrary number of processors. Instead of an approximation of the
-number of steps required to execute a program, work and span instead results in
-a cost graph, a specification of the dependencies between subcomputations of
-the program. The cost graph can be compiled into The work of a program
-corresponds to the total number of steps needed to run.  The span of a program
-is the steps in the critical path.  The critical path is the largest number of
-steps that must be executed sequentially.  The length of the critical path
-determines how much a program can be parallelized.  If the span is equal to the
+be run on arbitrary number of processors. Instead of producing an approximation
+of the number of steps required to execute a program, work and span instead
+produces a cost graph; a specification of the dependencies between
+subcomputations of the program. The cost graph can be compiled into two
+measures, work and span. The work of a program corresponds to the total number
+of steps required to execute the program.  The span is the number of steps
+in the critical path.  The critical path is the longest number of steps that
+must be executed sequentially.  The length of the critical path determines the
+extent to which a program may be parallelized.  If the span is equal to the
 work, than every step in the computation depends on the previous step, and the
-program cannot be parallelized.
+subcomputations of the program cannot be run independently, so the program
+cannot be parallelized. If the span is smaller than the work, then there are
+subcomputations which may be run independently and the program may be
+parallelized. The upper bound on the running time of a program is summarized by
+theorem \ref{thm:ws_brents_theorem}.
 
+\begin{theorem}[Brent's Theorem]
+  \label{thm:ws_brents_theorem}
+  A program with work $w$ and span $s$ may be evaluated on $p$ processors in $O(max(w/p,s))$ steps.
+\end{theorem}
 
 A cost graph is defined as follows.
 
@@ -45,6 +58,11 @@ The work of a cost graph is defined as
   \end{cases}
 \end{equation*}
 %
+Since the work of a program is the total number of steps required to run the
+program, we add the work of subgraphs regardless whether the may be run
+independently or not.
+
+
 The span of a cost graph is defined as
 %
 \begin{equation*}
@@ -56,15 +74,22 @@ The span of a cost graph is defined as
   \end{cases}
 \end{equation*}
 %
+Cost graphs connected by $\oplus$ must be run sequentially, so their span is the
+sum of the spans of the subgraphs. Cost graphs connected by $\otimes$ may be
+run independently, so their span is the maximum of the spans of the subgraphs.
+
+
+\subsection{Operational Cost Semantics}
+%
 We alter the operational cost semantics of the source language to produce a cost
 graph instead of a natural number. Figure \ref{fig:ws_srclang_oper_sem} shows
 the new operational cost semantics. For tuples, the subexpressions may be evaluated
 in parallel, so the cost of evaluating a tuple is the cost graphs of the
 subexpressions connected by $\otimes$.  For \T{split}, the second subexpression
 depends on the result of the first subexpression, so the cost of evaluating the
-\T{split} is the cost graphs of the subexpression connected by $\oplus$. In
-every rule except for tuples and function application, $+$ gets replacted with
-$\oplus$. This is because tuples and function application are the two syntactic
+\T{split} is the cost graphs of the subexpression connected with $\oplus$. In
+every rule except for tuples and function application, we replace $+$ with
+$\oplus$. Because tuples and function application are the two syntactic
 forms which consist of multiple subexpressions whose evaluation does not depend
 on each other.
 %
@@ -159,12 +184,12 @@ The complexity translation is given in Figure
 syntactic sugar for $\langle E_0 \oplus E_{1c}, E_{1p} \rangle$.  The
 translation is similar to the original translation except we replace the use of
 $+$ and $+_c$ with $\oplus$ and $\oplus_c$.  In the tuple case and function
-application case we use $\otimes$ since the arguments do not depend on each
-other and may be computed in parallel.
+application case, the subexpressions may be computed in parallel so the cost is
+the costs of the subgraphs connected with $\otimes$.
 %
 \begin{figure}
   \label{fig:ws_complexity_translation}
-  \caption{Work and span translation from source language to compleity language}
+  \caption{Work and span translation from source language to complexity language}
   \begin{align*}
     \|x\| &= \langle 0, x \rangle \\
     \|\langle\rangle\| &= \langle 0, \langle \rangle \rangle \\
@@ -183,7 +208,10 @@ other and may be computed in parallel.
 %
 \section{Bounding Relation}
 %
-We mutually define the following relations.
+We verify that the the translation of a well-typed source language is bounded
+by its translation into the complexity language. We mutually define the
+following bounding relations:
+%
 \begin{enumerate}
   \item $e \sqsubseteq_\tau E, \emptyset \vdash_\phi e : \tau$ and $\emptyset \vdash_{\|\psi\|} E : \|\tau\|$
   \item $v \sqsubseteq_\tau^{val} E, $ where $\emptyset \vdash v : \tau$ and $\emptyset \vdash_{\|\psi\|} E : \llangle \tau \rrangle$
@@ -191,10 +219,19 @@ We mutually define the following relations.
   \item $e \sqsubseteq_{\phi,R} E$, where $\emptyset \vdash_\psi e : \phi[\delta]$ and $\emptyset \vdash_{\|\psi\|} E : \|\phi\|[\delta]$
 \end{enumerate}
 %
-The $R$ parameterizes the relation. The mutual definitions are given below.
+The bounding relation $e \sqsubseteq_\tau$ defines the notion of an source
+language expression to be bounded by a complexity language expression. We will
+refer to this as "bounding". The second bounding relation $e
+\sqsubseteq_\tau^{val} E$ defines a notion of a complexity language potential
+bounding a source language value. We will refer to this relation as "value
+bounding". Relations three and four are parameterized by any relation $R$ and
+interpret strictly positive functors as relation transformers. The mutual
+definitions of the relations are given below.
 %
+\begin{defn}[Bounding Relation]\leavevmode
+  \label{def:ws_bounding_relations}
 \begin{enumerate}
-  \item We define $e \sqsubseteq_\tau E$ as if $e \downarrow^n v$, then
+  \item We define $e \sqsubseteq_\tau E$ as if $e \downarrow^n v$, then \label{ws:bounding_rel_defn}
     \begin{itemize}
       \item $n \leq E_c$
       \item $v \sqsubseteq_\tau^{val} E_p$.
@@ -225,32 +262,79 @@ The $R$ parameterizes the relation. The mutual definitions are given below.
       \item $v \sqsubseteq_{\phi,R}^{val} E_p$
     \end{itemize}
 \end{enumerate}
+\end{defn}
 %
-The statement of the bounding theorem is the same.
+The definition \ref{ws:bounding_rel_defn} of $e \sqsubseteq_\tau E$ states that
+if a source language expression $e$ steps to a value $v$ with cost $n$, then
+the cost $n$ is less than or equal to the cost of the complexity language
+expression $E$ and the value $v$ is value bounded by potential of the
+complexity language expression $E$. In the sequential cost semantics, the cost
+is a natural number and $\leq$ is the ordering $a \leq b$ if there exists a
+natural number $c$ such that $a+c=b$. We need to impose a partial ordering on
+cost graphs. We use the containment ordering. A cost graph $a$ is less than or
+equal to a cost graph $b$ if $a$ is a subset of $b$. The subset relation is
+transitive and antisymmetric, so the ordering is transitive and antisymmetric.
+The ordering must satisfy these two properties in order for the proof of the
+bounding relation to fall through.
+
+
+The bounding theorem states well-typed source language expressions are bounded
+by their translations into the complexity language.
+%The following lemmas are required.
+% %Weakening consists of two parts. The first states if a source language
+%expression is bounded by a complexity language expression and the complexity
+%language expression is less than or equal to another complexity language
+%expression, then the source language expression is bounded by the second
+%complexity language expression. The second states if a source language value is
+%value bounded by a complexity language expression and the complexity language
+%expression is less than or equal to another complexity language expression,
+%then the source language value is value bounded by the second complexity
+%language expression.
+%%
+%\begin{lemma}[Weakening]
+%  \label{lem:ws_weakening}
+%  \begin{align}
+%    &e \sqsubseteq_\tau E \ and\ E \leq_{\|\tau\|} E' \implies e \sqsubseteq_\tau E' \\
+%    &v \sqsubseteq_\tau^{val} E \ and\ E \leq_{\llangle \tau \rrangle} E' \implies  v \sqsubseteq_\tau^{val} E'
+%  \end{align}
+%\end{lemma}
+%\begin{proof}
+%  The proof is by induction on type $\tau$.
+%\end{proof}
+%%
+%The compositionality
 %
-\begin{theorem}
+\begin{theorem}[Bounding Theorem]
   If $\gamma \vdash e : \tau, $ then $e \sqsubseteq_\tau \|e\|$.
 \end{theorem}
 \begin{proof}
-  The proof is by induction on the derivation of $\gamma \vdash e : \tau$ and
-  is identical to the proof given in \citet{Danner2015} so is not included
-  here.
+  The proof proceeds by induction on the typing derivation and is identical to
+  the proof of the bounding theorem \citet{Danner2015}. We will not reproduce
+  it here.
 \end{proof}
 
+%
+% PARALLEL LIST MAP
+%
 \section{Parallel List Map}
-If we revisit \T{map} using the work and span translation, we will get a different result.
+We will analyze the cost of the \T{map} function from section
+\ref{sec:sequential_list_map}. We translate the source language program using
+the new translation function and interpret the resulting complexity language
+expression in a similar denotational semantics.
 
-
-We use the same data type \T{list} and \T{map} function as in sequential list map.
+We use the same data type \T{list} and \T{map} definition.
+%
 \begin{equation*}
   \T{datatype list} = \T{Nil of Unit | Cons of int $\times$ list}
 \end{equation*}
-
+%
 \begin{equation*}
   \T{map} = \lambda f. \lambda xs . \T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \T{Cons} \mapsto \langle y \langle ys, y \rangle\rangle. \T{Cons}\langle f\ y, \T{force}(r)\rangle)
 \end{equation*}
-
-The derivation of the complexity expression is given in Figure \ref{fig:ws_map_complexity_translation}.
+%
+The derivation of the complexity expression is given in Figure
+\ref{fig:ws_map_complexity_translation}.
+%
 \begin{figure}
   \label{fig:ws_map_complexity_translation}
   \caption{Work and span complexity translation of \T{map f xs}.}
@@ -282,8 +366,9 @@ The derivation of the complexity expression is given in Figure \ref{fig:ws_map_c
     &\quadfour \T{Cons} \mapsto \langle y, \langle ys, r \rangle \rangle. \langle 1 \oplus ((1 \oplus (f_p\ y)_c) \otimes r_c), \T{Cons} \langle (f_p\ y)_p, r_p \rangle \rangle)
   \end{split}\]
 \end{figure}
-
+%
 The complexity language translation is
+%
 \begin{equation*}
 \begin{split}
     &\|\T{map f xs}\| = (3 \oplus f_c \otimes xs_c) \oplus_c \\
@@ -291,21 +376,21 @@ The complexity language translation is
     &\quadfour \T{Cons} \mapsto \langle y, \langle ys, r \rangle \rangle. \langle 1 \oplus ((1 \oplus (f_p\ y)_c) \otimes r_c), \T{Cons} \langle (f_p\ y)_p, r_p \rangle \rangle)
 \end{split}
 \end{equation*}
-
-
+%
 We interpret lists as a pair of their largest element and length.
+%
 \begin{align*}
   \llbracket \T{list} \rrbracket &= \mathbb{Z} \times \mathbb{N} \\
   D^\T{list} &= \{*\} + (\llbracket \mathbb{Z} \rrbracket \times \llbracket \T{list} \rrbracket) \\
   size_\T{list}(*) &= (0, 0) \\
   size_\T{list}((x, (m, n))) &= (max(x, m), 1 + n)
 \end{align*}
-
-The interpretation of the recurser is given in Figure \ref{fig:ws_map_interpretation}.
-
+%
+The interpretation of the recursor is given in Figure \ref{fig:ws_map_interpretation}.
+%
 \begin{figure}
   \label{fig:ws_map_interpretation}
-  \caption{Interpretation of recurser in \T{map}}
+  \caption{Interpretation of recursor in \T{map}}
   \[\begin{split}
       &\quad \text{Let } \eta = \{ xs \mapsto (0, (m, n)), f \mapsto (0, f)\}\\
       &\quad g(f, (m, n)) = \llbracket \T{rec}(xs_p, \T{Nil} \mapsto \langle 1, \T{Nil}\rangle,\\
@@ -327,8 +412,9 @@ The interpretation of the recurser is given in Figure \ref{fig:ws_map_interpreta
       &\quadfour \T{Cons} \mapsto (1 \oplus ((1 \oplus (f\ m)_c) \otimes g_c(f, (m, n-1))), ((f\ m)_p, \pi_1 g_p(f, (m, n-1)))))
   \end{split}\]
 \end{figure}
-
+%
 The result is
+%
 \begin{equation*}
   \begin{split}
   &g(f, (m, n)) = \\
@@ -336,7 +422,7 @@ The result is
   &\quadfour \T{Cons} \mapsto (1 \oplus ((1 \oplus (f\ y)_c) \otimes g_c(f, (m, n-1))), ((f\ y)_p, \pi_1 g_p(f, (m, n-1)))))
   \end{split}
 \end{equation*}
-
+%
 %In figure \ref{fig:ws_map_massage}, we massage the recurrence into a simpler form by eliminating the big max and the $case$.
 %\begin{figure}
 %  \label{fig:ws_map_massage}
@@ -364,9 +450,10 @@ The result is
 %    (1 \oplus (1 \oplus (f\ m)_c \otimes g(f, (m, n-1))_c), ((f\ m)_p, g(f, (m, n-1))_p)) &n > 0
 %  \end{cases}
 %\end{equation*}
-
-We compile the recurrence down to the work and the span to make it easier to manipulate.
-The costs change from cost graphs to a tuple of the work and the span.
+We compile the recurrence down to the work and the span to make it easier to
+manipulate.  The costs change from cost graphs to a tuple of the work and the
+span.
+%
 \begin{equation*}
   \begin{split}
   &g(f, (m, n)) = \\
@@ -377,13 +464,13 @@ The costs change from cost graphs to a tuple of the work and the span.
   &\quadfive\quadeight                  ((f\ y)_p, \pi_1 g_p(f, (m, n-1)))))
   \end{split}
 \end{equation*}
-
+%
 We prove by induction bounds on the work and span of the cost of $g$.
-
+%
 \begin{theorem}
 $\pi_0 g_c(f, (m, n)) \leq 1 + (2 + \pi_0(f\ m)_c)n$
 \end{theorem}
-
+%
 \begin{proof}
    The proof is by induction on $n$.
   \begin{description}
@@ -409,10 +496,11 @@ $\pi_0 g_c(f, (m, n)) \leq 1 + (2 + \pi_0(f\ m)_c)n$
       \end{split}\]
   \end{description}
 \end{proof}
-
+%
 \begin{theorem}
   $\pi_1 g_c(f, (m, n)) \leq 1 + \pi_1 (f\ m)_c + n$
 \end{theorem}
+%
 \begin{proof}
   \begin{description}
     \item[case $n=0$]\mbox{}\\[-1.5\baselineskip]
@@ -438,7 +526,7 @@ $\pi_0 g_c(f, (m, n)) \leq 1 + (2 + \pi_0(f\ m)_c)n$
       \end{split}\]
   \end{description}
 \end{proof}
-
+%
 Compare these results with sequential map.
 
 

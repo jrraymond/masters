@@ -5,8 +5,8 @@
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{bussproofs}
-\usepackage{framed}
 \usepackage{listings}
+%\usepackage{ntheorem}
 \usepackage{upgreek}
 \usepackage{stmaryrd}
 
@@ -53,9 +53,15 @@
 \title{Extracting Cost Rercurrences from Sequential and Parallel Functional Programs}
 \author{Justin Raymond}
 
-\newtheorem{theorem}{Theorem}[section]
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[chapter]
 \newtheorem{corollary}{Corollary}[theorem]
 \newtheorem{lemma}[theorem]{Lemma}
+
+\theoremstyle{definition}
+\newtheorem{defn}{Definition}[chapter]
+%\newenvironment{definition}[1][Definition]{\begin{trivlist}
+%\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
 
 \newcommand{\T}[1]{\texttt{#1}}
 \lstset{mathescape=true,basicstyle=\ttfamily}
@@ -81,6 +87,7 @@
 \include{TreeMap}
 \include{WorkAndSpan}
 \include{MutualRecurrence}
+\include{Conclusion}
 
 \bibliography{bibliography}
 \bibliographystyle{plainnat}
