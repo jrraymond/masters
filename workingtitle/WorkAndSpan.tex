@@ -340,7 +340,7 @@ The derivation of the complexity expression is given in Figure
   \caption{Work and span complexity translation of \T{map f xs}.}
   \[\begin{split}
     &\|\T{map f xs}\| = \\
-    &  (3 \oplus f_c \otimes xs_c) \oplus_c \T{rec}(xs_p, \T{Nil}\mapsto 1 \oplus_c \|\T{Nil}\|, \\
+    &  (2 \oplus f_c \otimes xs_c) \oplus_c \T{rec}(xs_p, \T{Nil}\mapsto 1 \oplus_c \|\T{Nil}\|, \\
     &\quadten\qquad \T{Cons} \mapsto \langle y, \langle ys, r \rangle \rangle. 1 \oplus_c \|\T{Cons}\langle f\ y, \T{force}(r)\rangle \|) \\
     %Nil branch
     &\quad 1 \oplus_c \|\T{Nil}\| = 1 \oplus_c \langle 0, Nil \rangle = \langle 1, Nil \rangle \\
@@ -361,7 +361,7 @@ The derivation of the complexity expression is given in Figure
     %Cons<..>
     &\quad\|\T{Cons}\langle f\ y, \T{force}(r)\rangle \| = \langle (1 \oplus (f_p\ y)_c) \otimes r_c, \T{Cons} \langle (f_p\ y)_p, r_p \rangle \rangle \\
     %rec
-    &\|\T{map f xs}\| = (3 \oplus f_c \otimes xs_c) \oplus_c \\
+    &\|\T{map f xs}\| = (2 \oplus f_c \otimes xs_c) \oplus_c \\
     &\quad \T{rec}(xs_p, \T{Nil}\mapsto \langle 1, \T{Nil}\rangle, \\
     &\quadfour \T{Cons} \mapsto \langle y, \langle ys, r \rangle \rangle. \langle 1 \oplus ((1 \oplus (f_p\ y)_c) \otimes r_c), \T{Cons} \langle (f_p\ y)_p, r_p \rangle \rangle)
   \end{split}\]
@@ -371,7 +371,7 @@ The complexity language translation is
 %
 \begin{equation*}
 \begin{split}
-    &\|\T{map f xs}\| = (3 \oplus f_c \otimes xs_c) \oplus_c \\
+    &\|\T{map f xs}\| = (2 \oplus f_c \otimes xs_c) \oplus_c \\
     &\quad \T{rec}(xs_p, \T{Nil}\mapsto \langle 1, \T{Nil}\rangle, \\
     &\quadfour \T{Cons} \mapsto \langle y, \langle ys, r \rangle \rangle. \langle 1 \oplus ((1 \oplus (f_p\ y)_c) \otimes r_c), \T{Cons} \langle (f_p\ y)_p, r_p \rangle \rangle)
 \end{split}
@@ -551,7 +551,7 @@ We will use \T{int} labelled binary trees.
   \caption{Complexity translation of \T{map f t}}
   \begin{equation*}
     \begin{split}
-      &3 \oplus (f_c \otimes t_c) \oplus_c \T{rec}(t_p, \T{E} \mapsto 1 \oplus_c \|\T{E}\|, \\
+      &2 \oplus (f_c \otimes t_c) \oplus_c \T{rec}(t_p, \T{E} \mapsto 1 \oplus_c \|\T{E}\|, \\
       &\quadten \T{N} \mapsto \langle y, \langle t_0, r_0 \rangle \langle t_1, r_1 \rangle \rangle 1 \oplus_c \|\T{N}\langle f\ x, \T{force}(r_0) \T{force}(r_1)\rangle \| ) \\
       %E branch
       &\quad 1 \oplus_c \|E\| = 1 \oplus \langle 0, E \rangle = \langle 1, E \rangle \\

@@ -24,12 +24,143 @@ The translation
               &\text{We apply the rule for translating a \T{rec} construct. We use $\|xs\| = \langle 0,xs\rangle$.}\\
               &= \langle 0, \lambda f. \langle 0, \lambda xs .\T{rec}(xs, \T{Nil} \mapsto 1 +_c \|\T{Nil}\|, \\
               &\quadten \T{Cons} \mapsto \langle y \langle ys, y \rangle\rangle.1 +_c \|\T{Cons}\langle f\ y, \T{force}(r)\rangle\|)\rangle\rangle \\
+  %
               &\text{The translation of \T{Nil} is $\langle 0, \T{Nil}\rangle$.}\\
-              &\|\T{Cons}\langle f\ x,\T{force}(r)\rangle\| = \langle \|\langle f\ x,\T{force}(r)\rangle_c, \T{Cons}\|\langle f\ x,\T{force}(r)\rangle\|\rangle \\
-              &\quad \|\langle f\ x,\T{force}(r)\rangle\| = \langle\|f\ x\|_c + \|\T{force}(r)\|_c, \langle \|f\ x\|_p,\|\T{force}(r)\|_p\rangle\rangle \\
-              &\quadthree \|f\ x\| = (1 + \|f\|_c + \|x\|_c) +_c \|f\|_p\|x\|_p = \langle 1 + (f\ x)_c, (f\ x)_p\rangle \\
-              &\quadthree \|\T{force}(r)\| = \langle 0,r\rangle +_c \langle 0,r\rangle_p = r \\
-              &= \langle 0, \lambda f. \langle 0, \lambda xs . \T{rec}(xs, \T{Nil} \mapsto \langle 1,\T{Nil}\rangle, \T{Cons} \mapsto \langle y \langle ys, y \rangle\rangle.1 +_c \|\T{Cons}\langle f\ y, \T{force}(r)\rangle\|)\rangle\rangle \\
+  %
+              &\text{To translate the \T{Cons} branch we translate the subexpressions first.}\\
+              &\quadthree\|\T{Cons}\langle f\ x,\T{force}(r)\rangle\| = \langle \|\langle f\ x,\T{force}(r)\rangle_c, \T{Cons}\|\langle f\ x,\T{force}(r)\rangle\|\rangle \\
+              &\quadfive \|\langle f\ x,\T{force}(r)\rangle\| = \langle\|f\ x\|_c + \|\T{force}(r)\|_c, \langle \|f\ x\|_p,\|\T{force}(r)\|_p\rangle\rangle \\
+  %
+              &\quadsix \|f\ x\| = (1 + \|f\|_c + \|x\|_c) +_c \|f\|_p\|x\|_p = \langle 1 + (f\ x)_c, (f\ x)_p\rangle \\
+  %
+              &\quadsix \|\T{force}(r)\| = \langle 0,r\rangle +_c \langle 0,r\rangle_p = r \\
+  %
+              &\quadfive \|\langle f\ x,\T{force}(r)\rangle\| = \langle 1 + (f\ x)_c + r_c, \langle (f\ x)_p,r_p\rangle\rangle \\
+              &\quadthree \|\T{Cons}\langle f\ x,\T{force}(r)\rangle\| = \langle 1 + (f\ x)_c + r_c, \T{Cons}\langle (f\ x)_p,r_p\rangle\rangle \\
+              &= \langle 0, \lambda f. \langle 0, \lambda xs . \T{rec}(xs, \T{Nil} \mapsto \langle 1,\T{Nil}\rangle, \\
+              &\quadten \T{Cons} \mapsto \langle y \langle ys, y \rangle\rangle.\langle 2 + (f\ x)_c + r_c, \T{Cons}\langle (f\ x)_p,r_p\rangle\rangle \\
+\end{align*}
+%
+We will translate \T{map} applied to some function \T{f} and a list \T{xs}.
+%
+\begin{align*}
+  \|\T{map f xs}\| &= (1 + \|\T{map}\ f\|_c + \|xs\|_c) +_c \|\T{map}\ f\|_p \|xs\|_p \\
+                   &\text{The translation of \T{map} partially applied to map is:}\\
+                   &\quadthree \|\T{map}\ f\| = (1 + \|\T{map}\|_c + \|f\|_c) +_c \|\T{map}\|_p \|f\|_p \\
+                   &\text{The cost of partially applied \T{map} is 0.} \\
+                   &= (2 + \|f\|_c + \|xs\|_c) +_c (\|\T{map}\|_p\ \|f\|_p)_p \|xs\|_p
 \end{align*}
 
 \subsection{Interpretation}
+
+We interpret lists as a pair of their largest element and length.
+%
+\begin{align*}
+  \llbracket \T{list} \rrbracket &= \mathbb{Z} \times \mathbb{N} \\
+  D^\T{list} &= \{*\} + (\llbracket \mathbb{Z} \rrbracket \times \llbracket \T{list} \rrbracket) \\
+  size_\T{list}(*) &= (0, 0) \\
+  size_\T{list}((x, (m, n))) &= (max(x, m), 1 + n)
+\end{align*}
+%
+The recursor of \T{map} drives the cost, so we will interpret the recursor
+first.
+%
+\begin{align*}
+  g(i, n) &= \llbracket \T{rec}(xs, \T{Nil} \mapsto \langle 1,\T{Nil}\rangle, \\
+       &\quadfive \T{Cons} \mapsto \langle 2 + (f\ x)_c + r_c,\T{Cons}\langle (f\ x)_p,r_p\rangle\rangle \rrbracket \{xs \mapsto n, f \mapsto f\}\\
+       &= \bigvee\limits_{size(z) \leq n} case(z, f_{Nil}, f_{Cons}) \\
+       &\text{where} \\
+  f_{Nil}(\ast) &= \llbracket \langle 1,\T{Nil}\rangle\rrbracket \\
+                &= (1,0) \\
+  f_{Cons}(i, m) &= \llbracket \langle 2 + (f\ x)_c + r_c,\T{Cons}\langle (f\ x)_p,r_p\rangle\rangle\rrbracket \xi\\
+                 &\qquad \text{where } \xi = \{xs \mapsto n, f \mapsto f, y \mapsto i, ys \mapsto m, r \mapsto g(i, m) \} \\
+                 &= (2 + (f\ i)_c + g_c(i,m), (max((f\ i)_p, \pi_0g_p(i,m)), 1 + \pi_1 g_p(i,m)))
+\end{align*}
+%
+We break the recurrence into the cases of $n=0$ and $n>0$
+%
+\begin{description}
+  \item[case $n=0$]\hfill \\
+    $g(i,0) = \bigvee\limits_{size(z) \leq 0} case(z, f_{Nil}, f_{Cons}) = (1,0)$
+  \item[case $n>0$]\hfill \\
+    \begin{align*}
+      g(i,n) &= \bigvee\limits_{size(z) \leq n} case(z, f_{Nil}, f_{Cons}) \\
+             &= \bigvee\limits_{size(z) \leq n-1} case(z,f_{Nil},f_{Cons}) \vee \bigvee\limits_{size(z) = n} case(z,f_{Nil}, f_{Cons}) \\
+             &= g(i,n-1) \vee \\
+             &\qquad (2 + (f\ i)_c + g_c(i,n-1), (max((f\ i)_p,\pi_0g_p(i,n-1)), 1 + \pi_1 g_p(i,n-1))) \\
+             &\text{Since $g_c(i,n-1) \leq g_c(i,n-1)$, then $g_c(i,n-1)\leq 2 + (f\ i)_c + g_c(i,n-1)$.} \\
+             &\text{Since $g_p(i,n-1) \leq g_p(i,n-1)$, then $\pi_0 g_p(i,n-1) \leq max((f\ i)_p, \pi_0g_p(i,n-1))$,} \\
+             &\text{and $\pi_1 g_p(i,n-1) \leq 1 + \pi_1 g_p(i,n-1)$.} \\
+             &= (2 + (f\ i)_c + g_c(i,n-1), (max((f\ i)_p,\pi_0g_p(i,n-1)), 1 + \pi_1 g_p(i,n-1))) \\
+    \end{align*}
+\end{description}
+%
+We obtain a closed form solution for the cost by using the substitution method.
+%
+\begin{lemma}
+  \label{lem:listmap_g_cost}
+  $g_c(i,n) = (2 + (f\ i)_c) n + 1$
+\end{lemma}
+%
+\begin{proof}
+  The proof is by induction on $n$.
+  \begin{description}
+    \item[case $n=0$]\hfill \\
+      $g_c(i,0) = (1,0)_c = 1$
+    \item[case $n>0$]\hfill \\
+      \begin{align*}
+        g_c(i,n) &= 2 + (f\ i)_c + g_c(i,n-1)\\
+                 &= 2 + (f\ i)_c + (2 + (f\ i)_c)(n-1) + 1\\
+                 &= 2 + (f\ i)_c + (2 + (f\ i)_c) n - 2 - (f\ i)_c + 1\\
+                 &= (2 + (f\ i)_c) n + 1
+      \end{align*}
+    \end{description}
+\end{proof}
+%
+We obtain a closed form of the solution for the potential of the recursor.
+%
+\begin{lemma}
+  \label{lem:listmap_g_potential}
+  $g_p(i,n) = ((f\ i)_p, n)$
+\end{lemma}
+%
+\begin{proof}
+  The proof is by induction on $n$.
+  \begin{description}
+    \item[case $n=0$]\hfill \\
+      $g_p(i,0) = (1,0)_p = 0$
+    \item[case $n>0$]\hfill \\
+      \begin{align*}
+        g_p(i,n) &= (max((f\ i)_p,\pi_0g_p(i,n-1)), 1 + \pi_1 g_p(i,n-1)) \\
+                 &= (max((f\ i)_p, (f\ i)_p), 1 + n - 1) \\
+                 &= ((f\ i)_p, n)
+      \end{align*}
+  \end{description}
+\end{proof}
+%
+Using the results from lemmas \ref{lem:listmap_g_cost} and
+\ref{lem:listmap_g_potential}, we interpret the translation of \T{map f xs}.
+Recall the translation is $(2 + \|f\|_c + \|xs\|_c) +_c (\|\T{map}\|_p\ \|f\|_p)_p \|xs\|_p$.
+So the interpretation is $2 \pplus_c (\llbracket\|\T{map}\|\rrbracket f)_p (i,n)$,
+where $(i,n)$ is the interpretation of $xs$ and we assume $f$ and $xs$ have $0$
+cost.
+%
+\begin{lemma}
+  \label{lem:listmap_cost}
+  $\llbracket\|\T{map f xs}\|_c\rrbracket = 3 + (2 + (f\ i)_c)n$ where $f$ is the
+  interpretation of the translation of \T{f} and $(i,n)$ is the interpretation
+  of the translation of \T{xs}.
+\end{lemma}
+%
+\begin{lemma}
+  \label{lem:listmap_potential}
+  $\llbracket\|\T{map f xs}\|_p\rrbracket = ((f\ i)_p,n)$ where $f$ is the
+  interpretation of the translation of \T{f} and $(i,n)$ is the interpretation
+  of the translation of \T{xs}.
+\end{lemma}
+%
+Lemma \ref{lem:listmap_cost} shows that the cost of \T{map f xs} is linear in
+the size of the list but also depends on the cost of applying \T{f} to the
+elements of \T{xs}. Lemma \ref{lem:listmap_potential} shows the cost of future
+uses of \T{map f xs} depends on the length of \T{xs} and the size of the result
+of applying \T{f} to the elements of \T{xs}.
