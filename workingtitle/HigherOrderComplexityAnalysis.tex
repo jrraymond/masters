@@ -15,10 +15,10 @@ and typing judgments of the source language are given in figure
 for evaluation are given in figure \ref{fig:source_lang_oper_sem}.
 
 \T{unit} is a singleton type with only one inhabitant, the value
-$\langle\rangle$, also called unit. 
+$\LP\RP$, also called unit.
 
 Product types are a compound types consisting of an ordered pair of types.
-Products are introduced using $\langle e_0, e_1 \rangle$ Since evaluation is
+Products are introduced using $\LP e_0, e_1 \RP$ Since evaluation is
 call-by-value, products are strict.  So both expressions of in product must be
 evaluated before the product may be destructured.  Products are eliminated
 using \T{split}.
@@ -72,8 +72,8 @@ recursive occurence of a datatype, such as a boolean or a tree leaf, then
 
   Expressions
   \begin{align*}
-    v &::= x\ |\ \langle\rangle\ |\ \langle v, v \rangle\ |\ \lambda x.e\ |\ \T{delay}(e)\ |\ C\ v \\
-    e &::= x\ |\ \langle\rangle\ |\ \langle e, e \rangle\ |\ \T{split}(e, x.x.e)\ |\ \lambda x.e\ |\ e\ e \\
+    v &::= x\ |\ \LP\RP\ |\ \LP v, v \RP\ |\ \lambda x.e\ |\ \T{delay}(e)\ |\ C\ v \\
+    e &::= x\ |\ \LP\RP\ |\ \LP e, e \RP\ |\ \T{split}(e, x.x.e)\ |\ \lambda x.e\ |\ e\ e \\
       &\quad\ |\ \T{delay}(e)\ |\ \T{force}(e)\ |\ C^\delta\ e\ |\ \T{rec}^\delta(e, \overline{C \mapsto x.e_C}) \\
       &\quad\ |\ \T{map}^\phi(x.v, v)\ |\ \T{let}(e, x.e) \\
     n &::= 0\ |\ 1\ |\ n + n
@@ -85,14 +85,14 @@ recursive occurence of a datatype, such as a boolean or a tree leaf, then
   \UnaryInfC{$\gamma, x : \sigma \vdash x : \sigma$}
   \DisplayProof
   \AxiomC{}
-  \UnaryInfC{$\gamma \vdash \langle \rangle : \T{unit}$}
+  \UnaryInfC{$\gamma \vdash \LP \RP : \T{unit}$}
   \DisplayProof
-  
+
   \bigskip
 
   \AxiomC{$\gamma \vdash e_0 : \tau_0$}
   \AxiomC{$\gamma \vdash e_1 : \tau_1$}
-  \BinaryInfC{$\langle e_0, e_1 \rangle : \tau_0 \times \tau_1$}
+  \BinaryInfC{$\LP e_0, e_1 \RP : \tau_0 \times \tau_1$}
   \DisplayProof
   \AxiomC{$\gamma \vdash e_0 : \tau_0 \times \tau_1$}
   \AxiomC{$\gamma, x_0 : \tau_0, x_1 : \tau_1 \vdash e_1 : \tau$}
@@ -149,7 +149,7 @@ recursive occurence of a datatype, such as a boolean or a tree leaf, then
   \bigskip
 
   \AxiomC{}
-  \UnaryInfC{$\langle\rangle$ \T{sig}}
+  \UnaryInfC{$\LP\RP$ \T{sig}}
   \DisplayProof
   \quadfive
   \AxiomC{$\delta \notin \forall\text{C}(\psi \vdash \phi_C \T{ok})$}
@@ -222,10 +222,10 @@ recursive occurence of a datatype, such as a boolean or a tree leaf, then
 
   \AxiomC{$e_0 \downarrow^{n_0} v_0$}
   \AxiomC{$e_1 \downarrow^{n_1} v_1$}
-  \BinaryInfC{$\langle e_0, e_1 \rangle \downarrow^{n_0 + n_1} \langle v_0, v_1 \rangle$}
+  \BinaryInfC{$\LP e_0, e_1 \RP \downarrow^{n_0 + n_1} \LP v_0, v_1 \RP$}
   \DisplayProof
   \quad
-  \AxiomC{$e_0 \downarrow^{n_0} \langle v_0, v_1 \rangle$}
+  \AxiomC{$e_0 \downarrow^{n_0} \LP v_0, v_1 \RP$}
   \AxiomC{$e_1[v_0/x_0, v_1/x_1] \downarrow^{n_1} v$}
   \BinaryInfC{$\T{split}(e_0, x_0.x_1.e_1) \downarrow^{n_0 + n_1} v$}
   \DisplayProof
@@ -256,7 +256,7 @@ recursive occurence of a datatype, such as a boolean or a tree leaf, then
   \bigskip
 
   \AxiomC{$e \downarrow^{n_0} C v_0$}
-  \AxiomC{$\T{map}^{\phi_C}(y.\langle y, \T{delay}(rec(y, \overline{C \mapsto x.e_C}))\rangle, v_0) \downarrow^{n_1} v_1$}
+  \AxiomC{$\T{map}^{\phi_C}(y.\LP y, \T{delay}(rec(y, \overline{C \mapsto x.e_C}))\RP, v_0) \downarrow^{n_1} v_1$}
   \AxiomC{$e_C[v_1/x] \downarrow^{n_2} v$}
   \TrinaryInfC{$rec(e, \overline{C \mapsto x.e_C}) \downarrow^{1 + n_0 + n_1 + n_2} v$}
   \DisplayProof
@@ -275,7 +275,7 @@ recursive occurence of a datatype, such as a boolean or a tree leaf, then
 
   \AxiomC{$\T{map}^{\phi_0}(x.v, v_0) \downarrow^{n_0} v_0'$}
   \AxiomC{$\T{map}^{\phi_1}(x.v, v_1) \downarrow^{n_1} v_1'$}
-  \BinaryInfC{$\T{map}^{\phi_0 \times \phi_1}(x.v, \langle v_0, v_1 \rangle) \downarrow^{n_0 + n_1} \langle v_0', v_1'\rangle$}
+  \BinaryInfC{$\T{map}^{\phi_0 \times \phi_1}(x.v, \LP v_0, v_1 \RP) \downarrow^{n_0 + n_1} \LP v_0', v_1'\RP$}
   \DisplayProof
 
   \AxiomC{}
@@ -311,7 +311,7 @@ Tuples are destructured using projections instead of \T{split}.
 
   Expressions
   \begin{align*}
-    E &::= x | 0 | 1 | E + E | \langle\rangle | \langle E,E \rangle | \\
+    E &::= x | 0 | 1 | E + E | \LP\RP | \LP E,E \RP | \\
       &\quad \pi_0 E | \pi_1 E | \lambda x.E | E\ E | C^\delta\ E | \text{rec}^\Delta(E, \overline{C \mapsto x.E_C})
   \end{align*}
 
@@ -332,7 +332,7 @@ Tuples are destructured using projections instead of \T{split}.
   \DisplayProof
   \quad
   \AxiomC{}
-  \UnaryInfC{$\Gamma \vdash \langle\rangle : \textbf{unit}$}
+  \UnaryInfC{$\Gamma \vdash \LP\RP : \textbf{unit}$}
   \DisplayProof
 
   \bigskip
@@ -344,7 +344,7 @@ Tuples are destructured using projections instead of \T{split}.
   \quad
   \AxiomC{$\Gamma \vdash E_0 : T_0$}
   \AxiomC{$\Gamma \vdash E_1 : T_1$}
-  \BinaryInfC{$\Gamma \vdash \langle E_0, E_1 \rangle : T_0 \times T_1$}
+  \BinaryInfC{$\Gamma \vdash \LP E_0, E_1 \RP : T_0 \times T_1$}
   \DisplayProof
 
   \bigskip
@@ -403,17 +403,17 @@ The translation from the source language to the complexity language is given in 
   \end{align*}
   %
   \begin{align*}
-    \|x\| &= \langle 0, x \rangle \\
-    \|\langle\rangle\| &= \langle 0, \langle\rangle\rangle \\
-    \|\langle e_0,e_1 \rangle\| &= \langle \|e_0\|_c + \|e_1\|_c, \langle \|e_0\|_p, \|e_1\|_p\rangle\rangle \\
+    \|x\| &= \LP 0, x \RP \\
+    \|\LP\RP\| &= \LP 0, \LP\RP\RP \\
+    \|\LP e_0,e_1 \RP\| &= \LP \|e_0\|_c + \|e_1\|_c, \LP \|e_0\|_p, \|e_1\|_p\RP\RP \\
     \|\T{split}(e_0, x_0.x_1.e_1)\| &= \|e_0\|_c +_c \|e_1\|[\pi_0\|e_0\|_p/x_0, \pi_1\|e_0\|_p/x_1] \\
-    \|\lambda x.e\| &= \langle 0, \lambda x.\|e\| \rangle \\
+    \|\lambda x.e\| &= \LP 0, \lambda x.\|e\| \RP \\
     \|e_0\ e_1\| &= (1 + \|e_0\|_c + \|e_1\|_c) +_c \|e_0\|_p \|e_1\|_p \\
-    \|\T{delay}(e)\| &= \langle 0, \|e\|\rangle \\
+    \|\T{delay}(e)\| &= \LP 0, \|e\|\RP \\
     \|\T{force}(e)\| &= \|e\|_c +_c \|e\|_p \\
-    \|\text{C}^\delta_i\ e\| = \langle \|e\|_c, \text{C}^\delta_i \|e\|_p \rangle \\
+    \|\text{C}^\delta_i\ e\| = \LP \|e\|_c, \text{C}^\delta_i \|e\|_p \RP \\
     \|\T{rec}^\delta(e, \overline{C \mapsto x.e_C})\| &= \|e\|_c +_c \T{rec}^\delta(\|e\|_p, \overline{C \mapsto x.1 +_c \|e_C\|}) \\
-    \|\T{map}^\phi(x.v_0, v_1)\| &= \langle 0, \T{map}^{\llangle \phi \rrangle}(x.\|v_0\|_p, \|v_1\|_p)\rangle \\
+    \|\T{map}^\phi(x.v_0, v_1)\| &= \LP 0, \T{map}^{\llangle \phi \rrangle}(x.\|v_0\|_p, \|v_1\|_p)\RP \\
     \|\T{let}(e_0, x.e_1)\rrangle &= \|e_0\|_c +_c \|e_1\|[\|e_0\|_p/x]
   \end{align*}
   %

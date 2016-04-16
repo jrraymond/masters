@@ -12,33 +12,33 @@ The \T{map} function recurses on the list, applying its first argument to each
 element.
 %
 \begin{equation*}
-  \T{map} = \lambda f. \lambda xs . \T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \T{Cons} \mapsto \langle y \langle ys, y \rangle\rangle. \T{Cons}\langle f\ y, \T{force}(r)\rangle)
+  \T{map} = \lambda f. \lambda xs . \T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \T{Cons} \mapsto \LP y \LP ys, y \RP\RP. \T{Cons}\LP f\ y, \T{force}(r)\RP)
 \end{equation*}
 
 \subsection{Translation}
 The translation
 \begin{align*}
   &\text{We apply the rule for translating an abstraction twice.}\\
-  \|\T{map}\| &= \|\lambda f. \lambda xs . \T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \T{Cons} \mapsto \langle y \langle ys, y \rangle\rangle. \T{Cons}\langle f\ y, \T{force}(r)\rangle)\| \\
-              &= \langle 0, \lambda f. \langle 0, \lambda xs . \T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \T{Cons} \mapsto \langle y \langle ys, y \rangle\rangle. \T{Cons}\langle f\ y, \T{force}(r)\rangle)\rangle\rangle \\
-              &\text{We apply the rule for translating a \T{rec} construct. We use $\|xs\| = \langle 0,xs\rangle$.}\\
-              &= \langle 0, \lambda f. \langle 0, \lambda xs .\T{rec}(xs, \T{Nil} \mapsto 1 +_c \|\T{Nil}\|, \\
-              &\quadten \T{Cons} \mapsto \langle y \langle ys, y \rangle\rangle.1 +_c \|\T{Cons}\langle f\ y, \T{force}(r)\rangle\|)\rangle\rangle \\
+  \|\T{map}\| &= \|\lambda f. \lambda xs . \T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \T{Cons} \mapsto \LP y \LP ys, y \RP\RP. \T{Cons}\LP f\ y, \T{force}(r)\RP)\| \\
+              &= \LP 0, \lambda f. \LP 0, \lambda xs . \T{rec}(xs, \T{Nil} \mapsto \T{Nil}, \T{Cons} \mapsto \LP y \LP ys, y \RP\RP. \T{Cons}\LP f\ y, \T{force}(r)\RP)\RP\RP \\
+              &\text{We apply the rule for translating a \T{rec} construct. We use $\|xs\| = \LP 0,xs\RP$.}\\
+              &= \LP 0, \lambda f. \LP 0, \lambda xs .\T{rec}(xs, \T{Nil} \mapsto 1 +_c \|\T{Nil}\|, \\
+              &\quadten \T{Cons} \mapsto \LP y \LP ys, y \RP\RP.1 +_c \|\T{Cons}\LP f\ y, \T{force}(r)\RP\|)\RP\RP \\
   %
-              &\text{The translation of \T{Nil} is $\langle 0, \T{Nil}\rangle$.}\\
+              &\text{The translation of \T{Nil} is $\LP 0, \T{Nil}\RP$.}\\
   %
               &\text{To translate the \T{Cons} branch we translate the subexpressions first.}\\
-              &\quadthree\|\T{Cons}\langle f\ x,\T{force}(r)\rangle\| = \langle \|\langle f\ x,\T{force}(r)\rangle_c, \T{Cons}\|\langle f\ x,\T{force}(r)\rangle\|\rangle \\
-              &\quadfive \|\langle f\ x,\T{force}(r)\rangle\| = \langle\|f\ x\|_c + \|\T{force}(r)\|_c, \langle \|f\ x\|_p,\|\T{force}(r)\|_p\rangle\rangle \\
+              &\quadthree\|\T{Cons}\LP f\ x,\T{force}(r)\RP\| = \LP \|\LP f\ x,\T{force}(r)\RP_c, \T{Cons}\|\LP f\ x,\T{force}(r)\RP\|\RP \\
+              &\quadfive \|\LP f\ x,\T{force}(r)\RP\| = \LP\|f\ x\|_c + \|\T{force}(r)\|_c, \LP \|f\ x\|_p,\|\T{force}(r)\|_p\RP\RP \\
   %
-              &\quadsix \|f\ x\| = (1 + \|f\|_c + \|x\|_c) +_c \|f\|_p\|x\|_p = \langle 1 + (f\ x)_c, (f\ x)_p\rangle \\
+              &\quadsix \|f\ x\| = (1 + \|f\|_c + \|x\|_c) +_c \|f\|_p\|x\|_p = \LP 1 + (f\ x)_c, (f\ x)_p\RP \\
   %
-              &\quadsix \|\T{force}(r)\| = \langle 0,r\rangle +_c \langle 0,r\rangle_p = r \\
+              &\quadsix \|\T{force}(r)\| = \LP 0,r\RP +_c \LP 0,r\RP_p = r \\
   %
-              &\quadfive \|\langle f\ x,\T{force}(r)\rangle\| = \langle 1 + (f\ x)_c + r_c, \langle (f\ x)_p,r_p\rangle\rangle \\
-              &\quadthree \|\T{Cons}\langle f\ x,\T{force}(r)\rangle\| = \langle 1 + (f\ x)_c + r_c, \T{Cons}\langle (f\ x)_p,r_p\rangle\rangle \\
-              &= \langle 0, \lambda f. \langle 0, \lambda xs . \T{rec}(xs, \T{Nil} \mapsto \langle 1,\T{Nil}\rangle, \\
-              &\quadten \T{Cons} \mapsto \langle y \langle ys, y \rangle\rangle.\langle 2 + (f\ x)_c + r_c, \T{Cons}\langle (f\ x)_p,r_p\rangle\rangle \\
+              &\quadfive \|\LP f\ x,\T{force}(r)\RP\| = \LP 1 + (f\ x)_c + r_c, \LP (f\ x)_p,r_p\RP\RP \\
+              &\quadthree \|\T{Cons}\LP f\ x,\T{force}(r)\RP\| = \LP 1 + (f\ x)_c + r_c, \T{Cons}\LP (f\ x)_p,r_p\RP\RP \\
+              &= \LP 0, \lambda f. \LP 0, \lambda xs . \T{rec}(xs, \T{Nil} \mapsto \LP 1,\T{Nil}\RP, \\
+              &\quadten \T{Cons} \mapsto \LP y \LP ys, y \RP\RP.\LP 2 + (f\ x)_c + r_c, \T{Cons}\LP (f\ x)_p,r_p\RP\RP \\
 \end{align*}
 %
 We will translate \T{map} applied to some function \T{f} and a list \T{xs}.
@@ -66,13 +66,13 @@ The recursor of \T{map} drives the cost, so we will interpret the recursor
 first.
 %
 \begin{align*}
-  g(i, n) &= \llbracket \T{rec}(xs, \T{Nil} \mapsto \langle 1,\T{Nil}\rangle, \\
-       &\quadfive \T{Cons} \mapsto \langle 2 + (f\ x)_c + r_c,\T{Cons}\langle (f\ x)_p,r_p\rangle\rangle \rrbracket \{xs \mapsto n, f \mapsto f\}\\
+  g(i, n) &= \llbracket \T{rec}(xs, \T{Nil} \mapsto \LP 1,\T{Nil}\RP, \\
+       &\quadfive \T{Cons} \mapsto \LP 2 + (f\ x)_c + r_c,\T{Cons}\LP (f\ x)_p,r_p\RP\RP \rrbracket \{xs \mapsto n, f \mapsto f\}\\
        &= \bigvee\limits_{size(z) \leq n} case(z, f_{Nil}, f_{Cons}) \\
        &\text{where} \\
-  f_{Nil}(\ast) &= \llbracket \langle 1,\T{Nil}\rangle\rrbracket \\
+  f_{Nil}(\ast) &= \llbracket \LP 1,\T{Nil}\RP\rrbracket \\
                 &= (1,0) \\
-  f_{Cons}(i, m) &= \llbracket \langle 2 + (f\ x)_c + r_c,\T{Cons}\langle (f\ x)_p,r_p\rangle\rangle\rrbracket \xi\\
+  f_{Cons}(i, m) &= \llbracket \LP 2 + (f\ x)_c + r_c,\T{Cons}\LP (f\ x)_p,r_p\RP\RP\rrbracket \xi\\
                  &\qquad \text{where } \xi = \{xs \mapsto n, f \mapsto f, y \mapsto i, ys \mapsto m, r \mapsto g(i, m) \} \\
                  &= (2 + (f\ i)_c + g_c(i,m), (max((f\ i)_p, \pi_0g_p(i,m)), 1 + \pi_1 g_p(i,m)))
 \end{align*}

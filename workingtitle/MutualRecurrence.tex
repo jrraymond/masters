@@ -17,8 +17,8 @@ expression is essientially the expression itself, without suspensions.
 %
 \begin{align*}
   |x| &= x                                                                                     \\
-  |\langle\rangle| &= \langle\rangle                                                           \\
-  |\langle e_0, e_1 \rangle | &= \langle |e_0|, |e_1| \rangle                                  \\
+  |\LP\RP| &= \LP\RP                                                           \\
+  |\LP e_0, e_1 \RP | &= \LP |e_0|, |e_1| \RP                                  \\
   |\texttt{split}(e_0, x_0. x_1. e_1)| &= |e_1|[\pi_0|e_0|/x_0, \pi_0|e_0|/x_1]                \\
   |\lambda x.e | &= \lambda x.|e|                                                              \\
   |e_0\ e_1| &= |e_0|\ |e_1|                                                                   \\
@@ -35,14 +35,14 @@ We define our logical relation below.
 %
 \begin{align*}
   E &\sim_{\texttt{\tiny{Unit}}} E' \text{always}  \\
-  E &\sim_{\tau_0 \times \tau_1} E' \Leftrightarrow \forall k. \langle k, \pi_0 E_p\rangle \sim_{\tau_0} \pi_0 E', \forall k. \langle k, \pi_1 E_p\rangle \sim_{\tau_1} \pi_1 E' \\
+  E &\sim_{\tau_0 \times \tau_1} E' \Leftrightarrow \forall k. \LP k, \pi_0 E_p\RP \sim_{\tau_0} \pi_0 E', \forall k. \LP k, \pi_1 E_p\RP \sim_{\tau_1} \pi_1 E' \\
   E &\sim_{\texttt{\tiny{susp }} \tau} E' \Leftrightarrow E_p \sim_\tau E' \\
   E &\sim_{\sigma \to \tau} E' \Leftrightarrow \forall E_0 \sim_\sigma E'_0. E_p E_{0p} \sim_\tau E' E'_0 \\
-  E &\sim_\delta E' \Leftrightarrow \exists k, k', C, V, V'. V \sim_{\phi[\delta]} V', E \downarrow \langle k, C V_p \rangle, E' \downarrow C V'
+  E &\sim_\delta E' \Leftrightarrow \exists k, k', C, V, V'. V \sim_{\phi[\delta]} V', E \downarrow \LP k, C V_p \RP, E' \downarrow C V'
 \end{align*}
 %
 The relation is defined on closed terms, but we extend it to open terms.
-Let $\Theta$ and $\Theta'$ be any substitutions such that $\forall x : \|\tau\|, \forall k, \langle k, \Theta(x) \rangle \sim_\tau \Theta'(x)$.
+Let $\Theta$ and $\Theta'$ be any substitutions such that $\forall x : \|\tau\|, \forall k, \LP k, \Theta(x) \RP \sim_\tau \Theta'(x)$.
 If $E\ \Theta \sim_\tau E'\ \Theta'$, then $E \sim_\tau E'$.
 
 \section{Proof}
@@ -54,36 +54,36 @@ The first states we can always ignore the cost of related terms.
 \begin{lemma}[Ignore Cost]
   \label{lem:ignorecost}
 \[
-  E \sim_\tau E' \Leftrightarrow \forall k, \langle k, E_p \rangle \sim_\tau E'
+  E \sim_\tau E' \Leftrightarrow \forall k, \LP k, E_p \RP \sim_\tau E'
 \]
 \end{lemma}
 %
 \begin{proof}
   We proceed by induction on type.
 
-  Case $E \sim_{\texttt{Unit}} E'$. 
-  Then $\forall k, \langle k, E_p \rangle \sim_{\texttt{\tiny{Unit}}} E'$ by definition.
+  Case $E \sim_{\texttt{Unit}} E'$.
+  Then $\forall k, \LP k, E_p \RP \sim_{\texttt{\tiny{Unit}}} E'$ by definition.
 
   Case $E \sim_{\tau_0 \times \tau_1} E'$.
-  By definition for $i\in{0,1}, \forall k_i, \langle k_i, \pi_i E_p \rangle \sim_{\tau_i} \pi_i E'$.
+  By definition for $i\in{0,1}, \forall k_i, \LP k_i, \pi_i E_p \RP \sim_{\tau_i} \pi_i E'$.
   Let $k$ be some cost.
-  Then $\langle k, E_p \rangle \sim_{\tau_0 \times \tau_1} E'$ by definition.
+  Then $\LP k, E_p \RP \sim_{\tau_0 \times \tau_1} E'$ by definition.
 
   Case $E \sim_{\texttt{\tiny{susp }} \tau} E'$.
   By definition $E_p \sim_\tau E'$.
   Let $k$ be some cost.
-  Then $\langle k, E_p \rangle \sim_{\texttt{\tiny{susp }} \tau} E'$.
+  Then $\LP k, E_p \RP \sim_{\texttt{\tiny{susp }} \tau} E'$.
 
   Case $E \sim_{\sigma \to \tau} E'$.
   Let $E_0, E_0'$ by some complexity language terms such that $E_0 \sim_\sigma E_0'$.
   Let $k$ be some cost.
   Then, $E_p\ E_0 \sim_\tau E'\ E_0'$.
-  So $\langle k, E_p \rangle \sim_{\sigma \to \tau} E'$.
+  So $\LP k, E_p \RP \sim_{\sigma \to \tau} E'$.
 
   Case $E \sim_\delta E'$.
-  Then by definition there exists costs $k$ and $k'$, a constructor $C$, and complexity language values $V$ and $V'$ such that $V \sim_{\Phi[\delta]} V', E \downarrow \langle k, C V_p \rangle$, and $E' \downarrow C V'$.
-  Since $E \downarrow \langle k, C V_p \rangle$, we know $\forall k_0, \exists k_0'. \langle k_0, E_p \rangle \downarrow \langle k_0', C V_p \rangle$.
-  So by definition we have $\forall k_0, \langle k_0, E_p \rangle \sim_\Phi E'$.
+  Then by definition there exists costs $k$ and $k'$, a constructor $C$, and complexity language values $V$ and $V'$ such that $V \sim_{\Phi[\delta]} V', E \downarrow \LP k, C V_p \RP$, and $E' \downarrow C V'$.
+  Since $E \downarrow \LP k, C V_p \RP$, we know $\forall k_0, \exists k_0'. \LP k_0, E_p \RP \downarrow \LP k_0', C V_p \RP$.
+  So by definition we have $\forall k_0, \LP k_0, E_p \RP \sim_\Phi E'$.
 \end{proof}
 %
 The next lemma states that if two terms step to related terms, then those terms are related.
@@ -97,12 +97,12 @@ The next lemma states that if two terms step to related terms, then those terms 
 %
 \begin{proof}
   The proof proceeds by induction on type.
-  
+
   Case \texttt{Unit}. Trivial since $E \sim_{\texttt{\tiny{Unit}}} E'$ always.
 
   Case $\delta$.
-  By definition $\exists C, U, U', k, k'$ such that $F \downarrow \langle k, C U_p \rangle, F' \downarrow C U', U \sim_{\phi[\delta]} U'$.
-  Since $E \to F$ and $E' \to F'$, $E \downarrow \langle k, C U_p \rangle$ and $E' \downarrow C U'$.
+  By definition $\exists C, U, U', k, k'$ such that $F \downarrow \LP k, C U_p \RP, F' \downarrow C U', U \sim_{\phi[\delta]} U'$.
+  Since $E \to F$ and $E' \to F'$, $E \downarrow \LP k, C U_p \RP$ and $E' \downarrow C U'$.
   Therefore since $U \sim_{\phi[\delta]} U'$, we have $E \sim_\delta E'$.
 
   Case $\sigma \to \tau$.
@@ -113,11 +113,11 @@ The next lemma states that if two terms step to related terms, then those terms 
   So by definition, $E \sim_{\sigma \to \tau} E'$.
 
   Case $\tau_0 \times \tau_1$.
-  Since $F \sim_{\tau_0 \times \tau_1} F'$, for $i\in\{0, 1\}$,  $\forall k_i, \langle k_i, \pi_i F_p \rangle \sim_{\tau_i} \pi_i F'$, by definition.
-  From $E \to F$, we get $\langle k_i, \pi_i E_p \rangle \to \langle k_i', \pi_i F_p \rangle$.
+  Since $F \sim_{\tau_0 \times \tau_1} F'$, for $i\in\{0, 1\}$,  $\forall k_i, \LP k_i, \pi_i F_p \RP \sim_{\tau_i} \pi_i F'$, by definition.
+  From $E \to F$, we get $\LP k_i, \pi_i E_p \RP \to \LP k_i', \pi_i F_p \RP$.
   From $E' \to F'$, we get $\pi_i E' \to \pi_i F'$.
-  We can apply our induction hypothesis to get $\langle k_i, \pi_i E_p \rangle \sim_{\tau_i} \pi_i E'$.
-  By \ref{lem:ignorecost}, $\forall k_i, \langle k_i, \pi_i E_p \rangle \sim_{\tau_i} \pi_i E$.
+  We can apply our induction hypothesis to get $\LP k_i, \pi_i E_p \RP \sim_{\tau_i} \pi_i E'$.
+  By \ref{lem:ignorecost}, $\forall k_i, \LP k_i, \pi_i E_p \RP \sim_{\tau_i} \pi_i E$.
   So by definition $E \sim_{\tau_0 \times \tau_1} E'$.
 
   Case $\texttt{susp }\tau$.
@@ -142,17 +142,17 @@ The next lemma states that related terms step to related terms
   $F \sim_{\texttt{\tiny{Unit}}} F'$ always.
 
   Case $\delta$.
-  By definition, $E \sim_\delta E'$ implies $\exists C, V, V', k$ such that $E \downarrow \langle k, C V_p \rangle, E' \downarrow C V', V \sim_{\phi[\delta]} V'$.
-  Since $E \to F$, $F \downarrow \langle k, C V_p \rangle$; and since $E \to F'$, $F' \downarrow C V'$.
-  By \ref{lem:ignorecost}, $\langle k, V_p \rangle \sim_{\phi[\delta]} V'$.
-  So because $F \downarrow \langle k, C V_p \rangle, F' \downarrow C V', \langle k, V_p \rangle \sim_{\phi[\delta]} V'$, we can apply our induction hypothesis to get $F \sim_\delta F'$.
+  By definition, $E \sim_\delta E'$ implies $\exists C, V, V', k$ such that $E \downarrow \LP k, C V_p \RP, E' \downarrow C V', V \sim_{\phi[\delta]} V'$.
+  Since $E \to F$, $F \downarrow \LP k, C V_p \RP$; and since $E \to F'$, $F' \downarrow C V'$.
+  By \ref{lem:ignorecost}, $\LP k, V_p \RP \sim_{\phi[\delta]} V'$.
+  So because $F \downarrow \LP k, C V_p \RP, F' \downarrow C V', \LP k, V_p \RP \sim_{\phi[\delta]} V'$, we can apply our induction hypothesis to get $F \sim_\delta F'$.
 
   Case $\tau_0 \times \tau_1$.
-  By definition $E \sim_{\tau_0 \times \tau_1} \implies \forall i \in \{0, 1\}, \forall k, \langle k_i, \pi_i E_p \rangle \sim_{\tau_i} \pi_i E'$.
+  By definition $E \sim_{\tau_0 \times \tau_1} \implies \forall i \in \{0, 1\}, \forall k, \LP k_i, \pi_i E_p \RP \sim_{\tau_i} \pi_i E'$.
   Fix some $k_i$.
-  Since $E \to F$, $\langle k_i, \pi_i E_p \rangle \to \langle k_i, \pi_i F_p \rangle$.
+  Since $E \to F$, $\LP k_i, \pi_i E_p \RP \to \LP k_i, \pi_i F_p \RP$.
   Since $E' \to F'$, $\pi_i E' \to \pi_i F'$.
-  From $\langle k_i, \pi_i E_p \rangle \to \langle k_i, \pi_i F_p \rangle, \langle k_i, \pi_i E_p \rangle \sim_{\tau_i} \pi_i E'$, the induction hypothesis tells us $\langle k_i, \pi_i F_p \rangle \sim_{\tau_i} \pi_i F'$.
+  From $\LP k_i, \pi_i E_p \RP \to \LP k_i, \pi_i F_p \RP, \LP k_i, \pi_i E_p \RP \sim_{\tau_i} \pi_i E'$, the induction hypothesis tells us $\LP k_i, \pi_i F_p \RP \sim_{\tau_i} \pi_i F'$.
   So by definition $F \sim_{\tau_0 \times \tau_1} F'$.
 
   Case $\texttt{susp } \tau$.
@@ -174,7 +174,7 @@ The next lemma states that if the arguments to $map$ are related, then $map$ pre
 %
 \begin{lemma}
   \label{lem:relatedmap}[Related Map]
-  \[ E \sim_{\tau_1} E', E_0 \sim_{\tau_0} E_0' \implies \forall k. \langle k, map^\Phi(x, E_p, E_{0p})\rangle \sim_{\Phi[\tau_1]} map^\Phi(x, E', E_0') \]
+  \[ E \sim_{\tau_1} E', E_0 \sim_{\tau_0} E_0' \implies \forall k. \LP k, map^\Phi(x, E_p, E_{0p})\RP \sim_{\Phi[\tau_1]} map^\Phi(x, E', E_0') \]
 \end{lemma}
 %
 \begin{proof}
@@ -183,35 +183,35 @@ The next lemma states that if the arguments to $map$ are related, then $map$ pre
   Recall the definition of the $map$ macro.
   \begin{align*}
     map^t(x.E, E_0) &= E[E_0/x]                                                                                       \\
-    map^T(x.E, E_0) &= E_0                                                                                            \\ 
-    map^{\Phi_0 \times \Phi_1}(x.E, E_0) &= \langle map^{\Phi_0}(x.E, \pi_0 E_0), map^{\Phi_1}(x.E, \pi_1 E_0 \rangle \\
+    map^T(x.E, E_0) &= E_0                                                                                            \\
+    map^{\Phi_0 \times \Phi_1}(x.E, E_0) &= \LP map^{\Phi_0}(x.E, \pi_0 E_0), map^{\Phi_1}(x.E, \pi_1 E_0 \RP \\
     map^{T \to \Phi}(x.E, E_0) &= \lambda y.map^\Phi(x.E, E_0\ y)
   \end{align*}
 
   Case $\Phi = t$.
   Then $map^t(x.E_p, E_{0p}) = E_p[E_{0p}/x]$ and $map^t(x.E', E_0') = E'[E_0'/x]$.
   Let $k$ be some cost.
-  By \ref{lem:ignorecost}, $E \sim_{\tau_1} E'$ implies $\langle k, E_p \rangle \sim_{\tau_1} E'$.
-  Since $\langle k, E_p \rangle \sim_{\tau_1} E'$ and $E_0 \sim_{\tau_0} E_0'$, $\langle k, E_p \rangle [E_{0p}/x] \sim_{\phi[\tau_0]} E'[E_0'/x]$.
-  So $\forall k, \langle k, map^t(x.E_p, E_{0p}) \rangle \sim_{\Phi[\tau_1]} map^t(x.E', E_0')$.
+  By \ref{lem:ignorecost}, $E \sim_{\tau_1} E'$ implies $\LP k, E_p \RP \sim_{\tau_1} E'$.
+  Since $\LP k, E_p \RP \sim_{\tau_1} E'$ and $E_0 \sim_{\tau_0} E_0'$, $\LP k, E_p \RP [E_{0p}/x] \sim_{\phi[\tau_0]} E'[E_0'/x]$.
+  So $\forall k, \LP k, map^t(x.E_p, E_{0p}) \RP \sim_{\Phi[\tau_1]} map^t(x.E', E_0')$.
 
   Case $\Phi = T$.
   Then $map^T(x.E_p, E_{0p}) = E_{0p}$ and $map^T(x.E', E_0') = E_0'$.
-  By \ref{lem:ignorecost} $\forall k, \langle k, E_{0p} \rangle \sim_{\tau_0} E_0'$.
-  So $\forall k, \langle k, map^T(x.E_p, E_{0p}) \rangle \sim_{\Phi[\tau_1]} map^T(x.E', E_0')$.
+  By \ref{lem:ignorecost} $\forall k, \LP k, E_{0p} \RP \sim_{\tau_0} E_0'$.
+  So $\forall k, \LP k, map^T(x.E_p, E_{0p}) \RP \sim_{\Phi[\tau_1]} map^T(x.E', E_0')$.
 
   Case $\Phi = \Phi_0 \times \Phi_1$.
   Then \\
-  $map^{\Phi_0 \times \Phi_1}(x. E_p, E_{0p}) = \langle map^{\Phi_0}(x. E_p, \pi_0 E_{0p}), map^{\Phi_1}(x. E_p, \pi_1 E_{0p}) \rangle$.\\
-  Similarly $map^{\Phi_0 \times \Phi_1}(x. E', E_0') = \langle map^{\Phi_0}(x. E', \pi_0 E_0'), map^{\Phi_1}(x. E', \pi_1 E_0') \rangle$.\\
-  By definition, $\forall k, \langle k, \pi_0 E_{0p} \rangle \sim_{\Phi_0[\tau_0]} \pi_0 E_0'$.\\
-  By the induction hypothesis, $\forall k, \langle k, map^{\Phi_0}(x. E_p, \pi_0 E_{0p}) \sim_{\Phi_0[\tau_1]} map^{\Phi_0[\tau_1]}(x. E', E_0')$.\\
-  By definition, $\forall k, \langle k, \pi_1 E_{0p} \rangle \sim_{\Phi_1[\tau_0]} \pi_1 E_0'$.\\
-  By the induction hypothesis, $\forall k, \langle k, map^{\Phi_1}(x. E_p, \pi_1 E_{0p}) \sim_{\Phi_1[\tau_1]} map^{\Phi_1[\tau_1]}(x. E', E_0')$.\\
+  $map^{\Phi_0 \times \Phi_1}(x. E_p, E_{0p}) = \LP map^{\Phi_0}(x. E_p, \pi_0 E_{0p}), map^{\Phi_1}(x. E_p, \pi_1 E_{0p}) \RP$.\\
+  Similarly $map^{\Phi_0 \times \Phi_1}(x. E', E_0') = \LP map^{\Phi_0}(x. E', \pi_0 E_0'), map^{\Phi_1}(x. E', \pi_1 E_0') \RP$.\\
+  By definition, $\forall k, \LP k, \pi_0 E_{0p} \RP \sim_{\Phi_0[\tau_0]} \pi_0 E_0'$.\\
+  By the induction hypothesis, $\forall k, \LP k, map^{\Phi_0}(x. E_p, \pi_0 E_{0p}) \sim_{\Phi_0[\tau_1]} map^{\Phi_0[\tau_1]}(x. E', E_0')$.\\
+  By definition, $\forall k, \LP k, \pi_1 E_{0p} \RP \sim_{\Phi_1[\tau_0]} \pi_1 E_0'$.\\
+  By the induction hypothesis, $\forall k, \LP k, map^{\Phi_1}(x. E_p, \pi_1 E_{0p}) \sim_{\Phi_1[\tau_1]} map^{\Phi_1[\tau_1]}(x. E', E_0')$.\\
   So by definition,
   \begin{align*}
-    &\forall k, \langle k, \langle map^{\Phi_0}(x. E_p, \pi_0 E_{0p}), map^{\Phi_1}(x. E_p, \pi_1 E_{0p}) \rangle \rangle \sim_{\Phi[\tau_1]}  \\
-    &\langle \langle map^{\Phi_0[\tau_1]}(x. E', E_0'), map^{\Phi_1[\tau_1]}(x. E', E_0') \rangle \rangle
+    &\forall k, \LP k, \LP map^{\Phi_0}(x. E_p, \pi_0 E_{0p}), map^{\Phi_1}(x. E_p, \pi_1 E_{0p}) \RP \RP \sim_{\Phi[\tau_1]}  \\
+    &\LP \LP map^{\Phi_0[\tau_1]}(x. E', E_0'), map^{\Phi_1[\tau_1]}(x. E', E_0') \RP \RP
   \end{align*}
 
   Case $T \to \Phi$.
@@ -240,24 +240,24 @@ Our last lemma is about the relatedness of $rec$ terms.
   Recall the rule for evaluating $rec$ in the complexity language:
   \begin{prooftree}
     \AxiomC{$E \downarrow C V_0$}
-    \AxiomC{$map^\Phi(y,\langle y, rec(y, \overline{C \mapsto x.E_C})\rangle, V_0) \downarrow V_1$}
+    \AxiomC{$map^\Phi(y,\LP y, rec(y, \overline{C \mapsto x.E_C})\RP, V_0) \downarrow V_1$}
     \AxiomC{$E_C[V_1/x] \downarrow V$}
     \TrinaryInfC{$rec(E, \overline{C \mapsto x.E_C}) \downarrow V$}
   \end{prooftree}
-  By definition of $\sim_\delta$, $\exists k, C, V_0, V_0'$ such that $E \downarrow \langle k, C V_{0p} \rangle, E' \downarrow C V_0'$, and $V_0 \sim_\delta V_0'$.
+  By definition of $\sim_\delta$, $\exists k, C, V_0, V_0'$ such that $E \downarrow \LP k, C V_{0p} \RP, E' \downarrow C V_0'$, and $V_0 \sim_\delta V_0'$.
   Our proof proceeds by induction on the number of constructors in $C V_{0p}$.
-  If $\Phi = T$, then $map^\Phi(y, \langle y, rec(y, \overline{C \mapsto x.E_C})\rangle, V_{0p}) = \langle y, rec(y, \overline{C \mapsto x.E_C})\rangle[V_{0p}/y] = \langle V_{0p}, rec(V_{0p}, \overline{C \mapsto x.E_C}) \rangle$.
-  Similarly for the pure potential, $map^\Phi(y, \langle y, rec(y, \overline{C \mapsto x.E_C'})\rangle, V_{0p}') = \langle y, rec(y, \overline{C \mapsto x.E_C'})\rangle [V_0'/y] = \langle V_0', rec(V_0', \overline{C \mapsto x.E_C'}) \rangle$.
+  If $\Phi = T$, then $map^\Phi(y, \LP y, rec(y, \overline{C \mapsto x.E_C})\RP, V_{0p}) = \LP y, rec(y, \overline{C \mapsto x.E_C})\RP[V_{0p}/y] = \LP V_{0p}, rec(V_{0p}, \overline{C \mapsto x.E_C}) \RP$.
+  Similarly for the pure potential, $map^\Phi(y, \LP y, rec(y, \overline{C \mapsto x.E_C'})\RP, V_{0p}') = \LP y, rec(y, \overline{C \mapsto x.E_C'})\RP [V_0'/y] = \LP V_0', rec(V_0', \overline{C \mapsto x.E_C'}) \RP$.
   By the induction hypothesis, $rec(V_{0p}, \overline{C \mapsto x.E_C}) \sim_\tau rec(V_0', \overline{C \mapsto x.E_C'})$.
-  By definition of $\sim_{\texttt{susp }\tau}$, for any $k$, $\langle k, rec(V_{0p}, \overline{C \mapsto x.E_C}) \rangle \sim_{\texttt{susp }\tau} rec(V_0', \overline{C \mapsto x.E_C'})$.
-  So by definition of $\sim_{\tau_0 \times \tau_1}$, $\langle 0, \langle V_{0p}, rec(V_{0p}, C \mapsto x.E_C) \rangle\rangle \sim_{\phi[\delta \times \texttt{susp }\tau]} \langle V_0', rec(V_0', \overline{C \mapsto x.E_C'})\rangle$.
-  So by \ref{lem:relatedmap}, $\forall k. \langle k, map^\Phi(y, \langle y, rec(y, \overline{C \mapsto x.E_C})\rangle, V_{0p}) \sim_{\phi[\delta \times \texttt{susp }\tau]} map^\Phi(y, \langle y, rec(y, \overline{C \mapsto x.E_C'}) \rangle, V_0')$.
-  Let $\langle 0, map^\Phi(y, \langle y, rec(y, \overline{C \mapsto x.E_C})\rangle, V_{0p}) \downarrow V_1$.
-  Let $map^\Phi(y, \langle y, rec(y, \overline{C \mapsto x.E_C'}) \rangle, V_0') \downarrow V_1'$.
+  By definition of $\sim_{\texttt{susp }\tau}$, for any $k$, $\LP k, rec(V_{0p}, \overline{C \mapsto x.E_C}) \RP \sim_{\texttt{susp }\tau} rec(V_0', \overline{C \mapsto x.E_C'})$.
+  So by definition of $\sim_{\tau_0 \times \tau_1}$, $\LP 0, \LP V_{0p}, rec(V_{0p}, C \mapsto x.E_C) \RP\RP \sim_{\phi[\delta \times \texttt{susp }\tau]} \LP V_0', rec(V_0', \overline{C \mapsto x.E_C'})\RP$.
+  So by \ref{lem:relatedmap}, $\forall k. \LP k, map^\Phi(y, \LP y, rec(y, \overline{C \mapsto x.E_C})\RP, V_{0p}) \sim_{\phi[\delta \times \texttt{susp }\tau]} map^\Phi(y, \LP y, rec(y, \overline{C \mapsto x.E_C'}) \RP, V_0')$.
+  Let $\LP 0, map^\Phi(y, \LP y, rec(y, \overline{C \mapsto x.E_C})\RP, V_{0p}) \downarrow V_1$.
+  Let $map^\Phi(y, \LP y, rec(y, \overline{C \mapsto x.E_C'}) \RP, V_0') \downarrow V_1'$.
   By \ref{lem:relatedstep}, $V_1 \sim_{\phi[\delta \times \texttt{susp }\tau]} V_1'$.
 
-  If $\Phi = t$, then $map^\Phi(y, \langle y, rec(y, \overline{C \mapsto x.E_C})\rangle, V_{0p}) = V_{0p}$.
-  Similarly, $map^\Phi(y, \langle y, rec(y, \overline{C \mapsto x.E_C'})\rangle V_0') = V_0'$.
+  If $\Phi = t$, then $map^\Phi(y, \LP y, rec(y, \overline{C \mapsto x.E_C})\RP, V_{0p}) = V_{0p}$.
+  Similarly, $map^\Phi(y, \LP y, rec(y, \overline{C \mapsto x.E_C'})\RP V_0') = V_0'$.
   So in this case $V_0 = V_1$ and $V_0' = V_1'$.
   We have already established $V_0 \sim_\tau V_0'$.
 
@@ -281,42 +281,42 @@ of that term.
   Our proof is by induction on the typing derivation $\gamma \vdash e : \tau$.
 
   Case \AxiomC{}\UnaryInfC{$\gamma, x : \sigma \vdash x : \sigma$}\DisplayProof.
-  Then by definition of the logical relation, $\forall k, \langle k, \Theta(x) \rangle \sim_\sigma \Theta'(x)$.
-  Since $\|x\| = \langle 0, x \rangle$ and $|x| = x$, we have $\langle 0, x \rangle \sim_\sigma x$.
+  Then by definition of the logical relation, $\forall k, \LP k, \Theta(x) \RP \sim_\sigma \Theta'(x)$.
+  Since $\|x\| = \LP 0, x \RP$ and $|x| = x$, we have $\LP 0, x \RP \sim_\sigma x$.
 
   Case \AxiomC{}\UnaryInfC{$\gamma \vdash e : Unit$}\DisplayProof.
   By definition, $\|e\| \sim_{\texttt{Unit}} |e|$ always.
 
-  Case \AxiomC{$\gamma \vdash e_0 : \tau_0$}\AxiomC{$\gamma \vdash e_1 : \tau_1$}\BinaryInfC{$\gamma \vdash \langle e_0, e_1 \rangle : \tau_0 \times \tau_1$}\DisplayProof
+  Case \AxiomC{$\gamma \vdash e_0 : \tau_0$}\AxiomC{$\gamma \vdash e_1 : \tau_1$}\BinaryInfC{$\gamma \vdash \LP e_0, e_1 \RP : \tau_0 \times \tau_1$}\DisplayProof
   By the induction hypothesis, $\|e_0\| \sim_{\tau_0} |e_0|$ and $\|e_1\| \sim_{\tau_1} |e_1|$.
-  By \ref{lem:ignorecost}, $\forall k, \langle k, \|e_0\|_p \rangle \sim_{\tau_0} |e_0|$
-  and $\forall k, \langle k, \|e_1\|_p \rangle \sim_{\tau_1} |e_1|$.
-  So by definition, $\|\langle e_0, e_1 \rangle \| \sim_{\tau_0 \times \tau_1} |\langle e_0, e_1 \rangle |$.
+  By \ref{lem:ignorecost}, $\forall k, \LP k, \|e_0\|_p \RP \sim_{\tau_0} |e_0|$
+  and $\forall k, \LP k, \|e_1\|_p \RP \sim_{\tau_1} |e_1|$.
+  So by definition, $\|\LP e_0, e_1 \RP \| \sim_{\tau_0 \times \tau_1} |\LP e_0, e_1 \RP |$.
 
   Case \AxiomC{$\gamma \vdash e_0 : \tau_0 \times \tau_1$}\AxiomC{$\gamma, x_0 : \tau_0, x_1 : \tau_1 \vdash e_1 : \tau$}\BinaryInfC{$\gamma \vdash split(e_0, x_0.x_1.e_1) : \tau$}\DisplayProof
   By the induction hypothesis, $\|e_0\| \sim_{\tau_0 \times \tau_1} |e_0|$ and $\|e_1\| \sim_\tau |e_1|$.
-  From $\|e_0\| \sim_{\tau_0 \times \tau_1} |e_0|$ it follows by definition that 
-    $\forall k, \langle k, \pi_0 \|e_0\|_p \rangle \sim_{\tau_0} \pi_0 |e_0|$ and
-    $\forall k, \langle k, \pi_1 \|e_1\|_p \rangle \sim_{\tau_1} \pi_1 |e_1|$.
+  From $\|e_0\| \sim_{\tau_0 \times \tau_1} |e_0|$ it follows by definition that
+    $\forall k, \LP k, \pi_0 \|e_0\|_p \RP \sim_{\tau_0} \pi_0 |e_0|$ and
+    $\forall k, \LP k, \pi_1 \|e_1\|_p \RP \sim_{\tau_1} \pi_1 |e_1|$.
   The complixity translation is $\|split(e_0, x_0.x_1.e_1)\| = \|e_0\|_c +_c \|e_1\|[\pi_0\|e_0\|_p/x_0, \pi_1\|e_1\|_p/x_1]$.
   The pure potential translation is $|split(e_0, x_0.x_1.e_1)| = |e_1|[\pi_0|e_0|/x_0, \pi_1|e_0|/x_1]$.
   By \ref{lem:ignorecost}, it suffices to show $\|e_1\|[\pi_0\|e_0\|_p/x_0, \pi_1\|e_1\|_p/x_1] \sim_\tau |e_1|[\pi_0|e_0|/x_0, \pi_1|e_0|/x_1]$
   By definition of the relation, it suffices to show $\|e_1\| \sim_\tau |e_1|$,
-    $\forall k, \langle k, \pi_0 \|e_0\|_p \rangle \sim_{\tau_0} \pi_0 |e_0|$,
-    and $\forall k, \langle k, \pi_1 \|e_0\|_p \rangle \sim_{\tau_1} \pi_1 |e_0|$.
+    $\forall k, \LP k, \pi_0 \|e_0\|_p \RP \sim_{\tau_0} \pi_0 |e_0|$,
+    and $\forall k, \LP k, \pi_1 \|e_0\|_p \RP \sim_{\tau_1} \pi_1 |e_0|$.
   Since we have already establed all three conditions, we have $\|split(e_0, x_0. x_1.e_1)\| \sim_\tau |split(e_0,x_0.x_1.e_1)|$.
 
 
   Case \AxiomC{$\gamma, x : \sigma \vdash e : \tau$}\UnaryInfC{$\gamma \vdash \lambda x.e : \sigma \to \tau$}\DisplayProof
   By the induction hypothesis $\|e\|\sim_\tau|e|$.
-  The complexity translation is $\|\lambda x.e\| = \langle 0, \lambda x.\|e\|\rangle$.
+  The complexity translation is $\|\lambda x.e\| = \LP 0, \lambda x.\|e\|\RP$.
   The pure potential translation is $|\lambda x.e| = \lambda x.|e|$.
   Let $E_0 : \|\sigma\|$ and $E_0' : |\sigma|$ be complexity language terms such that $E_0 \sim_\sigma E_0'$.
-  Then $\langle 0, \lambda x.\|e\|\rangle\ E_0 \to \langle 0 + E_{0c}, \|e\|[x \mapsto E_0]\rangle$
+  Then $\LP 0, \lambda x.\|e\|\RP\ E_0 \to \LP 0 + E_{0c}, \|e\|[x \mapsto E_0]\RP$
     and $\lambda x.|e|\ E_0' \to |e|[x \mapsto E_0']$.
   Since $\|e\| \sim_\tau |e|$ and $E_0 \sim_\sigma E_0'$, $\|e\|[x \mapsto E_0] \sim_\tau |e|[x \mapsto E_0']$.
-  By \ref{lem:relatedstepback}, $\langle 0, \lambda x. \|e\| \rangle\ E_0 \sim_\tau (\lambda x.|e|)\ E_0'$.
-  So by definition $\langle 0, \lambda x. \|e\| \rangle \sim_{\sigma \to \tau} \lambda x. |e|$.
+  By \ref{lem:relatedstepback}, $\LP 0, \lambda x. \|e\| \RP\ E_0 \sim_\tau (\lambda x.|e|)\ E_0'$.
+  So by definition $\LP 0, \lambda x. \|e\| \RP \sim_{\sigma \to \tau} \lambda x. |e|$.
   So $\|\lambda x.e\| \sim_{\sigma \to \tau} |\lambda x.e|$.
 
   Case \AxiomC{$\gamma \vdash e_0 : \sigma \to \tau$}\AxiomC{$\gamma \vdash e_1 : \sigma$}\BinaryInfC{$\gamma \vdash e_0\ e_1 : \tau$}\DisplayProof
@@ -328,15 +328,15 @@ of that term.
 
   Case \AxiomC{$\gamma \vdash e : \tau$}\UnaryInfC{$\gamma \vdash delay(e) : susp\ \tau$}\DisplayProof
   By the induction hypothesis $\|e\| \sim_\tau |e|$.
-  So $\langle 0, \|e\|\rangle \sim_{\texttt{susp }\tau} |e|$.
-  The complexity translation is $\|delay(e)\| = \langle 0, \|e\|\rangle$.
+  So $\LP 0, \|e\|\RP \sim_{\texttt{susp }\tau} |e|$.
+  The complexity translation is $\|delay(e)\| = \LP 0, \|e\|\RP$.
   The pure potential translatio is $|delay(e)| = |e|$.
   So $\|delay(e)\| \sim_{\texttt{susp }\tau} |delay(e)|$.
 
   Case \AxiomC{$\gamma \vdash e : susp\ \tau$}\UnaryInfC{$\gamma \vdash force(e) : \tau$}\DisplayProof
   By the induction hypothesis $\|e\| \sim_{\texttt{susp }\tau} |e|$.
   So by definition of the relation at \texttt{susp} type, $\|e\|_p \sim_\tau |e|$.
-  By \ref{lem:ignorecost}, $\forall k, \langle k, \|e\|_{pp} \rangle \sim_\tau |e|$.
+  By \ref{lem:ignorecost}, $\forall k, \LP k, \|e\|_{pp} \RP \sim_\tau |e|$.
   The complexity translation is $\|force(e)\| = \|e\|_c +_c \|e\|_p$.
   The pure potential translation is $|force(e)| = |e|$.
   So $\|e\|_c +_c \|e\|_p \sim_\tau |e|$.
@@ -345,21 +345,21 @@ of that term.
   Case \AxiomC{$\gamma \vdash e_0 : \sigma$}\AxiomC{$\gamma, x : \sigma \vdash e_1 : \tau$}\BinaryInfC{$\gamma \vdash let(e_0, x.e_1) : \tau$}\DisplayProof
   By the induction hypothesis $\|e_0\| \sim_\sigma |e_0|$ and $\|e_1\| \sim_\tau |e_1|$.
   So $\|e_1\|[\|e_0\|_p/x] \sim_\tau |e_1|[|e_0|/x]$.
-  By \ref{lem:ignorecost}, $\forall k, \langle k, \|e_1\|_p[\|e_0\|_p/x] \rangle \sim_\tau |e_1|[|e_0|/x]$.
+  By \ref{lem:ignorecost}, $\forall k, \LP k, \|e_1\|_p[\|e_0\|_p/x] \RP \sim_\tau |e_1|[|e_0|/x]$.
   The complexity translation is $\|let(e_0, x.e_1)\| = \|e_0\|_c +_c \|e_1\|[\|e_0\|_p/x]$.
   The pure potential translation is $|let(e_0, x.e_1)| = |e_1|[|e_0|/x]$.
   So $\|let(e_0, x.e_1)\|  \sim_\tau |let(e_0, x.e_1)|$.
 
   Case \AxiomC{$\gamma, x : \tau_0 \vdash v_1 : \tau_1$}\AxiomC{$\gamma \vdash v_0 : \phi[\tau_0]$}\BinaryInfC{$\gamma \vdash map^\phi(x.v_1, v_0) : \phi[\tau_1]$}\DisplayProof
   By the induction hypothesis $\|v_1\| \sim_{\tau_1} |v_1|$ and $\|v_0\| \sim_{\phi[\tau_0]} |v_0|$.
-  By \ref{lem:relatedmap}, $\forall k, \langle k, map^\Phi(x.\|v_1\|_p, \|v_0\|_p)\rangle \sim_{\phi[\tau_1]} map^\Phi(x.|v_1|, |v_0|)$.
-  The complexity translation is $\|map^\phi(x.v_1, v_0)\| = \langle 0, map^\Phi(x.\|v_0\|_p, \|v_1\|_p)\rangle$.
+  By \ref{lem:relatedmap}, $\forall k, \LP k, map^\Phi(x.\|v_1\|_p, \|v_0\|_p)\RP \sim_{\phi[\tau_1]} map^\Phi(x.|v_1|, |v_0|)$.
+  The complexity translation is $\|map^\phi(x.v_1, v_0)\| = \LP 0, map^\Phi(x.\|v_0\|_p, \|v_1\|_p)\RP$.
   The pure potential translation is $|map^\phi(x.v_1, v_0| = map^\Phi(x, |v_0|, |v_1|)$.
   So we have $\|map^\phi(x.v_1, v_0)\| \sim_{\phi[\tau_1]} |map^\phi(x.v_1, v_0|$.
 
   Case \AxiomC{$\gamma \vdash e_0 : \delta$}\AxiomC{$\forall C (\gamma, x: \phi_C[\delta \times susp\ \tau] \vdash e_c : \tau$}\BinaryInfC{$\gamma \vdash rec^\delta(e_0, \overline{C \mapsto x.e_C}) : \tau$}\DisplayProof
   By the induction hypothesis $\|e_0\| \sim_\delta |e_0|$ and $\forall C, \|e_c\| \sim_\tau |e_c|$.
-  By \ref{lem:ignorecost}, $\forall k, \langle k \|e_C\| \sim_\tau |e_c$, so $1 +_c \|e_C\| \sim_\tau |e_c|$.
+  By \ref{lem:ignorecost}, $\forall k, \LP k \|e_C\| \sim_\tau |e_c$, so $1 +_c \|e_C\| \sim_\tau |e_c|$.
   So by \ref{lem:relatedrec}, $rec(\|e_0\|_p, \overline{C \mapsto x.1 +_c \|e_C\|}) \sim_\tau rec(|e_0|, \overline{C \mapsto x.1 +_c |e_C|})$.
   So by \ref{lem:ignorecost}, $\|e_0\|_c +_c rec(\|e_0\|_p, \overline{C \mapsto x.1 +_c \|e_C\|}) \sim_\tau rec(|e_0|, \overline{C \mapsto x.1 +_c |e_C|})$
 
@@ -367,10 +367,10 @@ of that term.
   By the induction hypothesis, $\|e\| \sim_{\phi[\delta]} |e|$.
   There exists $V, V'$ such that $\|e\| \downarrow V$ and $|e| \downarrow V'$.
   By \ref{lem:relatedstep} $V \sim_{\phi[\delta]} V'$.
-  Since $\|e\| \downarrow V$, $\langle k, C\ \|e\| \rangle \downarrow \langle k, C\ V_p$.
+  Since $\|e\| \downarrow V$, $\LP k, C\ \|e\| \RP \downarrow \LP k, C\ V_p$.
   Similarly, since $|e| \downarrow V'$, $C |e| \downarrow C V'$.
-  So by definition we have $\langle k, C\ \|e\|\rangle \sim_\delta C |e|$.
-  The complexity translation is $\|C e\| = \langle \|e\|, C\|e\|_p\rangle$.
+  So by definition we have $\LP k, C\ \|e\|\RP \sim_\delta C |e|$.
+  The complexity translation is $\|C e\| = \LP \|e\|, C\|e\|_p\RP$.
   The pure potential translation is $|C e| = C |e|$.
   Therefore by \ref{lem:ignorecost}, $\|C e\| \sim_\delta |C e|$.
 \end{proof}
