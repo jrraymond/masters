@@ -592,8 +592,10 @@ recuses on the children, and reconstructs a node using the results.
     \end{split}
   \end{equation*}
 \end{figure}
+%
 
 The translation of \T{map f t} is given in figure \ref{fig:ws_treemap_complexity_translation}.
+%
 \begin{equation}
   \label{eq:ws_treemap_complexity}
   \begin{split}
@@ -602,20 +604,25 @@ The translation of \T{map f t} is given in figure \ref{fig:ws_treemap_complexity
     &\quadseven \T{N} \mapsto \LP y, \LP t_0, r_0 \RP \LP t_1, r_1 \RP \RP.  \LP 2 \oplus (f_p\ x)_c \otimes r_{0c} \otimes r_{1c}, \T{N} \LP (f_p\ x)_p, r_{0p}, r_{1p}\RP\RP
 \end{split}
 \end{equation}
+%
 
 The result is shown in equation \ref{eq:ws_treemap_complexity}.
 
 We interpret trees as the number of \T{N} constructors and the maximum label.
+%
 \begin{align*}
   \LB tree \RB &= \mathbb{Z} \times \mathbb{Z} \\
   D_\T{tree} &= \{\ast\} + \mathbb{Z} \times \LB \T{tree} \RB \times \LB \T{tree} \RB \\
   size_\T{tree}(\ast) &= (0, 0) \\
   size_\T{tree}(x, (m_0, n_0), (m_1, n_1)) &= (max(x, m_0, m_1), 1 + n_0 + n_1)
 \end{align*}
+%
 
+%
 \begin{figure}
   \label{fig:ws_map_interpretation_derivation}
   \caption{Deriviation of interpretation of \T{map f t}}
 \[ \begin{split}
 \end{split} \]
 \end{figure}
+%
