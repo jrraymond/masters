@@ -67,7 +67,7 @@ We interpret trees as a three-tuple of their largest element and number of
   \LB tree \RB &= \mathbb{Z} \times \mathbb{Z} \\
   D_\T{tree} &= \{\ast\} + \mathbb{Z} \times \LB \T{tree} \RB \times \LB \T{tree} \RB \\
   size_\T{tree}(\ast) &= (0, 0) \\
-  size_\T{tree}(x, (m_0, n_0), (m_1, n_1)) &= (max(x, m_0, m_1), 1 + n_0 + n_1)
+  size_\T{tree}(x, (i_0, n_0), (i_1, n_1)) &= (max(x, i_0, i_1), 1 + n_0 + n_1)
 \end{align*}
 %
 We will interpret the \T{rec} construct first, since it drives the cost of
@@ -75,25 +75,32 @@ We will interpret the \T{rec} construct first, since it drives the cost of
 %
 \begin{align*}
   g(i,n) &= \LB\T{rec}(t, \T{E} \mapsto \LP 1,\T{E}\RP, \\
-               &\quad \T{N} \mapsto \LP x,\LP t_0,r_0\RP,\LP t_1,r_1\RP\RP.\LP 2 + (f\ x)_c + r_{0c} + r_{1c}, \T{N}\LP (f\ x)_p,r_{0p},r_{1p}\RP\RP)\RP\RP\RB \xi\\
-               &\text{where } \xi = \{t \mapsto (i,n), f \mapsto f \} \\
-               &= \bigvee\limits_{size(z) \leq n} case(z, f_E, f_N) \\
-               &\text{where} \\
+         &\quad \T{N} \mapsto \LP x,\LP t_0,r_0\RP,\LP t_1,r_1\RP\RP. \\
+         &\quadfive \LP 2 + (f\ x)_c + r_{0c} + r_{1c}, \T{N}\LP (f\ x)_p,r_{0p},r_{1p}\RP\RP)\RP\RP\RB \xi\\
+         &\text{where } \xi = \{t \mapsto (i,n), f \mapsto f \} \\
+         &= \bigvee\limits_{size(z) \leq n} case(z, f_E, f_N) \\
+         &\text{where} \\
   f_E(\ast) &= \LB \LP 1,\T{E}\RP\RB\xi  \\
             &= (1,(0,0)) \\
-  f_N(j,m_0,m_1) &= \LB \LP 2 + (f\ x)_c + r_{0c} + r_{1c}, \T{N}\LP (f\ x)_p,r_{0p},r_{1p}\RP\RP \RB \xi' \\
-                 &\text{where } \xi' = \xi \{ x \mapsto j, r_0 \mapsto g(j,m_0), r_1 \mapsto g(j,m_1) \} \\
+  f_N(j,(j_0, n_0),(j_1,n_1)) &= \LB \LP 2 + (f\ x)_c + r_{0c} + r_{1c}, \T{N}\LP (f\ x)_p,r_{0p},r_{1p}\RP\RP \RB \xi' \\
+         &\text{where } \xi' = \xi \{ x \mapsto j, r_0 \mapsto g(j_0,n_0), r_1 \mapsto g(j_1,n_1) \} \\
+         &= (2 + (f\ j)_c + g_c(j_0,n_0) + g_c(j_1,n_1), \\
+         &\qquad (max((f\ j)_p, \pi_0g_p(j_0,n_0), \pi_0g_p(j_1,n_1)), \\
+         &\qquad 1 + \pi_1g_p(j_0,n_0) + \pi_1g_p(j_1,n_1)))
 \end{align*}
 %
 To obtain a closed form solution for this recurrence, we first eliminate the
 big maximum.
 %
-%\begin{description}
-%  \item[if $n=0$]\hfill \\
-%    $g(i,0) = \bigvee\limits_{size(z) \leq (i, 0)} case(z, f_E, f_N) = (1,(0,0))$
-%  \item[if $n>0$]\hfill \\
-%    \begin{align*}
-%      g(i,n) &= \bigvee\limits_{size(z) \leq (i,n)} case(z, f_E,f_N) \\
-%             &= \bigvee\limits_{size(
-%    \end{align*}
-%\end{description}
+\begin{align*}
+  g(i,n) &= \bigvee\limits_{size(z) \leq (i,n)} case(z,f_E,f_N) \\
+         &= (1,(0,0)) \vee \bigvee\limits_{size(j,(j_0,n_0),(j_1,n_1)) \leq (i,n)} f_N(j,(j_0,n_0),(j_1,n_1)) \\
+         &\leq \bigvee\limits_{size(j,(j_0,n_0),(j_1,n_1)) \leq (i,n)} f_N(j,(j_0,n_0),(j_1,n_1)) \\
+         &\leq \bigvee\limits_{\substack{1 + n_0 + n_1 \leq n\\max(j,j_0,j_1)\leq s}} (2 + (f\ j)_c + g_c(j_0,n_0) + g_c(j_1,n_1), \\
+         &\quadseven (max((f\ j)_p, \pi_0g_p(j_0,n_0), \pi_0g_p(j_1,n_1)), \\
+         &\quadseven 1 + \pi_1g_p(j_0,n_0) + \pi_1g_p(j_1,n_1)))
+         &\leq \bigvee\limits_{\substack{1 + n_0 + n_1 \leq n\\max(j,j_0,j_1)\leq s}} (2 + (f\ j)_c + g_c(j_0,n_0) + g_c(j_1,n_1), \\
+         &\quadseven (max((f\ j)_p, \pi_0g_p(j_0,n_0), \pi_0g_p(j_1,n_1)), \\
+         &\quadseven 1 + \pi_1g_p(j_0,n_0) + \pi_1g_p(j_1,n_1)))
+\end{align*}
+%

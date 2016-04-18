@@ -1,3 +1,25 @@
 \chapter{Conclusions and Future Work}
 
 This is the conclusion.
+
+\section{Future Work}
+One of the criticisms leveed against traditional complexity analysis is there
+is no formal connection between the source language program and the recurrence
+for its cost. Although the method from \citet{Danner2015} does provide the
+formal connection, the translation from source language to complexity language
+and subsequent interpretation is tedious and prone to errors. Automation of the
+source to complexity translation and interpretation could easily be automated.
+Both transformations are simply forms of cross compilation between different
+languages. This leaves only the process of obtaining closed form solutions of
+recurrences initially obtained from the interpretation. Solving the recurrences
+requires a significant amount of cleverness. For simpler recurrences such as
+\T{list map}, the recurrences are straightforward to solve. However for more
+complex functions, the recurrences may be very difficult to solve. Consider a
+function that calculates the $n$th term of the Fibonacci sequence. Under an
+interpretation of natural numbers as the number of successor constructors, the
+potential of this function is the $n$th Fibonacci number. The closed form
+solution to the potential recurrence is
+\[
+  \frac{(1 + \sqrt{5})^n + (1 - \sqrt{5})^n}{2^n\sqrt{5}}
+\]
+Obtaining this solution is not at all obvious.
