@@ -72,6 +72,7 @@
 
 \newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
 \begin{document}
+%
 \begin{abstract}
 Complexity analysis aims to predict the resources, most often time and space,
 which a program requires.  We build on previous work by \cite{Danner2013} and
@@ -88,9 +89,14 @@ extracted recurrences are an upper bound on the evaluation cost of the original
 program. We also give examples of the analysis of higher order functional
 programs under the parallel evaluation semantics.
 \end{abstract}
-%Traditional complexity analysis is not compositional,
-%often does not address higher order functions, and there is no formal relation
-%between programs and the equations that describe their complexity.
+%
+\begin{acknowledgements}
+  Thank you to my adviser Norman Danner for having the patience to put up with
+  me the past year. Without him, this thesis would not have made it past the
+  title page. Thanks also to Jim Lipton, Dan Licata, and Danny Krizanc who,
+  along with Norman Danner, taught me everything I know about computer science.
+\end{acknowledgements}
+%
 
 \frontmatter
 \maketitle

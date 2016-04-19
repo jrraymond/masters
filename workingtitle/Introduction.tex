@@ -46,11 +46,11 @@ constant cost, such as fixed width integer addition, then this first-order
 analysis is sufficient.  The cost of mapping a constant cost function over a
 list will increase linearly in the size of the list.  However, first-order
 complexity analysis will not accurately describe the cost of mapping a
-nontrivial function over a list.  Consider insertion sort, which is quadratic
-in the size of its argument.  The cost of mapping this function over a list of
-lists depends not only on the length of the list, but also on the length of the
-sublists.  A more accurate prediction of the cost of this function can be
-obtained by taking into account the cost of insertion sort.
+nontrivial function over a list. The cost of mapping a quadratic time function
+such as insertion sort over a list of lists depends not only on the length of
+the list, but also on the length of the sublists.  A more accurate prediction
+of the cost of this function can be obtained by taking into account the cost of
+insertion sort.
 
 For an example such \T{map}, it is simple enough to change our analysis to
 reflect that applying the functions \T{f} does not have constant cost $c$, but
@@ -58,9 +58,9 @@ instead has cost $f_c(x)$, where $x$ is some notion of size of the elements of
 the list. If the elements of the list are fixed width integers, then all $x$
 would be equivalent, and $f_c(x)$ would be constant. If the elements of the
 list are strings or lists than the notion of size could be their
-length. We can no longer interpret the size of lists to be their lengths,
+length. If we only interpret the size of lists to be their lengths,
 because then we have no information about the size of the elements we apply $f$
-to. So we interpret lists as their length and their largest element. The
+to. So we interpret lists as a pair of their largest element and their length. The
 recurrence for the cost of \T{map} becomes $T(n,x) = (f_c(x) + c)n$. Our
 analysis of the cost of \T{map} is now parameterized by the cost applying \T{f}
 to the elements of the list. However, this does not allow us to analyze the
@@ -73,23 +73,23 @@ The method of extracting recurrences presented in \citet{Danner2013} and
 \citet{Danner2015} addresses these problems. The first problem with traditional
 analysis is there is no formal connection between a program and the recurrence
 for its cost. There is a language which progams are written in, which we will
-refer to as the source language, and a language in which recurrences are
-written in, which we will refer to as the complexity language. In traditional
-complexity analysis, the source language is some programming language and the
-complexity language is mathematics, and there is no formalization of how a
-program in the source language is translated into the complexity language.
-There is also no proof that the mathematical recurrence for the cost of the
-source language program is an upper bound on the cost of executing the source
-language program. \citet{Danner2013} address this problem by formally defining
-a translation from a source language to a complexity language and proving the
-recurrence in the complexity language is an upper bound on the cost of
-executing the source language program. The complexity language is also higher
-order. So if the source language program is higher order, such as \T{map}, the
-recurrence in the complexity language will reflect the cost of applying the
-higher order function. Finally, functions in the complexity language are from
-potentials to complexitys, so the result of applying a function results in both
-a cost of the function and a potential which can be used to analyze the cost of
-applying another function to the result.
+refer to as the source language, and a language for recurrences, which we will
+refer to as the complexity language. In traditional complexity analysis, the
+source language is some programming language and the complexity language is
+mathematics, and there is no formalization of the translation from the source
+language to the complexity language.  There is also no proof that the
+mathematical recurrence for the cost of the source language program is an upper
+bound on the cost of executing the source language program.  \citet{Danner2013}
+address this problem by formally defining a translation from a source language
+to a complexity language and proving the recurrence in the complexity language
+is an upper bound on the cost of executing the source language program. The
+complexity language is also higher order. So if the source language program is
+higher order, such as \T{map}, the recurrence in the complexity language will
+reflect the cost of applying the higher order function. Finally, functions in
+the complexity language are from potentials to complexitys, so the result of
+applying a function results in both a cost of the function and a potential
+which can be used to analyze the cost of applying another function to the
+result.
 
 \section{Previous Work}
 
@@ -98,15 +98,15 @@ applying another function to the result.
 idea that the complexity of an expression consists of a cost, representing an
 upper bound on the time it takes to evaluate the expression, and a potential,
 representing the cost of future uses of the expression.  The notion of a
-potential is key because it allows the analysis of higher-order expressions.
-The complexity of a higher-order function such as \T{map} depends on the
-potential of its argument function.  They developed a type system for ATR, a
-call-by-value version of System T, that consists of a part restricting the sizes of
-values of expressions and a part restricting the cost of evaluating a
-expression.  Programs written in ATR are constrained by the type system as to
-run in less than type-2 polynomial time.  \citet{Danner2009} extended this work
-to express more forms of recursion, in particular those required by insertion
-sort and selection sort.
+potential allows the analysis of higher-order expressions.  The complexity of a
+higher-order function such as \T{map} depends on the potential of its argument
+function.  They developed a type system for ATR, a call-by-value version of
+System T, that consists of a part restricting the sizes of values of
+expressions and a part restricting the cost of evaluating a expression.
+Programs written in ATR are constrained by the type system to run in less
+than type-2 polynomial time.  \citet{Danner2009} extended this work to express
+more forms of recursion, in particular those required by insertion sort and
+selection sort.
 
 \paragraph{}
 \citet{Danner2013} utilized the notion of thinking of the complexity of an
@@ -120,19 +120,22 @@ expression describes an upper bound on the complexity of the original programs.
 \paragraph{}
 \citet{Danner2015} built on this work to formalize the extraction
 of recurrences from a higher-order functional language with structural
-recursion on arbitrary inductive data types. Programs are written in the
-functional language, referred to as the source language. The programs are
-translated into a complexity language, which represents a bound on the
-complexity of the source program. A bounding relation is used to prove the
-translation and denotational semantics of the complexity language give an upper
-bound on the operational cost of running the source program. The paper also
-presents a syntactic bounding theorem, where the abstraction of values to sizes
-done in the semantics is instead done syntactically. Arbitrary inductive data
-types are handled semantically using programmer specified sizes of data types.
-Sizes must be programmer specified because the structure of a data type does
-not always determine the interpretation of the size of a data type. There also
-exist different reasonable interpretations of size, and some may be
-preferable to others depending on what is being analyzed.
+recursion on arbitrary inductive data types. Programs are written in a higher
+order functional language, referred to as the source language. The programs are
+translated into a complexity language, which is essentially for recurrences.
+The result of the translation of an expression is a pair of a cost and a
+potential. The cost is a bound on the steps required to evaluate the expression
+to a value, the potential is a size which represents cost of future use of the
+value. A bounding relation is used to prove the translation and denotational
+semantics of the complexity language give an upper bound on the operational
+cost of running the source program. The paper also presents a syntactic
+bounding theorem, where the abstraction of values to sizes done syntactically
+instead of semantically.  Arbitrary inductive data types are handled
+semantically using programmer specified sizes of data types. Sizes must be
+programmer specified because the structure of a data type does not always
+determine the interpretation of the size of a data type. There also exist
+different reasonable interpretations of size, and some may be preferable to
+others depending on what is being analyzed.
 
 
 \section{Contribution}
