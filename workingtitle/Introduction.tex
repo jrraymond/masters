@@ -142,19 +142,16 @@ others depending on what is being analyzed.
 
 This thesis comes in three parts.
 \paragraph{}
-The first chapter contains a catalog of examples of the extraction of recurrences
+Chapter two contains a catalog of examples of the extraction of recurrences
 from functional programs using the approach given by \citet{Danner2015}. These
 examples illustrate how to apply the method to nontrivial examples. They also
 serve to demonstrate common techniques for solving the extracted recurrences.
-The examples also allow the comparison with other automated complexity methods
-such as those given by \citet{Avanzini2015} and \citet{HoffHof2010},
-highlighting their respective strengths and weaknesses. The examples include
-reversing a list in quadratic, reversing a list in linear time, insertion sort,
-parametric insertion sort, list map, and tree map.
+The examples include reversing a list in quadratic, reversing a list in linear
+time, insertion sort, parametric insertion sort, list map, and tree map.
 
 
 \paragraph{}
-The second chapter extends the analysis to parallel programs. We change costs from
+Chapter three extends the analysis to parallel programs. We change costs from
 from natural numbers to the cost graphs described in \citet{Harper2012PFPL}. A cost
 graph represents the dependencies between subcomputations in a program. The
 nodes of the graph are subcomputations of the program and an edge between two
@@ -167,7 +164,7 @@ run the program. The span is the critical path; the longest number of steps
 from the start to the end of the cost graph.
 
 \paragraph{}
-The third chapter demonstrates the recurrence for the potential does not depend on
+Chapter four demonstrates the recurrence for the potential does not depend on
 the recurrence for the cost. Consequently, we can extract the recurrence for the
 potential and analyze it independently. This is useful because it is often
 easier to solve the cost and potential recurrences independently than it is to

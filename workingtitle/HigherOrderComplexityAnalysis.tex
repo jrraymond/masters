@@ -1,6 +1,6 @@
 \chapter{Higher Order Complexity Analysis}
 
-Programs are written in the {source language. Then the program is translated
+Programs are written in the source language. Then the program is translated
 to a complexity language. The semantic interpretation of the complexity
 language program may be used to analyse the complexity of the original
 program.
@@ -8,11 +8,11 @@ program.
 \section{Source Language}
 The source language is the simply typed lambda calculus with \T{Unit},
 products, suspensions, user-defined inductive datatypes and a recursion
-construct.  Valid signatuers, types, and constructor arguments are given in
-figure \ref{fig:source_lang_sigs_types_constructors}. The types, expressions,
-and typing judgments of the source language are given in figure
+construct. Valid signatures, types, and constructor arguments are given in
+Figure \ref{fig:source_lang_sigs_types_constructors}. The types, expressions,
+and typing judgments of the source language are given in Figure
 \ref{fig:source_lang_syntax_types}.  Evaluation is call-by-value and the rules
-for evaluation are given in figure \ref{fig:source_lang_oper_sem}.
+for evaluation are given in Figure \ref{fig:source_lang_oper_sem}.
 
 \T{unit} is a singleton type with only one inhabitant, the value
 $\LP\RP$, also called unit.
@@ -38,7 +38,7 @@ Each datatype may only refer to datatypes declared earlier in the signature.
 This prevents general recursive datatypes.  The argument to each constructor is
 given by a strictly positive functor $\phi$, which is one of $t$, $\tau$,
 $\phi_0 \times \phi_1$, and $\tau \rightarrow \phi$.  The identity functor $t$
-represents recursive occurence of the datatype.  The constant functor $\tau$
+represents recursive occurrence of the datatype.  The constant functor $\tau$
 represents a non-recursive type.  The product functor $\phi_0 \times \phi_1$
 represents a pair of arguments.  The constant exponential $\tau \rightarrow \phi$
 represents a function type.  The introduction forms for datatypes are the
@@ -56,13 +56,13 @@ constructor of the value, \T{rec} evaluates to the appropriate branch.
 $\phi[\sigma] \rightarrow \phi[\tau]$. \T{map} is restricted to syntactic
 values and is used in the operational semantics to insert recursive calls in
 their places. For example, if recursing on a value that does not contain a
-recursive occurence of a datatype, such as a boolean or a tree leaf, then
+recursive occurrence of a datatype, such as a boolean or a tree leaf, then
 \T{map} does not insert a recursive call anywhere.
 
 
-\begin{figure}
-  \label{fig:source_lang_syntax_types}
+\begin{figure}[H]
   \caption{Source language syntax and types}
+  \label{fig:source_lang_syntax_types}
   Types
   \begin{align*}
     \tau &::= \T{unit}\ |\ \tau \times \tau\ |\ \tau \rightarrow \tau\ |\ \T{susp}\ \tau\ |\ \delta \\
@@ -141,9 +141,10 @@ recursive occurence of a datatype, such as a boolean or a tree leaf, then
 \end{figure}
 
 
-\begin{figure}
-  \label{fig:source_lang_sigs_types_constructors}
+\begin{figure}[H]
   \caption{Source language valid signatures, types, and constructor arguments}
+  \label{fig:source_lang_sigs_types_constructors}
+
   Signatures: $\psi$ \T{sig}
 
   \bigskip
@@ -214,9 +215,9 @@ recursive occurence of a datatype, such as a boolean or a tree leaf, then
 \end{figure}
 
 
-\begin{figure}
-  \label{fig:source_lang_oper_sem}
+\begin{figure}[H]
   \caption{Source language operational semantics}
+  \label{fig:source_lang_oper_sem}
 
   \bigskip
 
@@ -290,16 +291,16 @@ recursive occurence of a datatype, such as a boolean or a tree leaf, then
 
 \section{Complexity Language}
 
-The types, expressions, and typing judgments of the complexity language are given in figure \ref{fig:complexity_lang}.
+The types, expressions, and typing judgments of the complexity language are given in Figure \ref{fig:complexity_lang}.
 The complexity language is similar to the source language with a few exceptions.
 
 Suspensions are no longer present.
 
 Tuples are destructured using projections instead of \T{split}.
 
-\begin{figure}
-  \label{fig:complexity_lang}
+\begin{figure}[H]
   \caption{Complexity language types, expressions, and typing judgments}
+  \label{fig:complexity_lang}
 
   Types
   \begin{align*}
@@ -377,10 +378,13 @@ Tuples are destructured using projections instead of \T{split}.
 
 \end{figure}
 
-The translation from the source language to the complexity language is given in figure \ref{fig:complexity_translation}.
-\begin{figure}
-  \label{fig:complexity_translation}
-  \caption{Translation from source language to complexity language}
+The translation from the source language to the complexity language is given in
+Figure \ref{fig:complexity_translation_types} and Figure
+\ref{fig:complexity_translation_expressions}.
+%
+\begin{figure}[H]
+  \caption{Translation from source language to complexity language types.}
+  \label{fig:complexity_translation_types}
   %
   \begin{align*}
     \|\tau\| &= \textbf{C} \times \llangle \tau \rrangle \\
@@ -402,6 +406,11 @@ The translation from the source language to the complexity language is given in 
     \llangle \psi \rrangle &= \text{ for each }\delta \in \psi, \delta = C_0^\delta \T{ of } \llangle \phi_{C_0}\rrangle[\delta], . . . , C_{n-1}^\delta \T{ of } \llangle \phi_{n-1}\rrangle[\delta] \\
   \end{align*}
   %
+\end{figure}
+%
+\begin{figure}[H]
+  \caption{Translation from source language to complexity language expressions.}
+  \label{fig:complexity_translation_expressions}
   \begin{align*}
     \|x\| &= \LP 0, x \RP \\
     \|\LP\RP\| &= \LP 0, \LP\RP\RP \\
@@ -411,7 +420,7 @@ The translation from the source language to the complexity language is given in 
     \|e_0\ e_1\| &= (1 + \|e_0\|_c + \|e_1\|_c) +_c \|e_0\|_p \|e_1\|_p \\
     \|\T{delay}(e)\| &= \LP 0, \|e\|\RP \\
     \|\T{force}(e)\| &= \|e\|_c +_c \|e\|_p \\
-    \|\text{C}^\delta_i\ e\| = \LP \|e\|_c, \text{C}^\delta_i \|e\|_p \RP \\
+    \|\text{C}^\delta_i\ e\| &= \LP \|e\|_c, \text{C}^\delta_i \|e\|_p \RP \\
     \|\T{rec}^\delta(e, \overline{C \mapsto x.e_C})\| &= \|e\|_c +_c \T{rec}^\delta(\|e\|_p, \overline{C \mapsto x.1 +_c \|e_C\|}) \\
     \|\T{map}^\phi(x.v_0, v_1)\| &= \LP 0, \T{map}^{\llangle \phi \rrangle}(x.\|v_0\|_p, \|v_1\|_p)\RP \\
     \|\T{let}(e_0, x.e_1)\rrangle &= \|e_0\|_c +_c \|e_1\|[\|e_0\|_p/x]
