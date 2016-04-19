@@ -74,15 +74,24 @@
 \begin{document}
 \begin{abstract}
 Complexity analysis aims to predict the resources, most often time and space,
-which a program requires. Traditional complexity analysis is not compositional,
-often does not address higher order functions, and there is no formal relation
-between programs and the equations that describe their complexity. We build on
-previous work by \cite{Danner2013} and \cite{Danner2015} which formalizes the
-extraction of cost recurrences from higher order functional programs. We use
-the formalization to analyze the time complexity of higher order functional
-programs. We also demonstrate the flexibility of the method by extending it
-to parallel cost semantics.
+which a program requires.  We build on previous work by \cite{Danner2013} and
+\cite{Danner2015} which formalizes the extraction of recurrences for evaluation
+cost from higher order functional programs. Source language programs are
+translated into a complexity language. The translation of an expression is a
+pair of a cost, a bound on the cost of evaluating the program to a value, and a
+potential, the cost of future use of the value. We use the formalization to
+analyze the time complexity of higher order functional programs. We also
+demonstrate the flexibility of the method by extending it to parallel cost
+semantics. Costs are cost graphs, which express dependencies between
+subcomputations in the program. We prove by logical relations that the
+extracted recurrences are an upper bound on the evaluation cost of the original
+program. We also give examples of the analysis of higher order functional
+programs under the parallel evaluation semantics.
 \end{abstract}
+%Traditional complexity analysis is not compositional,
+%often does not address higher order functions, and there is no formal relation
+%between programs and the equations that describe their complexity.
+
 \frontmatter
 \maketitle
 \makededication
