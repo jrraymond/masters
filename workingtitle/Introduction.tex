@@ -24,6 +24,8 @@ Traditional analysis assumes the cost of applying its first argument is
 constant.
 
 
+
+
 Traditional complexity analysis proceeds as follows.  First we write a
 recurrence for the cost.  \[ T(n) = c + T(n-1) \] The variable $n$ is the
 length of the list and the constant \T{c} is the cost of applying the function
@@ -31,26 +33,32 @@ $f$ to an element of the list and then applying the cons function \T{::}. The
 result is the asymptotic efficiency of \T{map} is linear in the length of the
 list.
 
-The are two problems with this approach. The first is that there is no formal
-connection between the implementation of \T{map} and the recurrence $T(n)$. The
-consequence is extraction of the correct recurrence relies on the absence of
-human error, which the author of this thesis can attest the difficulty of
-doing. A formalization of the connection between the source program and
-the recurrence would prevent this. The translation from the source program to
-the recurrence could be done using application of a series of rules and the
-translation could even be automated.
 
-The second is that the analysis assumes the cost of applying the function \T{f} to
-each element in the list has a constant cost. If the cost function is has a
-constant cost, such as fixed width integer addition, then this first-order
-analysis is sufficient.  The cost of mapping a constant cost function over a
-list will increase linearly in the size of the list.  However, first-order
-complexity analysis will not accurately describe the cost of mapping a
-nontrivial function over a list. The cost of mapping a quadratic time function
-such as insertion sort over a list of lists depends not only on the length of
-the list, but also on the length of the sublists.  A more accurate prediction
-of the cost of this function can be obtained by taking into account the cost of
-insertion sort.
+
+The are two problems with this approach.  The first is that the analysis
+assumes the cost of applying the function \T{f} to each element in the list has
+a constant cost. If the cost function is has a constant cost, such as fixed
+width integer addition, then this first-order analysis is sufficient.  The cost
+of mapping a constant cost function over a list will increase linearly in the
+size of the list.  However, first-order complexity analysis will not accurately
+describe the cost of mapping a nontrivial function over a list. The cost of
+mapping a quadratic time function such as insertion sort over a list of lists
+depends not only on the length of the list, but also on the length of the
+sublists.  A more accurate prediction of the cost of this function can be
+obtained by taking into account the cost of insertion sort.
+
+
+
+The second is that there is no formal connection between the implementation of
+\T{map} and the recurrence $T(n)$. The consequence is extraction of the correct
+recurrence relies on the absence of human error, which the author of this
+thesis can attest the difficulty of doing. A formalization of the connection
+between the source program and the recurrence would prevent this. The
+translation from the source program to the recurrence could be done using
+application of a series of rules and the translation could even be automated.
+
+
+
 
 For an example such \T{map}, it is simple enough to change our analysis to
 reflect that applying the functions \T{f} does not have constant cost $c$, but
@@ -69,31 +77,53 @@ need to have a notion of the size of the result of $f$, as well as the cost. We
 need to have a notion of the size of the result of $f$ in order to analyze the
 cost of applying $g$ to the result of applying $f$ to some value.
 
-The method of extracting recurrences presented in \citet{Danner2013} and
-\citet{Danner2015} addresses these problems. The first problem with traditional
-analysis is there is no formal connection between a program and the recurrence
-for its cost. There is a language which progams are written in, which we will
-refer to as the source language, and a language for recurrences, which we will
-refer to as the complexity language. In traditional complexity analysis, the
-source language is some programming language and the complexity language is
-mathematics, and there is no formalization of the translation from the source
-language to the complexity language.  There is also no proof that the
-mathematical recurrence for the cost of the source language program is an upper
-bound on the cost of executing the source language program.  \citet{Danner2013}
-address this problem by formally defining a translation from a source language
-to a complexity language and proving the recurrence in the complexity language
-is an upper bound on the cost of executing the source language program. The
-complexity language is also higher order. So if the source language program is
-higher order, such as \T{map}, the recurrence in the complexity language will
-reflect the cost of applying the higher order function. Finally, functions in
-the complexity language are from potentials to complexitys, so the result of
-applying a function results in both a cost of the function and a potential
-which can be used to analyze the cost of applying another function to the
-result.
+
+The term we will this notion of the size of the result is potential. Potential
+represents the cost of future use of an expression. As mentioned above,
+potential is necessary to compose the analysis of functions. Consider this
+implementation of \T{fromList} which creates a set from a list of items.
+%
+\lstset{language=Haskell}
+\begin{lstlisting}
+fromList xs = foldr `insert` empty xs
+\end{lstlisting}
+%
+The \T{insert} function takes an element and a set and adds the element to the
+set. \T{empty} is the empty set. The \T{insert} function will be with
+increasing sized sets each step of the fold. To correctly analyze \T{fromList},
+our analysis of \T{insert} must include both a cost of inserting an element
+into a set, and a potential with which we can use to analyze the cost of the
+next application of \T{insert} by \T{foldr}.
 
 \section{Previous Work}
 
-\paragraph{}
+As we have just seen, traditional complexity analysis does not have a formal
+connection between the programs and the extracted recurrences. Traditional
+complexity analysis is also not compositional.
+
+%The method of extracting recurrences presented in \citet{Danner2013} and
+%\citet{Danner2015} addresses these problems. The first problem with traditional
+%analysis is there is no formal connection between a program and the recurrence
+%for its cost. There is a language which programs are written in, which we will
+%refer to as the source language, and a language for recurrences, which we will
+%refer to as the complexity language. In traditional complexity analysis, the
+%source language is some programming language and the complexity language is
+%mathematics, and there is no formalization of the translation from the source
+%language to the complexity language.  There is also no proof that the
+%mathematical recurrence for the cost of the source language program is an upper
+%bound on the cost of executing the source language program.  \citet{Danner2013}
+%address this problem by formally defining a translation from a source language
+%to a complexity language and proving the recurrence in the complexity language
+%is an upper bound on the cost of executing the source language program. The
+%complexity language is also higher order. So if the source language program is
+%higher order, such as \T{map}, the recurrence in the complexity language will
+%reflect the cost of applying the higher order function. Finally, functions in
+%the complexity language are from potentials to complexities, so the result of
+%applying a function results in both a cost of the function and a potential
+%which can be used to analyze the cost of applying another function to the
+%result.
+
+
 \citet{Danner2007}, building on the work of others, introduced the
 idea that the complexity of an expression consists of a cost, representing an
 upper bound on the time it takes to evaluate the expression, and a potential,
@@ -108,7 +138,8 @@ than type-2 polynomial time.  \citet{Danner2009} extended this work to express
 more forms of recursion, in particular those required by insertion sort and
 selection sort.
 
-\paragraph{}
+
+
 \citet{Danner2013} utilized the notion of thinking of the complexity of an
 expression as a pair of a cost and a potential to statically analyze the
 complexity of a higher-order functional language with structural list
@@ -117,7 +148,8 @@ structural list recursion, referred to as the source language, are mapped to
 expressions in a complexity language by a translation function.  The translated
 expression describes an upper bound on the complexity of the original programs.
 
-\paragraph{}
+
+
 \citet{Danner2015} built on this work to formalize the extraction
 of recurrences from a higher-order functional language with structural
 recursion on arbitrary inductive data types. Programs are written in a higher
@@ -141,8 +173,10 @@ others depending on what is being analyzed.
 \section{Contribution}
 
 This thesis comes in three parts.
-\paragraph{}
-Chapter two contains a catalog of examples of the extraction of recurrences
+
+
+
+Chapter 2 contains a catalog of examples of the extraction of recurrences
 from functional programs using the approach given by \citet{Danner2015}. These
 examples illustrate how to apply the method to nontrivial examples. They also
 serve to demonstrate common techniques for solving the extracted recurrences.
@@ -150,21 +184,27 @@ The examples include reversing a list in quadratic, reversing a list in linear
 time, insertion sort, parametric insertion sort, list map, and tree map.
 
 
-\paragraph{}
-Chapter three extends the analysis to parallel programs. We change costs from
-from natural numbers to the cost graphs described in \citet{Harper2012PFPL}. A cost
-graph represents the dependencies between subcomputations in a program. The
-nodes of the graph are subcomputations of the program and an edge between two
-nodes indicates the result of one computation is an input to the other. The
-cost graph can be used to determine an optimal strategy for scheduling the
-computation on multiple processors. The cost graph has two properties that we
-are interested in, work and span. The work is the total steps required to run
-the program, which corresponds to the steps a single processor must execute to
-run the program. The span is the critical path; the longest number of steps
-from the start to the end of the cost graph.
 
-\paragraph{}
-Chapter four demonstrates the recurrence for the potential does not depend on
+Chapter 3 extends the analysis to parallel programs. The source language syntax
+remains unchanged, but the operational semantics change to allow binary
+fork-join parallelism, also called nested parallelism. The subexpressions to
+tuples and function application may be evaluated in parallel. The
+subexpressions themselves may have subexpressions which may also be evaluated
+in parallel. We change costs from from natural numbers to the cost graphs
+described in \citet{Harper2012PFPL}. A cost graph represents the dependencies
+between subcomputations in a program.  The nodes of the graph are
+subcomputations of the program and an edge between two nodes indicates the
+result of one computation is an input to the other. The cost graph can be used
+to determine an optimal strategy for scheduling the computation on multiple
+processors. The cost graph has two properties that we are interested in, work
+and span. The work is the total steps required to run the program, which
+corresponds to the steps a single processor must execute to run the program.
+The span is the critical path; the longest number of steps from the start to
+the end of the cost graph.
+
+
+
+Chapter 4 demonstrates the recurrence for the potential does not depend on
 the recurrence for the cost. Consequently, we can extract the recurrence for the
 potential and analyze it independently. This is useful because it is often
 easier to solve the cost and potential recurrences independently than it is to
