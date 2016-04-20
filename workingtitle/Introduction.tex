@@ -181,7 +181,13 @@ from functional programs using the approach given by \citet{Danner2015}. These
 examples illustrate how to apply the method to nontrivial examples. They also
 serve to demonstrate common techniques for solving the extracted recurrences.
 The examples include reversing a list in quadratic, reversing a list in linear
-time, insertion sort, parametric insertion sort, list map, and tree map.
+time, insertion sort, parametric insertion sort, list map, and tree map. We do
+quadratic time reverse as an introductory example. Linear time list reversal is
+an example of higher-order analysis. Insertion sort introduces the
+compositionality of analysis. Parametric insertion sort combines the
+compositionality of insertion sort with a higher-order function. We do list map
+and tree map to compare with the parallel list map and tree map.
+
 
 
 
@@ -204,9 +210,14 @@ the end of the cost graph.
 
 
 
-Chapter 4 demonstrates the recurrence for the potential does not depend on
-the recurrence for the cost. Consequently, we can extract the recurrence for the
-potential and analyze it independently. This is useful because it is often
-easier to solve the cost and potential recurrences independently than it is to
-solve the initial recurrence. We are also sometimes only interested in just the
-potential or just the cost of a recurrence.
+Chapter 4 defines a pure potential translation. The pure potential translation
+is a stripped down version of the complexity translation which drops all
+notions of cost. We prove by logical relations that for all well-typed source
+language terms, the potential of the translation of the program into the
+complexity language is related to the pure potential translation of the
+program. The result of this is that the potential of the complexity of the
+translation does not depend on the cost. This justifies the extraction of the
+potential recurrence from the complexity language recurrence. This is useful
+because it is often easier to solve the cost and potential recurrences
+independently than it is to solve the initial recurrence. We are also sometimes
+only interested in just the potential or just the cost of a recurrence.
