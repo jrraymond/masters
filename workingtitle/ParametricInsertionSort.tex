@@ -325,7 +325,7 @@ $n \leq n'$ and $s < s'$ or $n < n'$ and $s \leq s'$.
 %
 First we interpret the \T{rec}, which drives of the cost of \T{insert}.  As in
 the translation, we break the interpretation up to make it more manageable.  We
-will write $map, \llambda$ and $\pplus_c$ in the semantics, which stand for the
+will write $map, \lambda$ and $+_c$ in the semantics, which stand for the
 semantic equivalents of the syntactic \T{map}, $\lambda$ and $+_c$.  The
 definitions of these semantic functions mirror the definitions of their
 syntactic equivalents.
@@ -366,21 +366,21 @@ Using this, we proceed to interpret the outer recurrence.
                 &= (1, (x, 1)) \\
   f_{Cons}(j,m) &= \LB (4 + (f\ x)_c) +_c \T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \LP 1, \T{Cons}\LP x,\T{Cons}\LP y,ys\RP\RP\RP, \\
                 &\quadthree \T{False}\mapsto \LP 1 + r_c, \T{Cons}\LP y,r_p\RP\RP)\RB \xi \{ y \mapsto j, ys \mapsto (j, m), r \mapsto g(j, m)\} \\
-                &= (4 + (f\ x)_c) \pplus_c \LB\T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \LP 1, \T{Cons}\LP x,\T{Cons}\LP y,ys\RP\RP\RP, \\
+                &= (4 + (f\ x)_c) +_c \LB\T{rec}(((f\ x)_p\ y)_p, \T{True}\mapsto \LP 1, \T{Cons}\LP x,\T{Cons}\LP y,ys\RP\RP\RP, \\
                 &\quadthree \T{False}\mapsto \LP 1 + r_c, \T{Cons}\LP y,r_p\RP\RP)\RB \xi \{ y \mapsto j, ys \mapsto (j, m), r \mapsto g(j, m)\} \\
-                &= (4 + (f\ x)_c) \pplus_c ((1, (max(x,j), 2 + m)) \\
+                &= (4 + (f\ x)_c) +_c ((1, (max(x,j), 2 + m)) \\
                 &\quadthree \vee (1 + g_c(j,m), (max(j,\pi_0 g_p(j,m)), 1 + \pi_1 g_p(j,m))))
 \end{flalign*}
 %
 So the interpretation of $\|\T{insert}\|$ is
 %
 \begin{flalign*}
-  \|\T{insert}\| &= (0, \llambda f.(0,\llambda x.(0,\llambda (i,n). g(i,n)))) \\
+  \|\T{insert}\| &= (0, \lambda f.(0,\lambda x.(0,\lambda (i,n). g(i,n)))) \\
   \text{where}& \\
   g(i,n) &= \bigvee\limits_{size(z) \leq (i,n)} case(z, f_{Nil}, f_{Cons}) \\
          &\text{where}\\
   f_{Nil}(\ast) &= (1, (x, 1)) \\
-  f_{Cons}(j,m) &= (4 + (f\ x)_c) \pplus_c ((1, (max(x,j), 2 + m)) \\
+  f_{Cons}(j,m) &= (4 + (f\ x)_c) +_c ((1, (max(x,j), 2 + m)) \\
                 &\quadthree \vee (1 + g_c(j,m), (max(j,\pi_0 r_p), 1 + \pi_1 g_p(j,m))))
 \end{flalign*}
 %
@@ -471,8 +471,8 @@ $xs$.
           &= (1, (-\infty,0)) \\
 f_{Cons} &= \LB (4 + r _c) +_c ((\|\T{insert}\|_p f)_p y)_p r_p) \RB \xi \\
          &\text{where}\quad \xi = \{xs \mapsto (i,n), f \mapsto f, y \mapsto j, ys \mapsto (j,m), r \mapsto g(j,m)\} \\
-         &= (4 + g_c(j,m)) \pplus_c ((\LB\|\T{insert}\|_p\RB\xi\ f)_p j)_p g_p(j,m) \\
-         &= (5 + g_c(j,m)) \pplus_c (((f\ j)_p\ j)_c g_p(j,m), (max\{j,j\},g_p(j, m)+1)) \\
+         &= (4 + g_c(j,m)) +_c ((\LB\|\T{insert}\|_p\RB\xi\ f)_p j)_p g_p(j,m) \\
+         &= (5 + g_c(j,m)) +_c (((f\ j)_p\ j)_c g_p(j,m), (max\{j,j\},g_p(j, m)+1)) \\
          &= (5 + g_c(j,m) + (f\ j)_p\ j)_c g_p(j,m), (max\{j,j\},g_p(j,m) + 1))
 \end{flalign*}
 %

@@ -1,5 +1,3 @@
-\chapter{Sequential Recurrence Extraction Examples}
-%
 \section{Reverse}
 %
 Here we present the naive implementation of list reverse. The naive
@@ -276,7 +274,7 @@ equation describing the complexity of $\|\T{snoc}\|$.
 %
 %\begin{flalign*}
 %  \LB\|\T{snoc}\ xs\ x\|\RB &= \LB(2 + \|xs\|_c + \|x\|_c) +_c (\|\T{snoc}\|_p\ \|xs\|_p)_p\ \|x\|_p\RB \\
-%                                          &= (2 + \LB\|xs\|_c\RB + \LB\|x\|_c\RB) \pplus_c \LB(\|\T{snoc}\|_p\ \|xs\|_p)_p \|x\|_p\RB\\
+%                                          &= (2 + \LB\|xs\|_c\RB + \LB\|x\|_c\RB) +_c \LB(\|\T{snoc}\|_p\ \|xs\|_p)_p \|x\|_p\RB\\
 %                                          &= (2 + \LB\|xs\|
 %\end{flalign*}
 %
@@ -299,8 +297,8 @@ We will interpret the \T{rec} construct first.
   f_{Nil}(\ast) &= \LB \LP 1,\T{Nil}\RP\RB \{xs \mapsto n\} \\
                 &= (1, 0) \\
   f_{Cons}((1, m)) &= \LB (3 + r_c) +_c (\|\T{snoc}\|_p\ r_p\ x)\RB \{xs \mapsto n, x \mapsto 1, r \mapsto g(m)\} \\
-                   &= (3 + g_c(m)) \pplus_c (\LB\|\T{snoc}\|_p\RB \{xs \mapsto n, x \mapsto 1, r \mapsto g(m)\}\ g_p(m)\ 1) \\
-                   &= (3 + g_c(m)) \pplus_c snoc(g_p(m), 1) \\
+                   &= (3 + g_c(m)) +_c (\LB\|\T{snoc}\|_p\RB \{xs \mapsto n, x \mapsto 1, r \mapsto g(m)\}\ g_p(m)\ 1) \\
+                   &= (3 + g_c(m)) +_c snoc(g_p(m), 1) \\
                    &= (3 + g_c(m) + snoc_c(g_p(m), 1), snoc_p(g_p(m), 1))
 \end{flalign*}
 %
