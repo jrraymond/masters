@@ -1,3 +1,4 @@
+\chapter{Sequential Recurrence Extraction Examples}
 % ---------------------------------------- FAST REVERSE ----------------------------------------
 \section{Fast Reverse}
 Fast reverse is an implementation reverse in linear time complexity.
@@ -443,8 +444,11 @@ Below is the translation of \T{rev xs}.
 The cost of \T{rev} is driven by the auxilary function \T{rec(...)}. The cost
 of \T{rev} will be determined by the cost of the auxilary function \T{rec(...)}
 applied to \T{Nil} plus some constant factor. We will interpret the auxilary
-function in the following denotational semantics. We intepret the size of an
-\T{list} to be the number of list constructors.
+function in the following denotational semantics.
+
+
+Since \T{list} is a user defined datatype, we must provide an interpretation.
+We intepret the size of an \T{list} to be the number of list constructors.
 %
 \begin{flalign*}
   \LB \T{list} \RB &= \mathbb{N}^\infty\\
@@ -469,9 +473,9 @@ where $n$ is the interpretation of $xs$.
   &= \bigvee\limits_{size\ z \leq \LB xs \RB \{xs \mapsto n\}} case(z, f_C, f_N) \\
   &\text{where} \\
   &f_{Nil}(x) = \LB \LP 1, \lambda a. \LP 0, a\RP\RP \RB \{xs \mapsto n\} \\
-  &\qquad = (1, \llambda a.(0, a)) \\
+  &\qquad = (1, \lambda a.(0, a)) \\
   &f_{Cons}(b) = \LB \LP 1, \lambda a.(1 + \pi_1\pi_1 b_c) +_c \pi_1\pi_1 b_p\ \T{Cons}\LP \pi_0 b, a \RP \RP \RB \\
-  &\quadfive \{xs \mapsto n, b \mapsto map^{\Phi_{Cons}}(\llambda d.(d, \LB R(w) \RB \{ w \mapsto d, xs \mapsto n \}), b) \} \\
+  &\quadfive \{xs \mapsto n, b \mapsto map^{\Phi_{Cons}}(d.(d, \LB R(w) \RB \{ w \mapsto d, xs \mapsto n \}), b) \} \\
 \end{flalign*}
 %
 Let us take a moment to analyze the semantic $map$. The definition mirrors the
@@ -481,15 +485,15 @@ projections of the
 tuple.
 %
 \begin{flalign*}
-  &\qquad map^{\Phi_{Cons}}(\llambda d.(d, \LB R(w) \RB \{ w \mapsto d \}), b) \\
-  &\qquad = (map^{int}(\llambda d.(d, \LB R(w) \RB \{w \mapsto d\}), \pi_0 b), \\
-  &\quadfour map^{list}(\llambda d.(d, \LB R(w) \RB \{w \mapsto d\}), \pi_1 b)) \\
+  &\qquad map^{\Phi_{Cons}}(d.(d, \LB R(w) \RB \{ w \mapsto d \}), b) \\
+  &\qquad = (map^{int}(d.(d, \LB R(w) \RB \{w \mapsto d\}), \pi_0 b), \\
+  &\quadfour map^{list}(d.(d, \LB R(w) \RB \{w \mapsto d\}), \pi_1 b)) \\
   %
-  &\text{The definition of $map$ over $int$ is $map^{int}(\llambda x.V_0, V_1) = V_1$.}\\
-  &\qquad = (\pi_0 b, map^{list}(\llambda d.(d, \LB R(w) \RB \{w \mapsto d\}), \pi_1 b)) \\
+  &\text{The definition of $map$ over $int$ is $map^{int}(\lambda x.V_0, V_1) = V_1$.}\\
+  &\qquad = (\pi_0 b, map^{list}(d.(d, \LB R(w) \RB \{w \mapsto d\}), \pi_1 b)) \\
   %
   &\text{The definition of $map$ over a recursive occurence of a }\\
-  &\text{a datatype is $map^T(\llambda x.V_0,V_1) = V_0[V_1/x]$.} \\
+  &\text{a datatype is $map^T(x.V_0,V_1) = V_0[V_1/x]$.} \\
   &\qquad = (\pi_0 b, (\pi_1 b, \LB R(w) \RB \{w \mapsto \pi_1 b\})) \\
   %
   &\text{Observe that we can substitute $g(\pi_1 b)$ for $\LB R(w) \RB \{w \mapsto \pi_1 b\}$.} \\
@@ -500,14 +504,14 @@ Let us resume our interpretation of \T{rec(...)}.
 %
 \begin{flalign*}
   &f_{Cons}(b) = \LB \LP 1, \lambda a.(1 + \pi_1\pi_1 b_c) +_c \pi_1\pi_1 b_p\ \T{Cons}\LP \pi_0 b, a \RP \RP \RB \\
-  &\quadfive \{xs \mapsto n, b \mapsto map^{\Phi_{Cons}}(\llambda d.(d, \LB R(w) \RB \{ w \mapsto d\}), b) \} \\
+  &\quadfive \{xs \mapsto n, b \mapsto map^{\Phi_{Cons}}(\lambda d.(d, \LB R(w) \RB \{ w \mapsto d\}), b) \} \\
   &\quad = \LB \LP 1, \lambda a.(1 + \pi_1\pi_1 b_c) +_c \pi_1\pi_1 b_p\ \T{Cons}\LP \pi_0 b, a \RP \RP \RB \\
   &\quadfive \{xs \mapsto n, b \mapsto (\pi_0 b, (\pi_1 b, g(\pi_1 b))) \} \\
   &\quad = (1, \LB \lambda a.(1 + \pi_1\pi_1 b_c) +_c \pi_1\pi_1 b_p\ \T{Cons}\LP \pi_0 b, a \RP \RB \\
   &\quadfive \{xs \mapsto n, b \mapsto (\pi_0 b, (\pi_1 b, g(\pi_1 b))) \}) \\
-  &\quad = (1, \llambda a. \LB (1 + \pi_1\pi_1 b_c) +_c \pi_1\pi_1 b_p\ \T{Cons}\LP \pi_0 b, a \RP \RB \\
+  &\quad = (1, \lambda a. \LB (1 + \pi_1\pi_1 b_c) +_c \pi_1\pi_1 b_p\ \T{Cons}\LP \pi_0 b, a \RP \RB \\
   &\quadfive \{xs \mapsto n, b \mapsto (\pi_0 b, (\pi_1 b, g(\pi_1 b))), a \mapsto a \}) \\
-  &\quad = (1, \llambda a. (1 + g_c(\pi_1 b)) \pplus_c g_p(\pi_1 b)\ (1 + a))\\
+  &\quad = (1, \lambda a. (1 + g_c(\pi_1 b)) +_c g_p(\pi_1 b)\ (1 + a))\\
 \end{flalign*}
 %
 So the initial extracted recurrence from \T{rec} is
@@ -515,8 +519,8 @@ So the initial extracted recurrence from \T{rec} is
 \begin{flalign*}
   &g(n) = \bigvee\limits_{size\ z \leq n} case(z, f_C, f_N) \\
   &\text{where} \\
-  &f_{Nil}(x) = (1, \llambda a.(0, a)) \\
-  &f_{Cons}(b) = (1, \llambda a. (1 + g_c(\pi_1 b)) \pplus_c g_p(\pi_1 b)\ (a + 1))\\
+  &f_{Nil}(x) = (1, \lambda a.(0, a)) \\
+  &f_{Cons}(b) = (1, \lambda a. (1 + g_c(\pi_1 b)) +_c g_p(\pi_1 b)\ (a + 1))\\
 \end{flalign*}
 %
 To obtain a closed form solution for the recurrence, we must eliminate the big
@@ -524,14 +528,14 @@ maximum operator. To do so we break the defnition of $g$ into two cases.
 %
 \begin{description}
   \item[case $n=0$]\hfill \\
-    For $n=0$, $g(0) = (1,\llambda a.(0,a))$.
+    For $n=0$, $g(0) = (1,\lambda a.(0,a))$.
   \item[case $n>0$]\hfill \\
     \begin{align*}
       g(n+1) &= \bigvee_{size\ ys \leq n+1} case(ys, f_{Nil}, f_{Cons}) \\
              &= \bigvee_{size\ ys \leq n} case(ys, f_{Nil}, f_{Cons}) \vee \bigvee_{size\ ys = n+1} case(ys, f_{Nil}, f_{Cons}) \\
-             &= g(n) \vee \bigvee_{size\ ys = n+1} case(ys, \llambda().(1,\llambda a.( 0,a)), \\
-             &\quadten \llambda (1,m).(1, \llambda a.(1 + g_c(m)) \pplus_c g_p(m) (a+1))) \\
-             &= g(n) \vee \LP 1, \llambda a. (1 + g_c(n)) \pplus_c g_p(n) (a+1))) \\
+             &= g(n) \vee \bigvee_{size\ ys = n+1} case(ys, \lambda().(1,\lambda a.( 0,a)), \\
+             &\quadten \lambda (1,m).(1, \lambda a.(1 + g_c(m)) +_c g_p(m) (a+1))) \\
+             &= g(n) \vee \LP 1, \lambda a. (1 + g_c(n)) +_c g_p(n) (a+1))) \\
     \end{align*}
 \end{description}
 %
@@ -551,9 +555,9 @@ of $g(n)$ is always one.
 We prove this by induction on $n$.
   \begin{description}
     \item[Base case: $n=0$]\hfill \\
-      By definition, $g_c(0) = (1, \llambda a.(0,a)) = 1$.
+      By definition, $g_c(0) = (1, \lambda a.(0,a)) = 1$.
     \item[Induction step: $n>0$]\hfill \\
-      By definition $g_c(n+1) = (g(n) \vee (1, \llambda a. (1 + g_c(n)) \pplus_c g_p(n)\ (a+1)))_c$.
+      By definition $g_c(n+1) = (g(n) \vee (1, \lambda a. (1 + g_c(n)) +_c g_p(n)\ (a+1)))_c$.
       We distribute the projection over the max: $g_c(n+1) = g_c(n) \vee 1$.
       By the induction hypothesis, $g_c(n) = 1$, so $g_c(n+1) = 1$.
   \end{description}
@@ -578,14 +582,14 @@ increasing.
   We prove this by induction on $n$.
   \begin{description}
     \item[$n=0$]\hfill \\
-      $g_p(0)\ a = (\llambda a.(0,a))\ a = (0,a)$\\
-      $g_p(0)\ (a+1) = (\llambda a.(0.a))\ (a+1) = (0,a+1)$\\
+      $g_p(0)\ a = (\lambda a.(0,a))\ a = (0,a)$\\
+      $g_p(0)\ (a+1) = (\lambda a.(0.a))\ (a+1) = (0,a+1)$\\
       $(0,a) \leq (0,a+1)$.
     \item[$n>0$]\hfill \\
       We assume $g_p(n)\ a \leq g_p(n)\ (a+1)$.
       \begin{align*}
       g_p(n)\ a &\leq g_p(n)\ (a+1)  \\
-      g_p(n)\ a \vee (1 + g_c(n)) \pplus_c g_p(n)\ a &\leq g_p(n)\ (a+1) \vee (1 + g_c(n)) \pplus_c g_p(n)\ (a+1) \\
+      g_p(n)\ a \vee (1 + g_c(n)) +_c g_p(n)\ a &\leq g_p(n)\ (a+1) \vee (1 + g_c(n)) +_c g_p(n)\ (a+1) \\
       g_p(n+1)\ a &\leq g_p(n+1)\ (a+1)
       \end{align*}
   \end{description}
@@ -598,22 +602,22 @@ Now we show $g_p(n) \leq g_p(n+1)$.
   By the lemma we just proved:
   \begin{align*}
   g_p(n)\ a &\leq g_p(n)\ (a+1) \\
-  g_p(n)\ a &\leq (1 + g_c(n)) \pplus_c g_p(n)\ (a+1) \\
+  g_p(n)\ a &\leq (1 + g_c(n)) +_c g_p(n)\ (a+1) \\
   %\[ \pi_1 g(n) a \leq \LP 2 + \pi_0 (\pi_1 g(n) (a+1)), \pi_1 (\pi_1 g(n) (a+1)) \RP \]
-  \llambda a.g_p(n)\ a &\leq \llambda a. (1 + g_c(n)) \pplus_c g_p(n)\ (a+1)
+  \lambda a.g_p(n)\ a &\leq \lambda a. (1 + g_c(n)) +_c g_p(n)\ (a+1)
   \end{align*}
 \end{proof}
 %
-So since for all $n$, $g_c(n) = 1$ and $g_p(n) \leq \llambda a. (1 + g_c(n)) \pplus_c g_p(n)\ (a+1)$, we conclude
+So since for all $n$, $g_c(n) = 1$ and $g_p(n) \leq \lambda a. (1 + g_c(n)) +_c g_p(n)\ (a+1)$, we conclude
 %
 \begin{flalign*}
-  g(n) &\leq \LP 1, \llambda a. (1 + g_c(n)) \pplus_c g_p(n)\ (a+1)\RP) \\
+  g(n) &\leq \LP 1, \lambda a. (1 + g_c(n)) +_c g_p(n)\ (a+1)\RP) \\
 \end{flalign*}
 %
 So
 %
 \begin{flalign*}
-  g(n+1) &= \LP 1, \llambda a. (1 + g_c(n)) \pplus_c g_p(n)\ (a+1)\RP\\
+  g(n+1) &= \LP 1, \lambda a. (1 + g_c(n)) +_c g_p(n)\ (a+1)\RP\\
 \end{flalign*}
 %
 %
@@ -625,7 +629,7 @@ For $n=0$
 %
 \begin{align*}
   h(0,a) &= g_p(0) a \\
-         &= (\llambda a.(0,a)) a \\
+         &= (\lambda a.(0,a)) a \\
          &= (0, a)
 \end{align*}
 %
@@ -633,7 +637,7 @@ For $n>0$
 %
 \begin{align*}
   h(n,a) &= g_p(n) a \\
-         &= (\llambda a. (1 + g_c(n-1)) \pplus_c g_p(n-1)\ (a+1))\ a \\
+         &= (\lambda a. (1 + g_c(n-1)) +_c g_p(n-1)\ (a+1))\ a \\
          &= (1 + g_c(n-1)) +_c g_p(n-1) (a+1) \\
          &= (1 + 1) +_c h(n-1,a+1) \\
          &= (2 + h_c(n-1,a+1), h_p(n-1,a+1))
@@ -755,15 +759,15 @@ interpretation of the auxilary function.
   &\text{Let $n = \LB \|xs\| \RB.$}\\
   \LB\|\T{rev xs}\|\RB &= \LB 1 +_c (\lambda xs. 1 +_c \T{rec}(xs, \T{Nil} \mapsto \LP 1, \lambda a. \LP 0, a \RP \RP\\
   &\qquad \T{Cons}\mapsto \LP x, \LP xs', r\RP\RP. \LP 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\LP x, a \RP \RP)\ \T{Nil})\ xs \RB \{xs \mapsto n\}  \\
-  &= 1 \pplus_c \LB \lambda xs. 1 +_c \T{rec}(xs, \T{Nil} \mapsto \LP 1, \lambda a. \LP 0, a \RP \RP\\
+  &= 1 +_c \LB \lambda xs. 1 +_c \T{rec}(xs, \T{Nil} \mapsto \LP 1, \lambda a. \LP 0, a \RP \RP\\
   &\qquad \T{Cons}\mapsto \LP x, \LP xs', r\RP\RP. \LP 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\LP x, a \RP \RP)\ \T{Nil} \RB \{xs \mapsto n\}\ n  \\
-  &= 1 \pplus_c (\llambda xs. \LB 1 +_c \T{rec}(xs, \T{Nil} \mapsto \LP 1, \lambda a. \LP 0, a \RP \RP\\
+  &= 1 +_c (\lambda xs. \LB 1 +_c \T{rec}(xs, \T{Nil} \mapsto \LP 1, \lambda a. \LP 0, a \RP \RP\\
   &\qquad \T{Cons}\mapsto \LP x, \LP xs', r\RP\RP. \LP 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\LP x, a \RP \RP)\ \T{Nil}\RB \{xs \mapsto n\})\ n  \\
-  &= 1 \pplus_c (\llambda xs. 1 \pplus_c \LB \T{rec}(xs, \T{Nil} \mapsto \LP 1, \lambda a. \LP 0, a \RP \RP\\
+  &= 1 +_c (\lambda xs. 1 +_c \LB \T{rec}(xs, \T{Nil} \mapsto \LP 1, \lambda a. \LP 0, a \RP \RP\\
   &\qquad \T{Cons}\mapsto \LP x, \LP xs', r\RP\RP. \LP 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\LP x, a \RP \RP)\RB \{xs \mapsto n\}\ 0)\ n  \\
-  &= 1 \pplus_c (\llambda xs. 1 \pplus_c h(xs,0))\ n  \\
-  &= 1 \pplus_c (1 \pplus_c h(n,0)) \\
-  &= 1 \pplus_c (1 \pplus_c (2n,n)) \\
+  &= 1 +_c (\lambda xs. 1 +_c h(xs,0))\ n  \\
+  &= 1 +_c (1 +_c h(n,0)) \\
+  &= 1 +_c (1 +_c (2n,n)) \\
   &= (2 + 2n,n)
 \end{flalign*}
 
