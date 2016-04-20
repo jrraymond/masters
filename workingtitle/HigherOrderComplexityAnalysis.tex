@@ -353,9 +353,7 @@ Tuples are destructured using projections instead of \T{split}.
   \AxiomC{$\Gamma \vdash E : T_0 \times T_1$}
   \UnaryInfC{$\Gamma \vdash \pi_i E : T_i$}
   \DisplayProof
-  \quad
-  \AxiomC{$\Gamma, x : T_0 \vdash E : T_1$}
-  \UnaryInfC{$\Gamma \vdash \lambda x.E : T_0 \rightarrow T_1$}
+  \quad \AxiomC{$\Gamma, x : T_0 \vdash E : T_1$} \UnaryInfC{$\Gamma \vdash \lambda x.E : T_0 \rightarrow T_1$}
   \DisplayProof
 
   \bigskip
@@ -427,3 +425,99 @@ Figure \ref{fig:complexity_translation_types} and Figure
   \end{align*}
   %
 \end{figure}
+
+
+
+\section{Denotational Semantics}
+
+The denotational interpretation of the complexity language is standard. We
+interpret numbers as elements of $\mathbb{Z}$, tuples of type $\tau \times
+\sigma$ as elements of the cross-product of the set of values of type $\tau$
+and the set of values of type $\sigma$, lambda expressions of type $\tau \to
+\sigma$ as mathematical functions from the set of values of type $\tau$ to type
+$\sigma$, and application as mathematical function application. The nonstandard
+interpretations are those of datatype constructors and \T{rec}. Since datatypes
+are user-defined and there are multiple interpretations for a single datatype,
+the user must provide their own translation. For example we may decide to interpret
+\T{list} as their length.
+%
+\[
+  \LB \T{list} \RB = \mathbb{N}
+\]
+%
+Semantically, we need to distinguish between the constructors of a datatype, so
+we also define a semantic value $D^\T{list}$. $D^\T{list}$ is a sum type of the
+arguments to the \T{list} constructors. \T{list} has two constructors, \T{Nil},
+which has argument of type \T{unit}, and \T{Cons}, which has argument of type
+$\T{int} \times \T{list}$.
+%
+\[
+  D^\T{list} = \ast + \mathbb{Z} \times \mathbb{N}
+\]
+%
+We will write $C_i$ for the $i^{th}$ injection. $C_i$ takes us from the
+interpretation of the argument of a constructor to a value of type
+$D^\T{list}$, and we also need a function $size_{list}$ which takes us from
+$D^\T{list}$ back to $\llbracket \T{list} \rrbracket$. $size_\Delta$ is the
+programmers notion of size for user-defined datatypes. In this case, we want
+the size of a list to be its length. So our $size$ function is defined as follows.
+%
+\begin{align*}
+  size_{list} (\ast) &= 0 \\
+  size_{list}(i,n) &= 1 + n
+\end{align*}
+%
+There is a restriction on the definition of the $size$ function. The size of a
+value must be strictly greater than the size of any of its substructures of the
+same type. In this case it means the size of a $(1, n)$ must be strictly
+greater than the size of $(j, n-1)$.
+
+The interpretation of a datatype with constructor $C$ under the environment
+$\xi$ is
+%
+\[
+  \llbracket C\ e\rrbracket \xi = size(C (\llbracket e \rrbracket \xi))
+\]
+%
+In the \T{list} case, if $e$ is \T{Nil}, then the interpretation $\llbracket \T{Nil}
+\rrbracket$ is $size_{list}(C_0 \LB\LP\RP\RB)$, since the argument to the \T{Nil}
+constructor is $\LP\RP$. The interpretation of \T{unit} is $0$. So
+$size_{list}(C_0 \LB\LP\RP\RB = size_{list}(C_0\ 0)$. $C_0$ is the $0^{th}$
+injection from $\LB \Phi[\T{list}\ \RB$ to $D^\T{list}$.  So
+$size_{list}(C_0\ 0) = size_{list}(\ast)$. By our definition of
+$size_{list}$, $size_{list}(\ast) = 0$.
+
+
+
+The interpretation of \T{rec} is also nonstandard. To interpret \T{rec}, we
+introduce a semantic $case$ function.
+%
+\[
+  case^\delta : D^\delta \times \Uppi_{C} (S^{\LB \Phi_C[\delta]\RB} \to S^\tau) \to S^\tau
+\]
+%
+$S^T = \LB T \RB$ for each complexity type $T$. The interpretation of a \T{rec} is
+%
+\[
+  \LB rec^\delta(E^\delta, \overline{C \mapsto x^{\phi_C[\delta \times \tau]}.E_C^\tau}) \RB \xi = \bigvee\limits_{size(z) \leq \LB E \RB \xi} case(z, \overline{f_C})
+\]
+%
+where for each constructor $C$,
+%
+\[
+  f_C(x) = \LB E_C \RB \xi \{ x \mapsto map^{\Phi_C}(a.(a, \LB rec(w, \overline{C \mapsto x.E_C})\RB \xi \{ w \mapsto a \}), x) \}
+\]
+%
+Since we cannot predict which branch the \T{rec} will take, we must take the
+maximum over all possible branches to obtain an upper bound. Recall our
+restriction on the $size$ function that the size of a value must be strictly
+greater than the size of any of its substructure of the same type. This ensures
+the recursion used to interpret the \T{rec} expressions is well-defined.
+Continuing with the \T{list} example, the interpretation of \T{rec} on \T{list} is
+%
+\begin{align*}
+  \LB\T{rec}(E_0, \T{Nil} \mapsto E_\T{Nil}, \T{Cons} \mapsto x.E_\T{Cons})\RB &= \bigvee\limits_{size(z) \leq \LB E_0 \RB} case(z, f_{Nil}, f_{Cons}) \\
+  \text{where} \\
+  f_{Nil}(\ast) &= \LB E_\T{Nil} \RB \\
+  f_{Cons}(i,n) &= \LB E_\T{Cons} \RB
+\end{align*}
