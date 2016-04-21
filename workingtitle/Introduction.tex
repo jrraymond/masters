@@ -129,27 +129,53 @@ complexity analysis is also not compositional.
 \citet{Danner2007}, building on the work of others, introduced the
 idea that the complexity of an expression consists of a cost, representing an
 upper bound on the time it takes to evaluate the expression, and a potential,
-representing the cost of future uses of the expression.  The notion of a
-potential allows the analysis of higher-order expressions.  The complexity of a
-higher-order function such as \T{map} depends on the potential of its argument
-function.  They developed a type system for ATR, a call-by-value version of
-System T, that consists of a part restricting the sizes of values of
-expressions and a part restricting the cost of evaluating a expression.
-Programs written in ATR are constrained by the type system to run in less
-than type-2 polynomial time.  \citet{Danner2009} extended this work to express
-more forms of recursion, in particular those required by insertion sort and
-selection sort.
+representing the cost of future uses of the expression. They developed ATR, a
+variant of System T with call-by-value semantics and type system which
+restricted the evaluation time of programs. ATR programs are limited to second
+order, programs which take natural numbers and first-order programs as
+arguments. Programs written in ATR are garunteed to run in polynomial time. ATR
+is at least powerful enough to compute each type-2 basic feasible functionals
+characterized by \citet{KC96}. In order to limit the size of higher-order
+programs, the type system of ATR limits both the size of the values of
+expressions and the time required to evaluate an expression. A type-2 function
+takes a function as an argument. In order to restrict the cost of evaluating
+the type-2 function, we need to restrict the size of the output of the argument.
+\citet{Danner2009} extended the ATR formalism with more forms of recursion, in
+particular those required by insertion sort and selection sort.
+
+%Consider the
+%Ackermann function.
+%%
+%\[
+%  A(n,m) =
+%  \begin{cases}
+%    n + 1              &\text{if } m=0 \\
+%    A(m-1,1)           &\text{if } m>0 \text{ and } n=0 \\
+%    A(m-1, A(m, n-1))  &\text{if } m>0 \text{ and } n>0
+%  \end{cases}
+%\]
+%%
+%The Ackerman function is definable in System T \citet{Harper2012PFPL}. Let
+%\T{it:(nat$\to$nat)$\to$nat$\to$nat$\to$nat} be the function
+%%
+%type-2 function which composes its arguments.
+%%
+%\[
+%  \lambda f.\lambda g.\lambda x. f\ (g\ x)
+%\]
+%%
+%In order to restrict the cost of this function we need to restrict the size of
+%the result of $g\ x$. This is why the type system restricts both the cost the
+%evaluate an expression to a value and the size of the value of an expression.
 
 
 
-\citet{Danner2013} utilized the notion of thinking of the complexity of an
-expression as a pair of a cost and a potential to statically analyze the
-complexity of a higher-order functional language with structural list
-recursion.  The expressions in the higher-order functional language with
-structural list recursion, referred to as the source language, are mapped to
-expressions in a complexity language by a translation function.  The translated
-expression describes an upper bound on the complexity of the original programs.
-
+Instead of implicitly restricting the complexity of programs as in ATR, the work of
+\citet{Danner2013} focused on constructing recurrences that bound the
+complexity of a program. The programs are written in a version of System T with
+structural list recursion, referred to as the source langugage. The recurrences
+for the cost of evaluating source language programs are constructed by
+translating the source language into a complexity language.
 
 
 \citet{Danner2015} built on this work to formalize the extraction
