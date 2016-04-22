@@ -14,7 +14,25 @@ and typing judgments of the source language are given in Figure
 \ref{fig:source_lang_syntax_types}. Evaluation is call-by-value and the rules
 for evaluation are given in Figure \ref{fig:source_lang_oper_sem}.
 
+\paragraph{}
+We use big-step operational cost semantics. Small-step operational semantics
+provide an indirect notion of number of steps required to evaluate a program to
+a value. Big-step operational semantics do not allow this since intermediate
+evaluation steps are suppressed. Big-step operational semantics introduce a
+notion of cost by using evaluation judgements of the form $e \downarrow^n v$.
+For example the evaluation judgement for a tuple is
+%
+\begin{prooftree}
+  \AxiomC{$e_0 \downarrow^{n_0} v_0$}
+  \AxiomC{$e_1 \downarrow^{n_1} v_1$}
+  \BinaryInfC{$\LP e_0,e_1 \RP \downarrow^{n_0 + n_1} \LP v_0,v_1\RP$}
+\end{prooftree}
+%
+This judgement reads if $e_0$ evaluates to a value $v_0$ in $n_0$ steps and
+$e_1$ evaluates to a value $v_1$ in $n_1$ steps, then the tuple $\LP
+e_0,v_0\RP$ evaluates to the value $\LP v_0,v_1\RP$ in $n_0+n_1$ steps.
 
+\paragraph{}
 A program using datatypes must have a top-level signature $\psi$ consisting of
 datatype declarations of the form
 %
@@ -30,6 +48,7 @@ represents a pair of arguments.  The constant exponential $\tau \rightarrow \phi
 represents a function type.  The introduction forms for datatypes are the
 constructors.  The elimination form for a datatype is the \T{rec} construct.
 
+\paragraph{}
 To give the reader a better understanding of the source language, we will
 implement a small program, explaining the syntax and semantics we need as we
 go.  We define an \T{list} datatype in the source language below.
@@ -60,7 +79,19 @@ recursion on datatypes.
 The \T{rec} is a branch on an expression. The expression is evaluated to a
 value, and the branch of the \T{rec} matching the outermost constructor of the
 value is taken. Inside the each branch of the \T{rec}, the variable $x$ is a
-value of type $\phi_C[\delta \times \T{susp } \tau]$.
+value of type $\phi_C[\delta \times \T{susp } \tau]$. A suspension is an
+unevaluated computation.  A suspension has type \T{susp} $\tau$ where $\tau$ is
+the type of the suspended computation.
+
+\paragraph{}
+Suspensions are introduced using the \T{delay}$(e)$ operator.  Suspensions are
+eliminated using the \T{force}$(e)$ operator, which evaluates the suspended
+computation. The \T{rec} construct makes available all recursive calls.
+Suspensions are necessary to avoid charging for recursive calls that are not
+actually used.
+
+\paragraph{}
+The operational semantics for \T{rec} are
 %
 \begin{prooftree}
   \AxiomC{$e \downarrow^{n_0} C v_0$}
@@ -78,7 +109,7 @@ $\phi[\sigma] \rightarrow \phi[\tau]$. To understand the role of \T{map} in
 \]
 %
 
-
+\paragraph{}
 The first case, $xs$ is \T{Nil}, so according to the operational semantics,
 $e \downarrow \T{Nil} \LP\RP$ in $0$ steps. Next
 %
@@ -97,7 +128,7 @@ is evaluated to a value $v_1$. We substitute $v_1$ for $z$ in the body of the
 So the \T{map} evaluates to $\LP\RP$.
 
 
-
+\paragraph{}
 In the second case, the outermost constructor of $xs$ is \T{Cons}. Let the
 argument to this constructor be the tuple $\LP x,xs'\RP$. So the map expression
 is
@@ -151,13 +182,8 @@ the recursive call on the tail of the list. Since it is  suspended, we need to
 use the \T{force} function to evaluate it.
 
 
-A suspension is an unevaluated computation.  A suspension has type \T{susp}
-$\tau$ where $\tau$ is the type of the suspended computation.  Suspensions are
-introduced using the \T{delay}$(e)$ operator.  Suspensions are eliminated using
-the \T{force}$(e)$ operator, which evaluates the suspended computation.
 
-
-\begin{figure}[H]
+\begin{figure}
   \caption{Source language syntax and types}
   \label{fig:source_lang_syntax_types}
   Types
@@ -238,7 +264,7 @@ the \T{force}$(e)$ operator, which evaluates the suspended computation.
 \end{figure}
 
 
-\begin{figure}[H]
+\begin{figure}
   \caption{Source language valid signatures, types, and constructor arguments}
   \label{fig:source_lang_sigs_types_constructors}
 
@@ -312,7 +338,7 @@ the \T{force}$(e)$ operator, which evaluates the suspended computation.
 \end{figure}
 
 
-\begin{figure}[H]
+\begin{figure}
   \caption{Source language operational semantics}
   \label{fig:source_lang_oper_sem}
 
@@ -395,7 +421,7 @@ Suspensions are no longer present.
 
 Tuples are destructured using projections instead of \T{split}.
 
-\begin{figure}[H]
+\begin{figure}
   \caption{Complexity language types, expressions, and typing judgments}
   \label{fig:complexity_lang}
 
@@ -477,7 +503,7 @@ The translation from the source language to the complexity language is given in
 Figure \ref{fig:complexity_translation_types} and Figure
 \ref{fig:complexity_translation_expressions}.
 %
-\begin{figure}[H]
+\begin{figure}
   \caption{Translation from source language to complexity language types.}
   \label{fig:complexity_translation_types}
   %
@@ -503,7 +529,7 @@ Figure \ref{fig:complexity_translation_types} and Figure
   %
 \end{figure}
 %
-\begin{figure}[H]
+\begin{figure}
   \caption{Translation from source language to complexity language expressions.}
   \label{fig:complexity_translation_expressions}
   \begin{align*}
