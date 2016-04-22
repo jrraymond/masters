@@ -11,22 +11,8 @@ products, suspensions, user-defined inductive datatypes and a recursion
 construct. Valid signatures, types, and constructor arguments are given in
 Figure \ref{fig:source_lang_sigs_types_constructors}. The types, expressions,
 and typing judgments of the source language are given in Figure
-\ref{fig:source_lang_syntax_types}.  Evaluation is call-by-value and the rules
+\ref{fig:source_lang_syntax_types}. Evaluation is call-by-value and the rules
 for evaluation are given in Figure \ref{fig:source_lang_oper_sem}.
-
-\T{unit} is a singleton type with only one inhabitant, the value
-$\LP\RP$, also called unit.
-
-Product types are a compound types consisting of an ordered pair of types.
-Products are introduced using $\LP e_0, e_1 \RP$ Since evaluation is
-call-by-value, products are strict.  So both expressions of in product must be
-evaluated before the product may be destructured.  Products are eliminated
-using \T{split}.
-
-A suspension is an unevaluated computation.  A suspension has type \T{susp}
-$\tau$ where $\tau$ is the type of the suspended computation.  Suspensions are
-introduced using the \T{delay}$(e)$ operator.  Suspensions are eliminated using
-the \T{force}$(e)$ operator, which evaluates the suspended computation.
 
 
 A program using datatypes must have a top-level signature $\psi$ consisting of
@@ -44,20 +30,131 @@ represents a pair of arguments.  The constant exponential $\tau \rightarrow \phi
 represents a function type.  The introduction forms for datatypes are the
 constructors.  The elimination form for a datatype is the \T{rec} construct.
 
+To give the reader a better understanding of the source language, we will
+implement a small program, explaining the syntax and semantics we need as we
+go.  We define an \T{list} datatype in the source language below.
+%
+\[
+  \T{datatype list = Nil of unit | Cons of int$\times$list}
+\]
+%
+\T{unit} is a singleton type with only one inhabitant, the value
+$\LP\RP$, also called unit.
 
-The \T{rec} construct allows for structural recursion.  \T{rec} is given an
-argument to recurse on and a sequence of statements corresponding to each
-constructor for the datatype of the first argument.  The first argument to
-\T{rec} is evaluated to a value, and then depending on the outermost
-constructor of the value, \T{rec} evaluates to the appropriate branch.
 
-
+The \T{listmap} function applies a function to each element in a list.
+%
+\[
+  \T{listmap f xs} = \T{rec}(xs, \T{Nil} \mapsto z.\T{Nil}, \T{Cons} \mapsto z.\T{Cons}\LP\pi_0 z, \T{force}(\pi_1\pi_1 z)\RP)
+\]
+%
+This function uses the \T{rec} construct, which is how we do structural
+recursion on datatypes.
+%
+\begin{prooftree}
+\AxiomC{$\gamma \vdash e : \delta$}
+\AxiomC{$\forall C . \gamma, x : \phi_C[\delta \times \T{susp}\ \tau] \vdash e_C : \tau$}
+\BinaryInfC{$\gamma \vdash \T{rec}^\delta(e, \overline{C \mapsto x.e_C}) : \tau$}
+\end{prooftree}
+%
+The \T{rec} is a branch on an expression. The expression is evaluated to a
+value, and the branch of the \T{rec} matching the outermost constructor of the
+value is taken. Inside the each branch of the \T{rec}, the variable $x$ is a
+value of type $\phi_C[\delta \times \T{susp } \tau]$.
+%
+\begin{prooftree}
+  \AxiomC{$e \downarrow^{n_0} C v_0$}
+  \AxiomC{$\T{map}^{\phi_C}(y.\LP y, \T{delay}(\T{rec}(y, \overline{C \mapsto x.e_C}))\RP, v_0) \downarrow^{n_1} v_1$}
+  \AxiomC{$e_C[v_1/x] \downarrow^{n_2} v$}
+  \TrinaryInfC{$rec(e, \overline{C \mapsto x.e_C}) \downarrow^{1 + n_0 + n_1 + n_2} v$}
+\end{prooftree}
+%
 \T{map} is used to lift functions from $\sigma \rightarrow \tau$ to
-$\phi[\sigma] \rightarrow \phi[\tau]$. \T{map} is restricted to syntactic
-values and is used in the operational semantics to insert recursive calls in
-their places. For example, if recursing on a value that does not contain a
-recursive occurrence of a datatype, such as a boolean or a tree leaf, then
-\T{map} does not insert a recursive call anywhere.
+$\phi[\sigma] \rightarrow \phi[\tau]$. To understand the role of \T{map} in
+\T{rec}, let us consider the two branches of \T{rec} in \T{listmap}.
+%
+\[
+  \text{Let } E = \T{rec}(y, \T{Nil} \mapsto \T{Nil}, \T{Cons} \mapsto z.\T{Cons}\LP\pi_0 z, \T{force}(\pi_1\pi_1 z)\RP)
+\]
+%
+
+
+The first case, $xs$ is \T{Nil}, so according to the operational semantics,
+$e \downarrow \T{Nil} \LP\RP$ in $0$ steps. Next
+%
+\[
+  \T{map}^{\phi_\T{Nil}}(y,\LP y, \T{delay}(E)\RP, \LP\RP)
+\]
+%
+is evaluated to a value $v_1$. We substitute $v_1$ for $z$ in the body of the
+\T{Nil} branch and evaluate the body to a value to get our result.
+%
+\begin{prooftree}
+  \AxiomC{}
+  \UnaryInfC{$\T{map}^\tau(x.v, v_0) \downarrow^0 v_0$}
+\end{prooftree}
+%
+So the \T{map} evaluates to $\LP\RP$.
+
+
+
+In the second case, the outermost constructor of $xs$ is \T{Cons}. Let the
+argument to this constructor be the tuple $\LP x,xs'\RP$. So the map expression
+is
+%
+\[
+  \T{map}^{\phi_\T{Cons}}(y,\LP y,\T{delay}(E)\RP, (x, xs') \RP)
+\]
+%
+To evaluate the \T{map} expression, we use the rule for mapping over a pair.
+%
+\begin{prooftree}
+  \AxiomC{$\T{map}^{\phi_0}(x.v, v_0) \downarrow^{n_0} v_0'$}
+  \AxiomC{$\T{map}^{\phi_1}(x.v, v_1) \downarrow^{n_1} v_1'$}
+  \BinaryInfC{$\T{map}^{\phi_0 \times \phi_1}(x.v, \LP v_0, v_1 \RP) \downarrow^{n_0 + n_1} \LP v_0', v_1'\RP$}
+\end{prooftree}
+%
+We apply the rule for mapping over a pair.
+%
+\[
+  \LP \T{map}^\T{int}(y,\LP y,\T{delay}(E)\RP, x), \T{map}^{\phi_\T{susp list}}(y,\LP y,\T{delay}(E)\RP, xs')\RP
+\]
+%
+The first \T{map} is over a nonrecursive occurence of \T{list}. Recall the rule
+for evaluating this \T{map}.
+%
+\begin{prooftree}
+  \AxiomC{}
+  \UnaryInfC{$\T{map}^\tau(x.v, v_0) \downarrow^0 v_0$}
+\end{prooftree}
+%
+So the first \T{map} evaluates to $x$.
+
+
+The second map is over a recursive occurence of \T{list}. The rule to
+evaluate this \T{map} is
+%
+\begin{prooftree}
+  \AxiomC{}
+  \UnaryInfC{$\T{map}^t(x.v, v_0) \downarrow^0 v[v_0/x]$}
+\end{prooftree}
+%
+The result of the \T{map} over the second element of the tuple is $\LP y,
+\T{delay}(E) \RP[xs'/y] = \LP xs',\T{delay}(E[xs'/y])\RP$. So the result of the
+\T{map} over the tuple is $\LP x, \LP xs', \T{delay}(E[xs'/y])\RP\RP$. Recall
+the body of the \T{Cons} branch of the \T{rec} is $\T{Cons}\LP f \pi_0 z,
+\T{force}(\pi_1\pi_1 z)\RP$. We have just shown how the \T{map} expression
+results in the term $\LP x, \LP xs',\T{delay}(E[xs'/z])\RP\RP$. This is the
+term $z$ is bound to inside the body of the \T{Cons} branch. So $\pi_0 z$ is
+the head of the list and $\pi_1\pi_1 z$ is a suspended computation representing
+the recursive call on the tail of the list. Since it is  suspended, we need to
+use the \T{force} function to evaluate it.
+
+
+A suspension is an unevaluated computation.  A suspension has type \T{susp}
+$\tau$ where $\tau$ is the type of the suspended computation.  Suspensions are
+introduced using the \T{delay}$(e)$ operator.  Suspensions are eliminated using
+the \T{force}$(e)$ operator, which evaluates the suspended computation.
 
 
 \begin{figure}[H]
