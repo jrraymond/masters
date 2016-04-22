@@ -173,9 +173,41 @@ particular those required by insertion sort and selection sort.
 Instead of implicitly restricting the complexity of programs as in ATR, the work of
 \citet{Danner2013} focused on constructing recurrences that bound the
 complexity of a program. The programs are written in a version of System T with
-structural list recursion, referred to as the source langugage. The recurrences
-for the cost of evaluating source language programs are constructed by
-translating the source language into a complexity language.
+structural list recursion, referred to as the source language.  Programs in the
+source language are limited to integers and integer lists, with structural
+recursion on lists the only recursion construct.  A translation function maps
+source language programs to recurrences in a complexity language.  It is not
+possible for the user to define their own datatypes. The result of the
+translation of a source language program is a complexity. The complexity
+consists of a cost and a potential. The cost is a bound on the execution cost
+of the program and the potential is the size of the result of evaluating the
+program. To understand why the complexity must have both a cost and a
+potential, consider the higher-order program \T{foldr} over a list.
+%
+\begin{lstlisting}
+foldr f z xs =
+  case xs of
+    [] -> z
+    x:xs' -> f x (fold f z xs')
+\end{lstlisting}
+%
+To analyze the cost of applying \T{f} at each step of the fold, we must have a
+bound on the size of \T{x} and \T{fold f z xs'}. In other words, the analysis
+must give produce a bound on the cost of the recursive call and a bound on the
+size of the recursive call.
+
+Costs and potentials also enable compositional analysis. Consider the
+composition of two \T{map sort} and \T{permutations}.
+%
+\begin{lstlisting}
+map sort $\circ$ permutations
+\end{lstlisting}
+%
+To analyze the cost of \T{map sort}, we must have a bound on its input size.
+The input size to \T{map sort} is the output of \T{permutations}. So our
+analysis of permutations must produce a cost bound and a size bound, which we
+can use to produce a cost bound for \T{map sort}.
+
 
 
 \citet{Danner2015} built on this work to formalize the extraction
