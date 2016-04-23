@@ -1,0 +1,68 @@
+\documentclass[pdf]{beamer}
+\usepackage{lmodern}
+\usepackage{listings}
+
+\mode<presentation>{}
+
+\newcommand{\T}[1]{\texttt{#1}}
+\newsavebox{\codebox}
+\lstset{mathescape=true, basicstyle=\ttfamily}
+\newcommand{\LP}{\langle}
+\newcommand{\RP}{\rangle}
+
+\title{Extracting Cost Recurrences from Sequential and Parallel Functional Programs}
+
+\author{Justin Raymond}
+
+
+\begin{document}
+
+\begin{lrbox}{\codebox}
+  \begin{lstlisting}
+  rev xs = $\lambda$xs.rec(xs,
+     Nil $\mapsto$ $\lambda$a.a,
+     Cons$\mapsto$b.split(b,x.c.split(c,xs'.r.
+        $\lambda$a.force(r) Cons$\LP$x,a$\RP$))) Nil
+  \end{lstlisting}
+\end{lrbox}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{Abstract}
+Complexity analysis aims to predict the resources, most often time and space,
+which a program requires.  We build on previous work by Danner2013 and
+Danner2015 which formalizes the extraction of recurrences for evaluation
+cost from higher order functional programs. Source language programs are
+translated into a complexity language. The translation of an expression is a
+pair of a cost, a bound on the cost of evaluating the program to a value, and a
+potential, the cost of future use of the value. We use the formalization to
+analyze the time complexity of higher order functional programs. We also
+demonstrate the flexibility of the method by extending it to parallel cost
+semantics. Costs are cost graphs, which express dependencies between
+subcomputations in the program. We prove by logical relations that the
+extracted recurrences are an upper bound on the evaluation cost of the original
+program. We also give examples of the analysis of higher order functional
+programs under the parallel evaluation semantics.
+\end{frame}
+
+
+\begin{frame}{Fast Reverse}
+  \begin{itemize}
+    \item<2->
+      Specification of \T{rev}.
+      \T{rev [$x_0,\dots,x_{n-1}$] = [$x_{n-1},\dots,x_0$]}
+    \item<3->
+      \[
+        \T{datatype list} = \T{Nil of unit}\ |\ \T{Cons of int} \times \T{list}
+      \]
+    \item<4->
+      \usebox{\codebox}
+    \item<5->
+      Specification of auxilary function
+      \T{rec($[x_0,\dots,x_{n-1}],\dots$) [$y_0,\dots,y_{m-1}$] = [$x_{n-1},\dots,x_0,y_0,\dots,y_{m-1}$]}
+  \end{itemize}
+\end{frame}
+
+\end{document}

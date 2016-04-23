@@ -22,6 +22,8 @@
 *.out
 *.synctex.gz
 *.pdf
+*.nav
+*.snm
 
 *.swo
 *.swp
