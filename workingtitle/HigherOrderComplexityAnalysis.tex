@@ -1,13 +1,14 @@
 \chapter{Higher Order Complexity Analysis}
-
+\paragraph{}
 Programs are written in the source language. Then the program is translated
 to a complexity language. The semantic interpretation of the complexity
 language program may be used to analyse the complexity of the original
 program.
 
 \section{Source Language}
+\paragraph{}
 The source language is the simply typed lambda calculus with \T{Unit},
-products, suspensions, user-defined inductive datatypes and a recursion
+products, suspensions, programmer-defined inductive datatypes and a recursion
 construct. Valid signatures, types, and constructor arguments are given in
 Figure \ref{fig:source_lang_sigs_types_constructors}. The types, expressions,
 and typing judgments of the source language are given in Figure
@@ -151,7 +152,7 @@ We apply the rule for mapping over a pair.
   \LP \T{map}^\T{int}(y,\LP y,\T{delay}(E)\RP, x), \T{map}^{\phi_\T{susp list}}(y,\LP y,\T{delay}(E)\RP, xs')\RP
 \]
 %
-The first \T{map} is over a nonrecursive occurence of \T{list}. Recall the rule
+The first \T{map} is over a non-recursive occurrence of \T{list}. Recall the rule
 for evaluating this \T{map}.
 %
 \begin{prooftree}
@@ -162,7 +163,7 @@ for evaluating this \T{map}.
 So the first \T{map} evaluates to $x$.
 
 
-The second map is over a recursive occurence of \T{list}. The rule to
+The second map is over a recursive occurrence of \T{list}. The rule to
 evaluate this \T{map} is
 %
 \begin{prooftree}
@@ -181,6 +182,12 @@ the head of the list and $\pi_1\pi_1 z$ is a suspended computation representing
 the recursive call on the tail of the list. Since it is  suspended, we need to
 use the \T{force} function to evaluate it.
 
+
+\paragraph{}
+The $\T{let}(e_0,x.e_1)$ syntactic construct serves the purpose avoiding
+recomputation of values. If $e_0$ is an expensive computation that occurs more
+than once in $e_1$, we can use \T{let} to compute $e_0$ and use the result
+inside $e_1$ multiple times without paying cost multiple times.
 
 
 \begin{figure}
@@ -414,12 +421,47 @@ use the \T{force} function to evaluate it.
 
 \section{Complexity Language}
 
-The types, expressions, and typing judgments of the complexity language are given in Figure \ref{fig:complexity_lang}.
-The complexity language is similar to the source language with a few exceptions.
+\paragraph{}
+The types, expressions, and typing judgments of the complexity language are
+given in Figure \ref{fig:complexity_lang}.  The complexity language is similar
+to the source language with a few exceptions.
 
-Suspensions are no longer present.
+\paragraph{}
+Suspensions are no longer present in the complexity language. Recall
+suspensions served the purpose of avoiding charging costs in unused recursive
+calls during the translation into the complexity language. Since the complexity
+language program has already been translated, the complexity language does not
+need suspensions.
 
-Tuples are destructured using projections instead of \T{split}.
+\paragraph{}
+Another difference is tuples are deconstructed using projection functions
+instead of \T{split}. In the source language, to add two elements of a tuple
+together we write
+%
+\[
+  \lambda p.\T{split}(p,x_0.x_1.x_0 + x_1)
+\]
+%
+In the complexity language we write
+%
+\[
+  \lambda p.\pi_0 p + \pi_1 p
+\]
+%
+
+\paragraph{}
+The \T{map} function is treated as a macro $\T{map}^\Phi$ in the complexity
+language. The macro is defined by $\Phi$ and the definition mirrors the
+semantics of \T{map} in the source language.
+%
+\begin{align*}
+  \T{map}^t(x.E,E_0) &= E[E_0/x] \\
+  \T{map}^T(x.E,E_0) &= E_0 \\
+  \T{map}^{\Phi_0\times\Phi_1}(x.E,E_0) &= \LP\T{map}^{\Phi_0}(x.E,\pi_0 E_0), \T{map}^{\Phi_1}(x.E,\phi_1 E_1)\RP \\
+  \T{map}^{T \to \Phi}(x.E,E_0) = \lambda y.\T{map}^\Phi(x.E,E_0\ y)
+\end{align*}
+%
+
 
 \begin{figure}
   \caption{Complexity language types, expressions, and typing judgments}
@@ -529,6 +571,24 @@ Figure \ref{fig:complexity_translation_types} and Figure
   %
 \end{figure}
 %
+We denote the complexity translation of a source language expression $e$ as
+$\|e\|$. We refer to complexity language expressions of type \textbf{C} as
+\textit{costs}, complexity language expressions of type $\llangle \tau \rrangle$ as
+\textit{potentials}, and complexity language expressions of type
+$\textbf{C}\times \llangle \tau \rrangle$ as \textit{complexities}.
+\paragraph{}
+Examining the translation of source language types to complexity language types
+in Figure \ref{fig:complexity_translation_types}, we see that the translation
+of a source language expression of type $\tau$ is
+$\textit{C}\times\llangle\tau\rrangle$.  The first element is the cost, a bound
+on the cost of evaluating the expression, and the second element is the
+potential, an expression for the size of the value.  The potential translation
+of types \T{unit} and $\delta$ is the corresponding complexity language types
+\T{unit} and $\delta$. The potential translation of a product type is the
+complexity language type of a product of the potential translations of the
+components of the product type.
+TODO EXPLAIN TRANSLATION MORE
+%
 \begin{figure}
   \caption{Translation from source language to complexity language expressions.}
   \label{fig:complexity_translation_expressions}
@@ -553,21 +613,23 @@ Figure \ref{fig:complexity_translation_types} and Figure
 
 \section{Denotational Semantics}
 
+\paragraph{}
 The denotational interpretation of the complexity language is standard. We
 interpret numbers as elements of $\mathbb{Z}$, tuples of type $\tau \times
 \sigma$ as elements of the cross-product of the set of values of type $\tau$
 and the set of values of type $\sigma$, lambda expressions of type $\tau \to
-\sigma$ as mathematical functions from the set of values of type $\tau$ to type
-$\sigma$, and application as mathematical function application. The nonstandard
-interpretations are those of datatype constructors and \T{rec}. Since datatypes
-are user-defined and there are multiple interpretations for a single datatype,
-the user must provide their own translation. For example we may decide to interpret
-\T{list} as their length.
+\sigma$ as mathematical functions from the set of values of type $\tau$ to the
+set of values of type $\sigma$, and application as mathematical function
+application. The nonstandard interpretations are those of datatype constructors
+and \T{rec}. Since datatypes are programmer-defined and there are multiple
+interpretations for a single datatype, the programmer must provide their own
+translation. For example we may decide to interpret \T{list} as their length.
 %
 \[
   \LB \T{list} \RB = \mathbb{N}
 \]
 %
+\paragraph{}
 Semantically, we need to distinguish between the constructors of a datatype, so
 we also define a semantic value $D^\T{list}$. $D^\T{list}$ is a sum type of the
 arguments to the \T{list} constructors. \T{list} has two constructors, \T{Nil},
@@ -578,12 +640,13 @@ $\T{int} \times \T{list}$.
   D^\T{list} = \ast + \mathbb{Z} \times \mathbb{N}
 \]
 %
-We will write $C_i$ for the $i^{th}$ injection. $C_i$ takes us from the
-interpretation of the argument of a constructor to a value of type
-$D^\T{list}$, and we also need a function $size_{list}$ which takes us from
+We will write $C_i$ for the $i^{th}$ injection into $D^\T{list}$. $C_i$ takes
+us from the interpretation of the argument of a constructor to a value of type
+$D^\T{list}$. We also need a function $size_{list}$ which takes us from
 $D^\T{list}$ back to $\llbracket \T{list} \rrbracket$. $size_\Delta$ is the
-programmers notion of size for user-defined datatypes. In this case, we want
-the size of a list to be its length. So our $size$ function is defined as follows.
+programmers notion of size for programmer-defined datatypes. In this case, we want
+the size of a list to be its length. So our $size$ function is defined as
+follows.
 %
 \begin{align*}
   size_{list} (\ast) &= 0 \\
@@ -592,9 +655,17 @@ the size of a list to be its length. So our $size$ function is defined as follow
 %
 There is a restriction on the definition of the $size$ function. The size of a
 value must be strictly greater than the size of any of its substructures of the
-same type. In this case it means the size of a $(1, n)$ must be strictly
-greater than the size of $(j, n-1)$.
+same type. In the case of \T{list}, the restriction means the size of a $(1,
+n)$ must be strictly greater than the size of $(j, n-1)$.
 
+\paragraph{}
+In general, when we interpret a source language with programmer-defined
+datatypes, for each datatype $\Delta$ we must define an interpretation $\LB
+\Delta \RB$, a set $D^\Delta$, and a function $size : D^\Delta -> \LB \Delta
+\RB$.
+
+
+\paragraph{}
 The interpretation of a datatype with constructor $C$ under the environment
 $\xi$ is
 %
@@ -611,7 +682,7 @@ $size_{list}(C_0\ 0) = size_{list}(\ast)$. By our definition of
 $size_{list}$, $size_{list}(\ast) = 0$.
 
 
-
+\paragraph{}
 The interpretation of \T{rec} is also nonstandard. To interpret \T{rec}, we
 introduce a semantic $case$ function.
 %
@@ -636,7 +707,7 @@ maximum over all possible branches to obtain an upper bound. Recall our
 restriction on the $size$ function that the size of a value must be strictly
 greater than the size of any of its substructure of the same type. This ensures
 the recursion used to interpret the \T{rec} expressions is well-defined.
-Continuing with the \T{list} example, the interpretation of \T{rec} on \T{list} is
+Continuing with the \T{list} example, the interpretation of \T{rec} on a \T{list} is
 %
 \begin{align*}
   \LB\T{rec}(E_0, \T{Nil} \mapsto E_\T{Nil}, \T{Cons} \mapsto x.E_\T{Cons})\RB &= \bigvee\limits_{size(z) \leq \LB E_0 \RB} case(z, f_{Nil}, f_{Cons}) \\

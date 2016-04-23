@@ -194,7 +194,7 @@ application.
 %
 \subsection{Interpretation}
 %
-We intepret the size of an \T{list} to be the number of \T{Cons} constructors.
+We interpret the size of an \T{list} to be the number of \T{Cons} constructors.
 %
 \begin{align*}
   \LB \T{list} \RB &= \mathbb{N}^\infty \\
@@ -328,20 +328,23 @@ and when $size\ z = n$.
 \end{description}
 %
 We use the substitution method to solve the recurrence.
+%
 \begin{lemma}
-  $g(n) = (4n^2 + 1, n)$
+  $g(n) = (\frac{n^2}{2} + \frac{9n}{2} + 1, n)$
 \end{lemma}
 \begin{proof}
   We prove this by induction on $n$.
   \begin{description}
     \item[case $n=0$]\hfill \\
-      $g(0) = (1, 0) = (4\dot0^2 + 1, 0)$.
+      $g(0) = (1, 0)$.
     \item[case $n>0$]\hfill \\
       \begin{align*}
         g(n) &= (4 + g_c(n-1) + g_p(n-1), 1 + g_p(n-1)) \\
-             &= (4 + (4(n-1)^2 + 1) + n - 1, 1 + n - 1) \\
-             &= (4 + 4n^2 - 8n + 4 + n, n) \\
-             %&=TODO: this was wrong \#jetfuelcantmeltstealbeams
+             &= (4 + (\frac{(n-1)^2}{2} + \frac{9(n-1)}{2} + 1) + n, n) \\
+             &= (\frac{n^2}{2} + \frac{9n}{2} + 1, n)
       \end{align*}
   \end{description}
 \end{proof}
+%
+We see that the size of the result of reverse is equal to the size of the input
+and that the cost is quadratic in the length of the input.

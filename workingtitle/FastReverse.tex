@@ -1,60 +1,62 @@
 \chapter{Sequential Recurrence Extraction Examples}
 % ---------------------------------------- FAST REVERSE ----------------------------------------
 \section{Fast Reverse}
+\paragraph{}
 Fast reverse is an implementation reverse in linear time complexity.
 A naive implementation of reverse appends the head of the list to recursively
 reversed tail of  the list. Fast reverse instead uses an abstraction to delay
 the consing. As this is the first example, we will walk through the translation
-and interpretation in gory detail. In following examples we will relegate the
-walk-through of the translation to the appendices, where the reader can peruse
-them, perhaps over a glass of carbenet sauvignon, as a relaxing end to a
-stressful day.
+and interpretation in gory detail.
 
-The definition of the list datatype holds no suprises.
-\[ \T{datatype list} = \T{Nil of unit}\ |\ \T{Cons of int} \times \T{list} \]
-
+\paragraph{}
+The definition of the list datatype holds no surprises.
+%
+\[
+  \T{datatype list} = \T{Nil of unit}\ |\ \T{Cons of int} \times \T{list}
+\]
+%
 The implementation of fast reverse is not obvious. We write a function \T{rev}
-that applies an auxilary function to an empty list to produce the result.  The
+that applies an auxiliary function to an empty list to produce the result.  The
 specification of reverse is \T{rev [$x_0,\dots,x_{n-1}$] =
-[$x_{n-1},\dots,x_0$]}. The specification of the auxilary function
+[$x_{n-1},\dots,x_0$]}. The specification of the auxiliary function
 \T{rec(xs,$\dots$)} is \T{rec($[x_0,\dots,x_{n-1}],\dots$)
 [$y_0,\dots,y_{m-1}$] = [$x_{n-1},\dots,x_0,y_0,\dots,y_{m-1}$]}.
-
+%
 \begin{lstlisting}
 rev xs = $\lambda$xs.rec(xs,
                Nil $\mapsto$ $\lambda$a.a,
                Cons$\mapsto$b.split(b,x.c.split(c,xs'.r.
                         $\lambda$a.force(r) Cons$\LP$x,a$\RP$))) Nil
 \end{lstlisting}
-
+%
 Notice that the implementation of \T{rev} would be much cleaner if we where
 able to pattern match on cases of the \T{rec}. Below is \T{rev} written with
 this syntactic sugar.
-
+%
 \begin{lstlisting}
 rev = $\lambda$xs.rec(xs, Nil $\mapsto \lambda$a.a,
               Cons$\mapsto\LP$y$\LP$ys,r$\RP\RP$.$\lambda$b.force(r) Cons$\LP$x,b$\RP$) Nil
 \end{lstlisting}
-
+%
 Each recursive call creates an abstraction that applies the recursive call on
 the tail of the list to the list created by consing the head of the list onto
 the abstraction argument. The recursive calls builds nested abstractions as
 deep as the length of the list which is collapsed by application of the
-outermost abastraction to \T{Nil}. Below we show the evaluation of \T{rev}
+outermost abstraction to \T{Nil}. Below we show the evaluation of \T{rev}
 applied to a small list of just two elements.
-
+%
 \begin{lstlisting}
 rev (Cons$\LP$0,Cons$\LP$1, Nil$\RP\RP$) $\to$
   rec(Cons$\LP$0,Cons$\LP$1,Nil$\RP\RP$,
       Nil $\mapsto\lambda$a.a
       Cons$\mapsto$b.split(b,x.c.split(c,xs'.r.
                $\lambda$a.force(r) Cons$\LP$x,a$\RP$))) Nil
-  $\to^* (\lambda$a0.($\lambda$a1.($\lambda$a2.a2) Cons$\LP$1,a1$\RP$) Cons$\LP$0,a0$\RP$) Nil
+  $\to^*_\beta (\lambda$a0.($\lambda$a1.($\lambda$a2.a2) Cons$\LP$1,a1$\RP$) Cons$\LP$0,a0$\RP$) Nil
   $\to_\beta$ ($\lambda$a1.($\lambda$a2.a2) Cons$\LP$1,a1$\RP$) Cons$\LP$0,Nil$\RP$
   $\to_\beta$ ($\lambda$a2.a2) Cons$\LP$1,Cons$\LP$0,Nil$\RP\RP$
   $\to_\beta$ Cons$\LP$1,Cons$\LP$0,Nil$\RP\RP$
 \end{lstlisting}
-
+%
 % -------------------- BEGIN REV TRANSLATION SPLIT --------------------
 \subsection{Translation}
 We will walk through the translation from the source language to the complexity
@@ -80,7 +82,7 @@ $\|\lambda x. e\| = \LP 0, \lambda x. \|e\|\RP$.
 The next translation is an application. The rule for translating an application is
 $\|e_0\ e_1\| = (1 + \|e_0\|_c + \|e_1\|_c) +_c (\|e_0\|_p\ \|e_1\|_p)$.
 In this case, \T{rec(...)} is $e_0$ and \T{Nil} is $e_1$. We translate \T{Nil} then
-\T{rec(...)} seperately.
+\T{rec(...)} separately.
 %
 % APP ARGUMENT
 %
@@ -202,7 +204,7 @@ The translation of $b$ is $\LP 0, b\RP$.
   &\quad \text{Next we do the translation of $\T{Cons}\LP x,a \RP$.} \\
   &\quadthree \|\T{Cons}\LP x, a\RP\| = \LP \|\LP x,a \RP\|_c, \T{Cons} \|\LP x,a \RP\|_p\RP \\
   %
-  &\quad \text{Notice the translation of $\LP x,a \RP$ appears twice, so we will do this seperately.} \\
+  &\quad \text{Notice the translation of $\LP x,a \RP$ appears twice, so we will do this separately.} \\
   %
   &\quadfour \|\LP x,a \RP\| = \LP \|x\|_c + \|a\|_c, \LP \|x\|_p, \|a\|_p \RP \RP \Theta\\
   %
@@ -287,7 +289,7 @@ pattern matching syntactic sugar as in the source language.
 \subsection{Syntactic Sugar Translation}
 %
 We walk through the same translation of fast reverse, but we use the syntactic
-sugar for matching introducted earlier. Recall the implementation of fast using
+sugar for matching introduced earlier. Recall the implementation of fast using
 syntactic sugar. The translation is almost identical to the translation of \T{rev}
 written without syntactic sugar until we translate the \T{Cons} branch of the
 \T{rec}.
@@ -311,7 +313,7 @@ $\|\lambda x. e\| = \LP 0, \lambda x. \|e\|\RP$.
 Next we apply the rule for translating an application. The rule is
 $\|e_0\ e_1\| = (1 + \|e_0\|_c + \|e_1\|_c) +_c (\|e_0\|_p\ \|e_1\|_p)$.
 In this case, \T{rec(...)} is $e_0$ and \T{Nil} is $e_1$. We translate
-\T{Nil} then \T{rec(...)} seperately.
+\T{Nil} then \T{rec(...)} separately.
 %
 % APP ARGUMENT
 %
@@ -441,14 +443,14 @@ Below is the translation of \T{rev xs}.
   &\qquad \T{Cons}\mapsto \LP x, \LP xs', r\RP\RP. \LP 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\LP x, a \RP \RP)\ \T{Nil})\ xs\\
 \end{flalign*}
 %
-The cost of \T{rev} is driven by the auxilary function \T{rec(...)}. The cost
-of \T{rev} will be determined by the cost of the auxilary function \T{rec(...)}
-applied to \T{Nil} plus some constant factor. We will interpret the auxilary
+The cost of \T{rev} is driven by the auxiliary function \T{rec(...)}. The cost
+of \T{rev} will be determined by the cost of the auxiliary function \T{rec(...)}
+applied to \T{Nil} plus some constant factor. We will interpret the auxiliary
 function in the following denotational semantics.
 
 
 Since \T{list} is a user defined datatype, we must provide an interpretation.
-We intepret the size of an \T{list} to be the number of list constructors.
+We interpret the size of an \T{list} to be the number of list constructors.
 %
 \begin{flalign*}
   \LB \T{list} \RB &= \mathbb{N}^\infty\\
@@ -457,7 +459,7 @@ We intepret the size of an \T{list} to be the number of list constructors.
   size_{list}(\T{Cons(1,n)}) &= 1 + n\\
 \end{flalign*}
 %
-We define the macro $R(xs)$ as the translation of the auxilary function
+We define the macro $R(xs)$ as the translation of the auxiliary function
 \T{rec(...)} to avoid repeated coping of the translation.
 %
 \begin{flalign*}
@@ -465,7 +467,7 @@ We define the macro $R(xs)$ as the translation of the auxilary function
   &\quadfive \T{Cons}\mapsto b. \LP 1, \lambda a.(1 + \pi_1\pi_1 b_c) +_c \pi_1\pi_1 b_p\ \T{Cons}\LP \pi_0 b, a \RP \RP \\
 \end{flalign*}
 %
-The recurrence $g(n)$ is the interpretation of the auxilary function $R(xs)$,
+The recurrence $g(n)$ is the interpretation of the auxiliary function $R(xs)$,
 where $n$ is the interpretation of $xs$.
 %
 \begin{flalign*}
@@ -492,7 +494,7 @@ tuple.
   &\text{The definition of $map$ over $int$ is $map^{int}(\lambda x.V_0, V_1) = V_1$.}\\
   &\qquad = (\pi_0 b, map^{list}(d.(d, \LB R(w) \RB \{w \mapsto d\}), \pi_1 b)) \\
   %
-  &\text{The definition of $map$ over a recursive occurence of a }\\
+  &\text{The definition of $map$ over a recursive occurrence of a }\\
   &\text{a datatype is $map^T(x.V_0,V_1) = V_0[V_1/x]$.} \\
   &\qquad = (\pi_0 b, (\pi_1 b, \LB R(w) \RB \{w \mapsto \pi_1 b\})) \\
   %
@@ -524,7 +526,7 @@ So the initial extracted recurrence from \T{rec} is
 \end{flalign*}
 %
 To obtain a closed form solution for the recurrence, we must eliminate the big
-maximum operator. To do so we break the defnition of $g$ into two cases.
+maximum operator. To do so we break the definition of $g$ into two cases.
 %
 \begin{description}
   \item[case $n=0$]\hfill \\
@@ -657,7 +659,7 @@ For $n>0$
   h_c(n,a) &= (2 + h_c(n-1,a+1), h_p(n-1,a+1))_c = 2 + h_c(n-1,a+1)
 \end{align*}
 %
-We now have a recurrence for the cost of the auxilary function
+We now have a recurrence for the cost of the auxiliary function
 \T{rec(xs,$\dots$)} when applied to some list:
 %
 \begin{equation}
@@ -689,7 +691,7 @@ We state the solution to the recurrence $h_c$ is $2n$.
   \end{description}
 \end{proof}
 %
-So we have proved the interpretation of applying the auxilary function of
+So we have proved the interpretation of applying the auxiliary function of
 \T{rev xs} to a list is linear in the length of \T{xs}.
 
 
@@ -710,7 +712,7 @@ For $n>0$
            &= h_p(n-1,a+1)
 \end{align*}
 %
-We now have a recurrence for the potential of the auxilary function in
+We now have a recurrence for the potential of the auxiliary function in
 \T{rev xs} when applied to some list $a$.
 %
 \begin{equation}
@@ -743,7 +745,7 @@ We now have a recurrence for the potential of the auxilary function in
 % ===================================================================================================
 
 Now that we have obtained a closed form solution for the recurrence describing
-the cost and potential of the auxilary function that drives the cost of
+the cost and potential of the auxiliary function that drives the cost of
 \T{rev}, we can obtain the interpretations for the cost and potential of \T{rev xs}.
 Recall the translation of \T{rev xs}.
 %
@@ -753,7 +755,7 @@ Recall the translation of \T{rev xs}.
 \end{flalign*}
 %
 We can obtain an interpretation of $\|\T{rev xs}\|$ by substituting our
-interpretation of the auxilary function.
+interpretation of the auxiliary function.
 %
 \begin{flalign*}
   &\text{Let $n = \LB \|xs\| \RB.$}\\
