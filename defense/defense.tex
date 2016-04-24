@@ -48,21 +48,51 @@ programs under the parallel evaluation semantics.
 \end{frame}
 
 
-\begin{frame}{Fast Reverse}
+\begin{frame}{Fast Reverse - Specification and Implementation}
   \begin{itemize}
-    \item<2->
-      Specification of \T{rev}.
-      \T{rev [$x_0,\dots,x_{n-1}$] = [$x_{n-1},\dots,x_0$]}
-    \item<3->
-      \[
-        \T{datatype list} = \T{Nil of unit}\ |\ \T{Cons of int} \times \T{list}
-      \]
-    \item<4->
+    \item
+        $\T{datatype list} = \T{Nil of unit}\ |\ \T{Cons of int} \times \T{list}$
+    \item
+      Specification: \T{rev [$x_0,\dots,x_{n-1}$] = [$x_{n-1},\dots,x_0$]}
+    \item
+      Implementation:
       \usebox{\codebox}
-    \item<5->
-      Specification of auxilary function
+    \item
+      Specification of auxilary function:\\
       \T{rec($[x_0,\dots,x_{n-1}],\dots$) [$y_0,\dots,y_{m-1}$] = [$x_{n-1},\dots,x_0,y_0,\dots,y_{m-1}$]}
   \end{itemize}
 \end{frame}
 
+\begin{frame}{Fast Reverse - Specification and Implementation}
+  \begin{itemize}
+    \item
+      \T{rev (Cons$\LP$0,Cons$\LP$1, Nil$\RP\RP$)}
+    \item
+    \T{$\to_\beta$
+      rec(Cons$\LP$0,Cons$\LP$1,Nil$\RP\RP$,
+          Nil $\mapsto\lambda$a.a
+          Cons$\mapsto$b.split(b,x.c.split(c,xs'.r.
+      $\lambda$a.force(r) Cons$\LP$x,a$\RP$))) Nil}
+    \item
+      \T{$\to^*_\beta (\lambda$a0.($\lambda$a1.($\lambda$a2.a2) Cons$\LP$1,a1$\RP$) Cons$\LP$0,a0$\RP$) Nil}
+    \item
+      $\to_\beta$ ($\lambda$a1.($\lambda$a2.a2) Cons$\LP$1,a1$\RP$) Cons$\LP$0,Nil$\RP$
+    \item
+      $\to_\beta$ ($\lambda$a2.a2) Cons$\LP$1,Cons$\LP$0,Nil$\RP\RP$
+    \item
+      $\to_\beta$ Cons$\LP$1,Cons$\LP$0,Nil$\RP\RP$
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Fast Reverse - Translation}
+\end{frame}
+
+\begin{frame}{Fast Reverse - Interpretation}
+\end{frame}
+
+\begin{frame}{Parallel Cost Semantics}
+\end{frame}
+
+\begin{frame}{Pure Potential Translation}
+\end{frame}
 \end{document}
