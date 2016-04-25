@@ -46,6 +46,7 @@ Tree \T{map f t} applies the function \T{f} to every label in the tree \T{t}.
               &\quadfive \T{N} \mapsto \LP x,\LP t_0,r_0\RP,\LP t_1,r_1\RP\RP.\LP 2 + (f\ x)_c + r_{0c} + r_{1c}, \T{N}\LP (f\ x)_p,r_{0p},r_{1p}\RP\RP)\RP\RP \\
 \end{align*}
 %
+We are interested in the cost of applying \T{map} to a function and a tree.
 The translation of \T{map} applied to a function \T{f} and a tree \T{t} is:
 %
 \begin{align*}
@@ -109,3 +110,25 @@ method to prove a bound on the cost.
 The result is the cost of the recursor of the \T{map} function is linear in the
 number of nodes in the tree but also depends on the cost of applying the
 function to the largest label in the tree.
+
+\paragraph{}
+Recall the translation of \T{map f t}.
+%
+\begin{align*}
+  \|\T{map f t}\| &= (2 + \|f\|_c + \|t\|_c) +_c (\|\T{map}\|_p \|f\|_p)_p \|t\|_p
+\end{align*}
+%
+The interpretation of the application of \T{map} to a function \T{f} and a tree \T{t} is
+%
+\begin{lemma}
+  \label{lem:treemap_cost}
+  $\LB\|\T{map f t}\|\RB = 3 + (4 + (f\ i)_c)n \text{ where } \LB\|t\|\RB = (i,n) \text{ and } \LB\|f\|\RB = f$
+\end{lemma}
+\begin{proof}
+\begin{align*}
+  \LB\|\T{map f t}\|\RB &= \LB(2 + \|f\|_c + \|t\|_c) +_c (\|\T{map}\|_p \|f\|_p)_p \|t\|_p\RB \\
+                        &= 2 + \LB\|f\|_c\RB + \LB\|t\|\RB_c) +_c (\LB\|\T{map}\|_p \LB\|f\|_p\|\RB)_p \LB\|t\|_p\RB \\
+                        &= 3 + (4 + (f\ i)_c)n \text{ where } \LB\|t\|\RB = (i,n) \text{ and } \LB\|f\|\RB = f
+\end{align*}
+\end{proof}
+%

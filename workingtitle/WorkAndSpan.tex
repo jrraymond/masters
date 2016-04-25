@@ -466,9 +466,9 @@ manipulate.
 %
 We prove by induction bounds on the work and span of the cost of $g$.
 %
-\begin{theorem}
+\begin{lemma}
 $\pi_0 g_c(f, (m, n)) \leq 1 + (2 + \pi_0(f\ m)_c)n$
-\end{theorem}
+\end{lemma}
 %
 \begin{proof}
    The proof is by induction on $n$.
@@ -496,9 +496,9 @@ $\pi_0 g_c(f, (m, n)) \leq 1 + (2 + \pi_0(f\ m)_c)n$
   \end{description}
 \end{proof}
 %
-\begin{theorem}
+\begin{lemma}
   $\pi_1 g_c(f, (m, n)) \leq 1 + \pi_1 (f\ m)_c + n$
-\end{theorem}
+\end{lemma}
 %
 \begin{proof}
   \begin{description}
@@ -526,15 +526,33 @@ $\pi_0 g_c(f, (m, n)) \leq 1 + (2 + \pi_0(f\ m)_c)n$
   \end{description}
 \end{proof}
 %
-Compare these results with sequential map.
+We see that there is opportunity to exploit parallelism in \T{list map} because
+applying the span is less than the work. However we are limited by the \T{list}
+datatype because deconstructing and reconstructing the \T{list} must be done
+sequentially.
+
+\paragraph{}
+Recall the sequential \T{list map} analysis in chapter 2 showed the cost of
+mapping a function \T{f} over a list \T{xs} with length $n$ and maximum value
+$i$ was $3 + (2 + (f\ i)_c)n$. We see the work of of the parallel cost analysis
+is identical to the work of the sequential cost analysis.
+
+\paragraph{}
+Brent's theorem tells us the asymptotic upper bound on the cost of running a
+program with work $w$ and span $s$ on $p$ processors is $O(max(\frac{w}{p},
+s))$. Since the work is $3 + (2 + (f\ i)_c)n$ and the span is $3 + \pi_1(f\
+i)_c + n$, we see adding processors will decrease the running time by a
+constant factor. We also see we will see a larger constant factor decrease in
+running time if $(f\ i)_c$ is larger.
 
 
 \section{Parallel Tree Map}
-A program which is embarrasingly parallel is tree map.  When a function $f$ is
-mapped over a tree $t$, each application of $f$ to the label at each node can
-be done independently.  Furthermore, the tree data structure itself is
-dividable by construction.  Dividing the work requires only destruction of the
-node constructor to yield the left and right subtrees.
+\paragraph{}
+A similar program which benefits more from parallism is tree map.  When a
+function $f$ is mapped over a tree $t$, each application of $f$ to the label at
+each node can be done independently.  Furthermore, the tree data structure
+itself is dividable by construction.  Dividing the work requires only
+matching on the tree to yield the left and right subtrees.
 
 We will use \T{int} labelled binary trees.
 %
