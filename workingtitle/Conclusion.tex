@@ -10,42 +10,22 @@ denotational semantics by mechanically applying the rules of the interpretation
 function. At this point, a certain amount of cleverness is needed to work the
 recurrence into a recognizable form. Once the big maximum is eliminated, a
 closed form solution for the recurrence can be obtained using the substitution
-method.
+method. The examples illustrate how the method can be used to analyze
+higher-order programs such as \T{map} and insertion sort. It also shows how the
+analysis is compositional. In insertion sort, we used the analysis of
+\T{insert} to analyze \T{sort}.
+
 
 \paragraph{}
-A drawback of the translation function is the process of applying the
-translation to a source language program by hand is tedious and error prone. An
-area of future work is to automate this translation. This should not be too
-difficult since the translation function is application of a translation rule
-to each node in the abstract syntax tree and then recursively translating
-subexpression. Similarly we should be able to automate the interpretation
-function. The automated interpretation function would be paramaterized by the
-interpretations of programmer-defined datatypes.
-
-\paragraph{}
-The last step of the process, obtaining closed form solutions to the extracted
-recurrences, would be the most difficult to automate. The PURRS project is
-working at automatically solving recurrences. The project
-is able to solve or approximate many forms of occurences, but not all. For
-example, divide and conquer algorithms often produce recurrences of the form
-$T(n) = a T(\frac{n}{b}) + S(n)$, called generalized recurrences. The PURRS
-project can solve some but not all of these recurrences (\citet{Bagnara2003}).
-\citet{Albert2011} automatically obtain closed form upper bounds for cost
-recurrences for a program, a system of recurrences that describe the cost a
-program with respect to its input, but the system is not complete and the
-bounds are not asymptotic. \citet{Albert2013} provides an implementation on
-Java bytecode programs to infer upper bounds on the resource usage.
-
-\paragraph{}
-The cost semantics can be adapted to different cost models. We changed the cost
-semantics from sequential to parallel and proved the complexity language
+The cost semantics can be adapted to different cost models. We change the cost
+semantics from sequential to parallel and prove the complexity language
 translation of a program is still an upper bound on the evaluation cost of the
 source language program. This demonstrates the flexibility of this framework
 with respect to cost models.
 
 \paragraph{}
-We also defined a pure potential translation that is a stripped down version of
-the complexity translation without the cost. We proved by logical relations the
+We also define a pure potential translation that is a stripped down version of
+the complexity translation without the cost. We prove by logical relations the
 potential translation is equivalent to the complexity language. Often when
 analyzing the recurrences obtained in the complexity language, we break the
 complexity recurrence into a pair of recurrences, one for the cost and one for
@@ -66,24 +46,48 @@ of \T{fold} we must first solve the recurrence for the potential of \T{fold}.
 Our pure potential translation and proof demonstrates we will never have to
 solve the cost recurrence in order to solve the potential recurrence.
 
+\section{Future Work}
+\paragraph{}
+A drawback of the translation function is the process of applying the
+translation to a source language program by hand is tedious and error prone. An
+area of future work is to automate this translation. This should not be too
+difficult since the translation function is application of a translation rule
+to each node in the abstract syntax tree and then recursively translating
+subexpression. Similarly we should be able to automate the interpretation
+function. The automated interpretation function would be parameterized by the
+interpretations of programmer-defined datatypes.
 
-One of the criticisms leveed against traditional complexity analysis is there
-is no formal connection between the source language program and the recurrence
-for its cost. Although the method from \citet{Danner2015} does provide the
-formal connection, the translation from source language to complexity language
-and subsequent interpretation is tedious and prone to errors. Automation of the
-source to complexity translation and interpretation could easily be automated.
-Both transformations are simply forms of cross compilation between different
-languages. This leaves only the process of obtaining closed form solutions of
-recurrences initially obtained from the interpretation. Solving the recurrences
-requires a significant amount of cleverness. For simpler recurrences such as
-\T{list map}, the recurrences are straightforward to solve. However for more
-complex functions, the recurrences may be very difficult to solve. Consider a
-function that calculates the $n$th term of the Fibonacci sequence. Under an
-interpretation of natural numbers as the number of successor constructors, the
-potential of this function is the $n$th Fibonacci number. The closed form
-solution to the potential recurrence is
-\[
-  \frac{(1 + \sqrt{5})^n + (1 - \sqrt{5})^n}{2^n\sqrt{5}}
-\]
-Obtaining this solution is not at all obvious.
+\paragraph{}
+The last step of the process, obtaining closed form solutions to the extracted
+recurrences, would be the most difficult to automate. The PURRS project is
+working at automatically solving recurrences. The project
+is able to solve or approximate many forms of occurrences, but not all. For
+example, divide and conquer algorithms often produce recurrences of the form
+$T(n) = a T(\frac{n}{b}) + S(n)$, called generalized recurrences. The PURRS
+project can solve some but not all of these recurrences (\citet{Bagnara2003}).
+\citet{Albert2011} automatically obtain closed form upper bounds for cost
+recurrences for a program, a system of recurrences that describe the cost a
+program with respect to its input, but the system is not complete and the
+bounds are not asymptotic. \citet{Albert2013} provides an implementation on
+Java bytecode programs to infer upper bounds on the resource usage.
+
+%One of the criticisms leveed against traditional complexity analysis is there
+%is no formal connection between the source language program and the recurrence
+%for its cost. Although the method from \citet{Danner2015} does provide the
+%formal connection, the translation from source language to complexity language
+%and subsequent interpretation is tedious and prone to errors. Automation of the
+%source to complexity translation and interpretation could easily be automated.
+%Both transformations are simply forms of cross compilation between different
+%languages. This leaves only the process of obtaining closed form solutions of
+%recurrences initially obtained from the interpretation. Solving the recurrences
+%requires a significant amount of cleverness. For simpler recurrences such as
+%\T{list map}, the recurrences are straightforward to solve. However for more
+%complex functions, the recurrences may be very difficult to solve. Consider a
+%function that calculates the $n$th term of the Fibonacci sequence. Under an
+%interpretation of natural numbers as the number of successor constructors, the
+%potential of this function is the $n$th Fibonacci number. The closed form
+%solution to the potential recurrence is
+%\[
+%  \frac{(1 + \sqrt{5})^n + (1 - \sqrt{5})^n}{2^n\sqrt{5}}
+%\]
+%Obtaining this solution is not at all obvious.

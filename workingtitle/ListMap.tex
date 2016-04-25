@@ -77,7 +77,7 @@ first.
                  &= (2 + (f\ i)_c + g_c(i,m), (max((f\ i)_p, \pi_0g_p(i,m)), 1 + \pi_1 g_p(i,m)))
 \end{align*}
 %
-We break the recurrence into the cases of $n=0$ and $n>0$
+We break the recurrence into the cases of $n=0$ and $n>0$ to eliminate the big maximum.
 %
 \begin{description}
   \item[case $n=0$]\hfill \\
@@ -95,7 +95,8 @@ We break the recurrence into the cases of $n=0$ and $n>0$
     \end{align*}
 \end{description}
 %
-We obtain a closed form solution for the cost by using the substitution method.
+With the big maximum eliminated, we can obtain a closed form solution for the
+cost using the substitution method.
 %
 \begin{lemma}
   \label{lem:listmap_g_cost}
@@ -117,7 +118,8 @@ We obtain a closed form solution for the cost by using the substitution method.
     \end{description}
 \end{proof}
 %
-We obtain a closed form of the solution for the potential of the recursor.
+Similarly, we can also obtain a closed form of the solution for the potential
+of the recursor using the substitution method.
 %
 \begin{lemma}
   \label{lem:listmap_g_potential}
