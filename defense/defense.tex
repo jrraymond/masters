@@ -203,11 +203,106 @@ rev xs = $\lambda$xs.rec(xs,
   \end{flalign*}
 \end{frame}
 
+\begin{frame}{Sequential Cost Semantics}
+  \begin{itemize}
+      \vfill
+    \item[]
+      \begin{prooftree}
+        \AxiomC{$e_0 \downarrow^{n_0} v_0$}
+        \AxiomC{$e_1 \downarrow^{n_1} v_1$}
+        \BinaryInfC{$\LP e_0, e_1 \RP \downarrow^{n_0 + n_1} \LP v_0, v_1 \RP$}
+      \end{prooftree}
+      \vfill
+    \item[]
+      \begin{prooftree}
+      \AxiomC{$e_0 \downarrow^{n_0} \lambda x.e_0'$}
+      \AxiomC{$e_1 \downarrow^{n_1} v_1$}
+      \AxiomC{$e_0'[v_1/x] \downarrow^n v$}
+      \TrinaryInfC{$e_0\ e_1 \downarrow^{1 + n_0 + n_1 + n} v$}
+      \end{prooftree}
+      \vfill
+    %\item[]
+    %  \tiny
+    %  \begin{prooftree}
+    %    \AxiomC{$e \downarrow^{n_0} C v_0$}
+    %    \AxiomC{$\T{map}^{\phi_C}(y.\LP y, \T{delay}(rec(y, \overline{C \mapsto x.e_C}))\RP, v_0) \downarrow^{n_1} v_1$}
+    %    \AxiomC{$e_C[v_1/x] \downarrow^{n_2} v$}
+    %    \TrinaryInfC{$rec(e, \overline{C \mapsto x.e_C}) \downarrow^{1 + n_0 + n_1 + n_2} v$}
+    %  \end{prooftree}
+      \vfill
+    \item[]
+      \begin{figure}
+        \AxiomC{}
+        \UnaryInfC{$\T{delay}(e) \downarrow^0 \T{delay}(e)$}
+        \DisplayProof
+        \qquad
+        \AxiomC{$e \downarrow^{n_0} \T{delay}(e_0)$}
+        \AxiomC{$e_0 \downarrow^{n_1} v$}
+        \BinaryInfC{$\T{force}(e) \downarrow^{n_0 + n_1} v$}
+        \DisplayProof
+      \end{figure}
+      \vfill
+  \end{itemize}
+\end{frame}
+
 \begin{frame}{Parallel Cost Semantics}
+  \begin{itemize}
+    \item Cost graphs
+      \[
+        \mathcal{C} ::= 0\ |\  1\ |\  \mathcal{C} \oplus \mathcal{C}\ |\  \mathcal{C} \otimes \mathcal{C}
+      \]
+    \item[] Evaluation Semantics
+      \begin{prooftree}
+        \AxiomC{$e_0 \downarrow^{n_0} v_0$}
+        \AxiomC{$e_1 \downarrow^{n_1} v_1$}
+        \BinaryInfC{$\LP e_0, e_1 \RP \downarrow^{n_0 \otimes n_1} \LP v_0, v_1 \RP$}
+        \end{prooftree}
+        \begin{prooftree}
+        \AxiomC{$e_0 \downarrow^{n_0} \lambda x.e_0'$}
+        \AxiomC{$e_1 \downarrow^{n_1} v_1$}
+        \AxiomC{$e_0'[v_1/x] \downarrow^n v$}
+        \TrinaryInfC{$e_0\ e_1 \downarrow^{(n_0 \otimes n_1) \oplus n \oplus 1} v$}
+        \end{prooftree}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Work and Span}
+  \begin{itemize}
+    \item \textbf{Work} total steps to run program
+      \begin{equation*}
+        work(c) = \begin{cases}
+          0 &\text{if } c = 0 \\
+          1 &\text{if } c = 1 \\
+          work(c_0) + work(c_1) &\text{if } c = c_0 \otimes c_1 \\
+          work(c_0) + work(c_1) &\text{if } c = c_0 \oplus c_1
+        \end{cases}
+      \end{equation*}
+    \item \textbf{Span} critical path of program
+      \begin{equation*}
+        span(c) = \begin{cases}
+          0 &\text{if } c = 0 \\
+          1 &\text{if } c = 1 \\
+          max(span(c_0), span(c_1)) &\text{if } c = c_0 \otimes c_1 \\
+          span(c_0) + span(c_1) &\text{if } c = c_0 \oplus c_1
+        \end{cases}
+      \end{equation*}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Parallel Complexity Translation}
+  \begin{align*}
+    \|\LP e_0, e_1 \RP \| &= \LP \|e_0\|_c \otimes \|e_1\|_c, \LP \|e_0\|_p, \|e_1\|_p\RP\RP \\
+    \|\lambda x.e\| &= \LP 0, \lambda x.\|e\| \RP \\
+    \|e_0\ e_1\| &= 1 \oplus (\|e_0\|_c \otimes \|e_1\|_c) \oplus_c \|e_0\|_p\ \|e_1\|_p \\
+    \|delay(e)\| &= \LP 0, \|e\|\RP \\
+    \|force(e)\| &= \|e\|_c \oplus_c \|e\|_p
+  \end{align*}
 \end{frame}
 
 \begin{frame}{Pure Potential Translation}
 \end{frame}
+
+
 \begin{frame}{Bibliography}
   \bibliography{bibliography}
   \bibliographystyle{plainnat}
