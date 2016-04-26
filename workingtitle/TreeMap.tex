@@ -93,7 +93,7 @@ To obtain a closed form solution for this recurrence, we use the substitution
 method to prove a bound on the cost.
 %
 \begin{lemma}
-  $g_c(i,n) = (4 + (f i)_c)n + 1$
+  $g_c(i,n) = (3 + (f i)_c)n + 1$
 \end{lemma}
 %
 \begin{proof}
@@ -101,9 +101,9 @@ method to prove a bound on the cost.
   g_c(i,n) &= (\bigvee\limits_{size(z) \leq (i,n)} case(z,f_E,f_N))_c \\
            &= 1 \vee (\bigvee\limits_{size(j,(j_0,n_0),(j_1,n_1)) \leq (i,n)} f_N(j,(j_0,n_0),(j_1,n_1)))_c \\
            &= \bigvee\limits_{\substack{1 + n_0 + n_1 \leq n\\max(j,j_0,j_1)\leq i}} 2 + (f\ j)_c + g_c(j_0,n_0) + g_c(j_1,n_1) \\
-           &\leq \bigvee\limits_{\substack{1 + n_0 + n_1 \leq n\\max(j,j_0,j_1)\leq i}} 2 + (f\ j)_c + (4 + (f\ j_0)_c)n_0 + 1 + (4 + (f\ j_1))n_1 + 1\\
-           &\leq \bigvee\limits_{\substack{1 + n_0 + n_1 \leq n\\max(j,j_0,j_1)\leq i}} (4 + (f\ j)_c)(1 + n_0 + n_1) + 1\\
-           &\leq (4 + (f\ i)_c)n + 1
+           &\leq \bigvee\limits_{\substack{1 + n_0 + n_1 \leq n\\max(j,j_0,j_1)\leq i}} 2 + (f\ j)_c + (3 + (f\ j_0)_c)n_0 + 1 + (3 + (f\ j_1))n_1 + 1\\
+           &\leq \bigvee\limits_{\substack{1 + n_0 + n_1 \leq n\\max(j,j_0,j_1)\leq i}} (3 + (f\ j)_c)(1 + n_0 + n_1) + 1\\
+           &\leq (3 + (f\ i)_c)n + 1
 \end{align*}
 \end{proof}
 %
@@ -122,13 +122,13 @@ The interpretation of the application of \T{map} to a function \T{f} and a tree 
 %
 \begin{lemma}
   \label{lem:treemap_cost}
-  $\LB\|\T{map f t}\|\RB = 3 + (4 + (f\ i)_c)n \text{ where } \LB\|t\|\RB = (i,n) \text{ and } \LB\|f\|\RB = f$
+  $\LB\|\T{map f t}\|\RB = 3 + (3 + (f\ i)_c)n \text{ where } \LB\|t\|\RB = (i,n) \text{ and } \LB\|f\|\RB = f$
 \end{lemma}
 \begin{proof}
 \begin{align*}
   \LB\|\T{map f t}\|\RB &= \LB(2 + \|f\|_c + \|t\|_c) +_c (\|\T{map}\|_p \|f\|_p)_p \|t\|_p\RB \\
                         &= 2 + \LB\|f\|_c\RB + \LB\|t\|\RB_c) +_c (\LB\|\T{map}\|_p \LB\|f\|_p\|\RB)_p \LB\|t\|_p\RB \\
-                        &= 3 + (4 + (f\ i)_c)n \text{ where } \LB\|t\|\RB = (i,n) \text{ and } \LB\|f\|\RB = f
+                        &= 3 + (3 + (f\ i)_c)n \text{ where } \LB\|t\|\RB = (i,n) \text{ and } \LB\|f\|\RB = f
 \end{align*}
 \end{proof}
 %

@@ -1,50 +1,145 @@
 \documentclass[pdf]{beamer}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{bussproofs}
+\usepackage{color}
 \usepackage{lmodern}
 \usepackage{listings}
+\usepackage{natbib}
+\usepackage{upgreek}
+\usepackage{stmaryrd}
 
 \mode<presentation>{}
 
 \newcommand{\T}[1]{\texttt{#1}}
 \newsavebox{\codebox}
+\newsavebox{\lengthbox}
 \lstset{mathescape=true, basicstyle=\ttfamily}
 \newcommand{\LP}{\langle}
 \newcommand{\RP}{\rangle}
+\newcommand{\LB}{\llbracket}
+\newcommand{\RB}{\rrbracket}
+\newcommand{\LL}{\langle\!\langle}
+\newcommand{\RR}{\rangle\!\rangle}
+\newcommand{\quadthree}{\qquad\quad}
+\newcommand{\quadfour}{\quadthree\quad}
+\newcommand{\quadfive}{\quadfour\quad}
+\newcommand{\quadsix}{\quadfive\quad}
+\newcommand{\quadseven}{\quadsix\quad}
+\newcommand{\quadeight}{\quadseven\quad}
+\newcommand{\quadten}{\quadfive\quadfive}
 
 \title{Extracting Cost Recurrences from Sequential and Parallel Functional Programs}
 
 \author{Justin Raymond}
+\institute{Professor Norman Danner}
+
+%\usecolortheme{fly}
 
 
 \begin{document}
 
 \begin{lrbox}{\codebox}
-  \begin{lstlisting}
-  rev xs = $\lambda$xs.rec(xs,
-     Nil $\mapsto$ $\lambda$a.a,
-     Cons$\mapsto$b.split(b,x.c.split(c,xs'.r.
-        $\lambda$a.force(r) Cons$\LP$x,a$\RP$))) Nil
-  \end{lstlisting}
+\begin{lstlisting}
+rev xs = $\lambda$xs.rec(xs,
+  Nil $\mapsto$ $\lambda$a.a,
+  Cons$\mapsto \LP x,\LP xs,r \RP\RP.\lambda$a.force(r) Cons$\LP$x,a$\RP$))) Nil
+\end{lstlisting}
 \end{lrbox}
+
+\defverbatim[colored]\lstlength{
+  \begin{lstlisting}[language=Caml, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
+  length xs =
+    match xs with
+     [] -> 0
+     (x::xs) -> 1 + length xs
+  \end{lstlisting}
+}
 
 \begin{frame}
   \titlepage
 \end{frame}
 
 \begin{frame}{Abstract}
-Complexity analysis aims to predict the resources, most often time and space,
-which a program requires.  We build on previous work by Danner2013 and
-Danner2015 which formalizes the extraction of recurrences for evaluation
-cost from higher order functional programs. Source language programs are
-translated into a complexity language. The translation of an expression is a
-pair of a cost, a bound on the cost of evaluating the program to a value, and a
-potential, the cost of future use of the value. We use the formalization to
-analyze the time complexity of higher order functional programs. We also
-demonstrate the flexibility of the method by extending it to parallel cost
-semantics. Costs are cost graphs, which express dependencies between
-subcomputations in the program. We prove by logical relations that the
-extracted recurrences are an upper bound on the evaluation cost of the original
-program. We also give examples of the analysis of higher order functional
-programs under the parallel evaluation semantics.
+  \begin{itemize}
+    \item Complexity analysis aims to predict the resources, most often time and space, which a program requires
+    \vfill
+    \item Previous work by \citet{Danner2013} and \citet{Danner2015} formalizes the analysis of higher-order function programs
+    \vfill
+    \item We use the method of \citet{Danner2015} to analyze higher order functional programs
+    \vfill
+    \item We extend the method to parallel cost semantics
+    \vfill
+    \item We prove an interesting fact about the recurrences for the cost of programs
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Introduction}
+  \begin{itemize}
+    \item Write programs in a "source language"
+    \vfill
+    \item Translate the programs to a "complexity language"
+    \vfill
+    \item The translated programs are recurrences for the complexity of the source language program
+    \vfill
+    \item \textbf{complexity} = cost $\times$ potential
+    \vfill
+    \item \textbf{cost}: steps to run a program
+    \vfill
+    \item \textbf{potential}: size of the result of evaluating program
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Source Language}
+  \begin{itemize}
+    \item Variant of System-T
+      \begin{align*}
+        e ::=\ &x\ |\ \LP\RP\ |\ \lambda x.e\ |\ e\ e\ |\ \LP e,e\RP\ |\ \T{split}(e, x.x.e) \\
+               &|\ \T{delay}(e)\ |\ \T{force}(e)|\ C^\delta\ e\ |\ \T{rec}^\delta(e, \overline{C \mapsto x.e_C}) \\
+               &|\ \T{map}^\phi(x.v, v)\ |\ \T{let}(e, x.e)
+      \end{align*}
+    \vfill
+    \item Programmer defined datatypes
+      \begin{itemize}
+        \item \T{datatype list = Nil | Cons int$\times$list}
+      \end{itemize}
+    \vfill
+    \item Structural Recursion
+      \begin{itemize}
+        \item OCaml: \lstlength
+        \item $\lambda xs.\T{rec}(xs, \T{Nil}\mapsto 0, \T{Cons}\mapsto\LP x,\LP xs,r\RP\RP.1 + \T{force}(r))$
+      \end{itemize}
+    \vfill
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Complexity Language}
+  \begin{itemize}
+    \item Language for recurrences
+    \vfill
+    \item Source language without syntactic constructs for controlling costs
+    \vfill
+    \item No \T{let}, \T{delay}, \T{split}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Translation}
+  \begin{itemize}
+    \item Translate source language programs of type $\tau$ to complexity language programs of type $\textbf{C}\times \LL \tau \RR$
+    \vfill
+    \item \textbf{C} bound on the steps to evaluate the program
+    \vfill
+    \item $\LL\tau\RR$ expression for the size of the value
+    \vfill
+    \item Some cases of the translation function $\|\cdot\|$:
+      \begin{itemize}
+        \item $\|x\| = \LP 0,x \RP$
+        \item $\|\LP e_0,e_1 \RP\| = \LP \|e_0\|_c + \|e_1\|_c, \LP \|e_0\|_p,\|e_1\|_p\RP\RP$
+      \item $\|\lambda x.e\| = \LP 0, \lambda x.\|e\|\RP$
+      \item $\|e_0\ e_1\| = (1 + \|e_0\|_c + \|e_1\|_c) +_c \|e_0\|_p \|e_1\|_p$
+      \end{itemize}
+  \end{itemize}
 \end{frame}
 
 
@@ -71,8 +166,7 @@ programs under the parallel evaluation semantics.
     \T{$\to_\beta$
       rec(Cons$\LP$0,Cons$\LP$1,Nil$\RP\RP$,
           Nil $\mapsto\lambda$a.a
-          Cons$\mapsto$b.split(b,x.c.split(c,xs'.r.
-      $\lambda$a.force(r) Cons$\LP$x,a$\RP$))) Nil}
+          Cons$\mapsto \LP x,\LP xs,r\RP\RP.\lambda$a.force(r) Cons$\LP$x,a$\RP$) Nil}
     \item
       \T{$\to^*_\beta (\lambda$a0.($\lambda$a1.($\lambda$a2.a2) Cons$\LP$1,a1$\RP$) Cons$\LP$0,a0$\RP$) Nil}
     \item
@@ -85,9 +179,28 @@ programs under the parallel evaluation semantics.
 \end{frame}
 
 \begin{frame}{Fast Reverse - Translation}
+  \small
+  \begin{itemize}
+    \item $\|\T{rev}\|$
+      \begin{align*}
+       &\LP 0, \lambda xs. 1 +_c \T{rec}(xs, \T{Nil} \mapsto \LP 1, \lambda a. \LP 0,a \RP\RP \\
+      &\quad \T{Cons}\mapsto \LP x, \LP xs', r\RP\RP.\LP 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\LP \pi_1 x, a \RP\RP)\ \T{Nil}\RP\\
+      \end{align*}
+    \item $\|\T{rev xs}\|$
+    \begin{align*}
+      &1 +_c (\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \LP 1, \lambda a. \LP 0, a \RP \RP \\
+  &\quad \T{Cons}\mapsto \LP x, \LP xs', r\RP\RP. \LP 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\LP x, a \RP \RP)\ \T{Nil})\ xs
+    \end{align*}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{Fast Reverse - Interpretation}
+  \begin{flalign*}
+    \LB \T{list} \RB &= \mathbb{N}^\infty\\
+    D^{list} &= \{\ast\} + \{1\} \times \mathbb{N}^\infty\\
+    size_{list}(\T{Nil}) &= 1\\
+    size_{list}(\T{Cons(1,n)}) &= 1 + n\\
+  \end{flalign*}
 \end{frame}
 
 \begin{frame}{Parallel Cost Semantics}
@@ -95,4 +208,9 @@ programs under the parallel evaluation semantics.
 
 \begin{frame}{Pure Potential Translation}
 \end{frame}
+\begin{frame}{Bibliography}
+  \bibliography{bibliography}
+  \bibliographystyle{plainnat}
+\end{frame}
+
 \end{document}

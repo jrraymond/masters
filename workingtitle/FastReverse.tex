@@ -439,8 +439,8 @@ Below is the translation of \T{rev xs}.
   &\|\T{rev xs}\| = (1 + \|\T{rev}\|_c + \|xs\|_c) +_c \|\T{rev}\|_p\ \|xs\|_p \\
   &\text{The cost of $\|\T{rev}\|$ is $0$, and we will let \T{xs} be a value, which has $0$ cost.} \\
   &= (1 + 0 + 0) +_c \|\T{rev}\|_p\ xs \\
-  &= 1 +_c (\lambda xs. 1 +_c \T{rec}(xs, \T{Nil} \mapsto \LP 1, \lambda a. \LP 0, a \RP \RP \\
-  &\qquad \T{Cons}\mapsto \LP x, \LP xs', r\RP\RP. \LP 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\LP x, a \RP \RP)\ \T{Nil})\ xs\\
+  &= 1 +_c (\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \LP 1, \lambda a. \LP 0, a \RP \RP \\
+  &\qquad \T{Cons}\mapsto \LP x, \LP xs', r\RP\RP. \LP 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\LP x, a \RP \RP)\ \T{Nil})\ xs
 \end{flalign*}
 %
 The cost of \T{rev} is driven by the auxiliary function \T{rec(...)}. The cost
