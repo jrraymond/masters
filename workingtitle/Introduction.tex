@@ -45,37 +45,38 @@ describe the cost of mapping a nontrivial function over a list. The cost of
 mapping a quadratic time function such as insertion sort over a list of lists
 depends not only on the length of the list, but also on the length of the
 sublists.  A more accurate prediction of the cost of this function can be
-obtained by taking into account the cost of insertion sort.
+obtained by taking into account the cost of the mapped function.
 
 
 
 The second is that there is no formal connection between the implementation of
 \T{map} and the recurrence $T(n)$. The consequence is extraction of the correct
-recurrence relies on the absence of human error, which the author of this
+recurrence relies on the absence of human error, to which the author of this
 thesis can attest the difficulty of doing. A formalization of the connection
 between the source program and the recurrence would prevent this. The
-translation from the source program to the recurrence could be done using
-application of a series of rules and the translation could even be automated.
-
+translation of the source program to the recurrence could be done by
+application of a series of rules. A mechanical process such as this could
+easily be automated.
 
 
 
 For an example such \T{map}, it is simple enough to change our analysis to
-reflect that applying the functions \T{f} does not have constant cost $c$, but
+reflect that applying the function \T{f} does not have constant cost $c$, but
 instead has cost $f_c(x)$, where $x$ is some notion of size of the elements of
 the list. If the elements of the list are fixed width integers, then all $x$
-would be equivalent, and $f_c(x)$ would be constant. If the elements of the
-list are strings or lists than the notion of size could be their
-length. If we only interpret the size of lists to be their lengths,
-because then we have no information about the size of the elements we apply $f$
-to. So we interpret lists as a pair of their largest element and their length. The
-recurrence for the cost of \T{map} becomes $T(n,x) = (f_c(x) + c)n$. Our
-analysis of the cost of \T{map} is now parameterized by the cost applying \T{f}
-to the elements of the list. However, this does not allow us to analyze the
-composition of functions. For example to analyze the cost of $g \circ f$, we
-need to have a notion of the size of the result of $f$, as well as the cost. We
-need to have a notion of the size of the result of $f$ in order to analyze the
-cost of applying $g$ to the result of applying $f$ to some value.
+are equivalent, and $f_c(x)$ is constant. However, if the elements of the list
+are strings or lists than $f_c(x)$ depends on the sizes of the elements of the
+list.  If we only interpret the size of lists to be their lengths, we have no
+information about the size of the elements we apply $f$ to. So we interpret
+lists as a pair of their largest element and their length. The recurrence for
+the cost of \T{map} becomes $T(n,i) = (f_c(i) + c)n$, where $i$ is the size of
+the largest element of the list. Our analysis of the cost of \T{map} is now
+parameterized by the cost applying \T{f} to the elements of the list. However,
+this does not allow us to analyze the composition of functions. For example, to
+analyze the cost of $g \circ f$, we need to have a notion of the size of the
+result of $f$, as well as the cost. We need to have a notion of the size of the
+result of $f$ in order to analyze the cost of applying $g$ to the result of
+applying $f$ to some value.
 
 
 The term we will this notion of the size of the result is potential. Potential
@@ -83,13 +84,12 @@ represents the cost of future use of an expression. As mentioned above,
 potential is necessary to compose the analysis of functions. Consider this
 implementation of \T{fromList} which creates a set from a list of items.
 %
-\lstset{language=Haskell}
 \begin{lstlisting}
-fromList xs = foldr `insert` empty xs
+fromList xs = foldr insert empty xs
 \end{lstlisting}
 %
 The \T{insert} function takes an element and a set and adds the element to the
-set. \T{empty} is the empty set. The \T{insert} function will be with
+set. \T{empty} is the empty set. The \T{insert} function is applied to
 increasing sized sets each step of the fold. To correctly analyze \T{fromList},
 our analysis of \T{insert} must include both a cost of inserting an element
 into a set, and a potential with which we can use to analyze the cost of the
@@ -103,27 +103,6 @@ As we have just seen, traditional complexity analysis does not have a formal
 connection between the programs and the extracted recurrences. Traditional
 complexity analysis is also not compositional.
 
-%The method of extracting recurrences presented in \citet{Danner2013} and
-%\citet{Danner2015} addresses these problems. The first problem with traditional
-%analysis is there is no formal connection between a program and the recurrence
-%for its cost. There is a language which programs are written in, which we will
-%refer to as the source language, and a language for recurrences, which we will
-%refer to as the complexity language. In traditional complexity analysis, the
-%source language is some programming language and the complexity language is
-%mathematics, and there is no formalization of the translation from the source
-%language to the complexity language.  There is also no proof that the
-%mathematical recurrence for the cost of the source language program is an upper
-%bound on the cost of executing the source language program.  \citet{Danner2013}
-%address this problem by formally defining a translation from a source language
-%to a complexity language and proving the recurrence in the complexity language
-%is an upper bound on the cost of executing the source language program. The
-%complexity language is also higher order. So if the source language program is
-%higher order, such as \T{map}, the recurrence in the complexity language will
-%reflect the cost of applying the higher order function. Finally, functions in
-%the complexity language are from potentials to complexities, so the result of
-%applying a function results in both a cost of the function and a potential
-%which can be used to analyze the cost of applying another function to the
-%result.
 
 
 \citet{Danner2007}, building on the work of others, introduced the
@@ -132,8 +111,8 @@ upper bound on the time it takes to evaluate the expression, and a potential,
 representing the cost of future uses of the expression. They developed ATR, a
 variant of System T with call-by-value semantics and type system which
 restricted the evaluation time of programs. ATR programs are limited to second
-order, programs which take natural numbers and first-order programs as
-arguments. Programs written in ATR are garunteed to run in polynomial time. ATR
+order programs, which take natural numbers and first-order programs as
+arguments. Programs written in ATR are guaranteed to run in polynomial time. ATR
 is at least powerful enough to compute each type-2 basic feasible functionals
 characterized by \citet{KC96}. In order to limit the size of higher-order
 programs, the type system of ATR limits both the size of the values of
@@ -193,20 +172,20 @@ foldr f z xs =
 %
 To analyze the cost of applying \T{f} at each step of the fold, we must have a
 bound on the size of \T{x} and \T{fold f z xs'}. In other words, the analysis
-must give produce a bound on the cost of the recursive call and a bound on the
+must produce a bound on the cost of the recursive call and a bound on the
 size of the recursive call.
 
 Costs and potentials also enable compositional analysis. Consider the
-composition of two \T{map sort} and \T{permutations}.
+composition of two functions, \T{map sort} and \T{permutations}.
 %
 \begin{lstlisting}
 map sort $\circ$ permutations
 \end{lstlisting}
 %
 To analyze the cost of \T{map sort}, we must have a bound on its input size.
-The input size to \T{map sort} is the output of \T{permutations}. So our
-analysis of permutations must produce a cost bound and a size bound, which we
-can use to produce a cost bound for \T{map sort}.
+The size of the input to \T{map sort} is the size of the output of
+\T{permutations}. So our analysis of permutations must produce a cost bound and
+a size bound, which we can use to produce a cost bound for \T{map sort}.
 
 
 
@@ -214,17 +193,17 @@ can use to produce a cost bound for \T{map sort}.
 of recurrences from a higher-order functional language with structural
 recursion on arbitrary inductive data types. Programs are written in a higher
 order functional language, referred to as the source language. The programs are
-translated into a complexity language, which is essentially for recurrences.
-The result of the translation of an expression is a pair of a cost and a
-potential. The cost is a bound on the steps required to evaluate the expression
-to a value, the potential is a size which represents cost of future use of the
-value. A bounding relation is used to prove the translation and denotational
-semantics of the complexity language give an upper bound on the operational
-cost of running the source program. The paper also presents a syntactic
-bounding theorem, where the abstraction of values to sizes done syntactically
-instead of semantically.  Arbitrary inductive data types are handled
-semantically using programmer specified sizes of data types. Sizes must be
-programmer specified because the structure of a data type does not always
+translated into a complexity language, which is essentially a language for
+recurrences.  The result of the translation of an expression is a pair of a
+cost and a potential. The cost is a bound on the steps required to evaluate the
+expression to a value, the potential is a size which represents cost of future
+use of the value. A bounding relation is used to prove the translation and
+denotational semantics of the complexity language give an upper bound on the
+operational cost of running the source program. The paper also presents a
+syntactic bounding theorem, where the abstraction of values to sizes done
+syntactically instead of semantically.  Arbitrary inductive data types are
+handled semantically using programmer specified sizes of data types. Sizes must
+be programmer specified because the structure of a data type does not always
 determine the interpretation of the size of a data type. There also exist
 different reasonable interpretations of size, and some may be preferable to
 others depending on what is being analyzed.
@@ -238,34 +217,36 @@ This thesis comes in three parts.
 
 Chapter 2 contains a catalog of examples of the extraction of recurrences
 from functional programs using the approach given by \citet{Danner2015}. These
-examples illustrate how to apply the method to nontrivial examples. They also
+examples illustrate how to apply the method to nontrivial programs. They also
 serve to demonstrate common techniques for solving the extracted recurrences.
-The examples include reversing a list in quadratic, reversing a list in linear
-time, insertion sort, parametric insertion sort, list map, and tree map. We do
-quadratic time reverse as an introductory example. Linear time list reversal is
-an example of higher-order analysis. Parametric insertion sort combines the
-compositionality of insertion sort with a higher-order function. We do list map
-and tree map to compare with the parallel list map and tree map.
+The examples include reversing a list in quadratic time, reversing a list in
+linear time, insertion sort, parametric insertion sort, list map, and tree map.
+Linear time list reversal is an example of higher-order analysis. Slow list
+reversal is an example of a quadratic time function. Parametric insertion sort
+demonstrates the compositionality of the method as well as its ability to
+handle higher-order programs.  We do list map and tree map to compare with the
+parallel list map and tree map in Chapter 3.
 
 
 
 
 Chapter 3 extends the analysis to parallel programs. The source language syntax
 remains unchanged, but the operational semantics change to allow binary
-fork-join parallelism, also called nested parallelism. The subexpressions to
-tuples and function application may be evaluated in parallel. The
-subexpressions themselves may have subexpressions which may also be evaluated
-in parallel. We change costs from from natural numbers to the cost graphs
-described in \citet{Harper2012PFPL}. A cost graph represents the dependencies
-between subcomputations in a program.  The nodes of the graph are
-subcomputations of the program and an edge between two nodes indicates the
-result of one computation is an input to the other. The cost graph can be used
-to determine an optimal strategy for scheduling the computation on multiple
-processors. The cost graph has two properties that we are interested in, work
-and span. The work is the total steps required to run the program, which
-corresponds to the steps a single processor must execute to run the program.
-The span is the critical path; the longest number of steps from the start to
-the end of the cost graph.
+fork-join parallelism, also called nested parallelism. The semantics are
+parallel in that the subexpressions to tuples and function application may be
+evaluated in parallel. Parallelism is nested because the subexpressions
+themselves may have subexpressions which may also be evaluated in parallel. We
+change costs from from natural numbers to the cost graphs described in
+\citet{Harper2012PFPL}. A cost graph represents the dependencies between
+subcomputations in a program.  The nodes of the graph are subcomputations of
+the program and an edge between two nodes indicates the result of one
+computation is an input to the other. The cost graph can be used to determine
+an optimal strategy for scheduling the computation on multiple processors. The
+cost graph has two properties that we are interested in, work and span. The
+work is the total steps required to run the program, which corresponds to the
+steps a single processor must execute to run the program.  The span is the
+critical path; the longest number of steps from the start to the end of the
+cost graph.
 
 
 

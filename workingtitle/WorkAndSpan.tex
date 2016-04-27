@@ -526,7 +526,7 @@ running time if $(f\ i)_c$ is larger.
 \section{Parallel Tree Map}
 
 \paragraph{}
-A similar program which benefits more from parallism is tree map.  When a
+A similar program which benefits more from parallelism is tree map.  When a
 function $f$ is mapped over a tree $t$, each application of $f$ to the label at
 each node can be done independently.  Furthermore, the tree data structure
 itself is dividable by construction.  Dividing the work requires only
@@ -540,7 +540,7 @@ We will use \T{int} labelled binary trees.
 
 %
 \T{map} simply deconstructs each node, applies the function to the label,
-recuses on the children, and reconstructs a node using the results.
+recurses on the children, and reconstructs a node using the results.
 %
 \begin{equation*}
   \T{map} = \lambda f.\lambda t.\T{rec}(t, \T{E} \mapsto \T{E}, \T{N} \mapsto \LP x, \LP t_0, r_0 \RP, \LP t_1, r_1 \RP\RP.\T{N} \LP f\ x, \T{force}(r_0), \T{force}(r_1)\RP)
@@ -703,9 +703,9 @@ that the difference in size of the subtrees of a node is at most 1.
                   &= 1 \vee \pi_1 (\bigvee\limits_{\substack{1 + n_0 + n_1 \leq n \\ max(j,j_0,j_1) \leq i}} f_N(j,(j_0,n_0),(j_1,n_1)))_c \\
                   &= 1 \vee \bigvee\limits_{\substack{1 + n_0 + n_1 \leq n \\ max(j,j_0,j_1) \leq i}} 2 + max((f\ j)_c,\pi_1 g_c(j_0,n_0),\pi_1 g_c(j_1,n_1)) \\
                   &= \bigvee\limits_{\substack{1 + n_0 + n_1 \leq n \\ max(j,j_0,j_1) \leq i}} 2 + (f\ j)_c \vee \pi_1 g_c(j_0,n_0) \\
-                  &\leq 2 + (f\ i)_c \vee \pi_1 g_c(i,\lceil \frac{n}{2} \rceil) \\
-									&\leq 2 + (f\ i)_c \vee ((f\ i)_c + log_2 \lceil \frac{n}{2} \rceil)
-									&\leq 2 + (f\ i)_c + log_2 \lceil \frac{n}{2} \rceil
+                  &\leq 2 + (f\ i)_c \vee \pi_1 g_c(i,\left\lceil \frac{n}{2} \right\rceil) \\
+									&\leq 2 + (f\ i)_c \vee ((f\ i)_c + log_2 \left\lceil \frac{n}{2} \right\rceil) \\
+									&\leq 2 + (f\ i)_c + log_2 \left\lceil \frac{n}{2} \right\rceil
 \end{align*}
 \end{proof}
 %
@@ -716,76 +716,3 @@ the span of the cost of traversing a list is linear in length of the list
 because the traversal must be done sequentially. The span of the cost of
 traversing a tree is logarithmic in the number of nodes in the tree because we
 can traverse the subtrees of a node in parallel.
-
-
-%In order to reap the benefits of using a tree instead of a list, we need to
-%assume the tree is balanced. We will use the same notion of balance as AVL
-%trees. The height of a tree is defined as:
-%%
-%\begin{align*}
-%  height(E) &= 0\\
-%  height(N\LP x,t_0,t_1\RP) &= 1 + max(height(t_0), height(t_1))
-%\end{align*}
-%%
-%A tree is balanced if the height of its left and right subtrees differ by at
-%most one, and its subtrees are balanced.
-%%
-%\begin{lstlisting}
-%balanced E = True
-%balanced (N x l r) =
-%  abs (height l - height r) <= 1 && balanced l && balanced r
-%\end{lstlisting}
-%%
-%In our analysis, we will need to know the largest difference in number nodes
-%between the left and right subtrees of a node.  If a node has $n$ sub-nodes,
-%then its height bounded by $2log_2(n) + 2$. We are interested in the largest
-%difference in nodes between its left and right subtrees. Let $h$ be the height
-%of the node, that is, $h \leq 2log_2(n) + 2$. Then in the worst case, one of the
-%subtrees has height $h-1$ and the other subtree has height $h-2$. The largest
-%difference in the number of nodes of the subtrees occurs when the nodes in the
-%subtree of shorter height are minimized and the nodes in the subtree of larger
-%height are maximized.
-%
-%\paragraph{}
-%The minimum number of nodes in a subtree of height $h$ is
-%given by the recurrence
-%%
-%\begin{align*}
-%  min\_nodes(0) &= 0 \\
-%  min\_nodes(1) &= 1 \\
-%  min\_nodes(h) &= 1 + min\_nodes(h-1) + min\_nodes(h-2)
-%\end{align*}
-%%
-%%The solution to this recurrence is
-%%\[
-%%  x(n) = -1+\frac{1}{2}\left(\frac{1}{2}+\frac{1}{2}\sqrt 5 \right)^n+\frac{3\sqrt 5}{10}\left(\frac{1}{2}+\frac{1}{2}\sqrt 5\right)^n - \frac{3\sqrt 5}{10}\left(\frac{1}{2}-\f
-%%\]
-%%The lower bound on this recurrence is order $k^h$ for some $k$.
-%
-%\paragraph{}
-%A tree with the maximum number of nodes is a \textit{perfect tree}. The number
-%of nodes in a perfect tree of height $h$ is $2^h-1$.
-%
-%\paragraph{}
-%So the largest difference between number of nodes is $2^{h-1} - 1 -
-%min\_nodes(h-2)$.
-%
-%\paragraph{}
-%Now in our analysis of the span, we can use the fact that $n_0 - n_1 \leq
-%2^{h-1} - 1 - min\_nodes(h-2)$ where $h$ is the height of the current node. We
-%will make the assumption that the cost of $g$ is monotonically increasing, that
-%is larger inputs result in larger outputs.
-%%
-%\begin{lemma}
-%	$\pi_1 g_c(i,n) \leq (2 + (f\ i)_c) 2 log_2 n$
-%\end{lemma}
-%%
-%\begin{proof}
-%\begin{align*}
-%    \pi_1 g_c(i,n) &= \pi_1 (\bigvee\limits_{\substack{1 + n_0 + n_1 \leq n \\ max(j,j_0,j_1) \leq i}} case(j,(j_0,n_0),(j_1,n_1), f_E, f_N))_c \\
-%                  &= 1 \vee \pi_1 (\bigvee\limits_{\substack{1 + n_0 + n_1 \leq n \\ max(j,j_0,j_1) \leq i}} f_N(j,(j_0,n_0),(j_1,n_1)))_c \\
-%                  &= 1 \vee \bigvee\limits_{\substack{1 + n_0 + n_1 \leq n \\ max(j,j_0,j_1) \leq i}} 2 + max((f\ j)_c,\pi_1 g_c(j_0,n_0),\pi_1 g_c(j_1,n_1)) \\
-%                  &= \bigvee\limits_{\substack{1 + n_0 + n_1 \leq n \\ max(j,j_0,j_1) \leq i \\ n_0 \geq n_1 \\ n_0 - n_1 \leq 2^{h-1} - 1 - min\_nodes(h-2)}} 2 + (f\ j)_c \vee \pi_1 g_c(j_0,n_0))\\
-%                  &= 2 + (f\ j)_c \vee \pi_1 g_c(i,hj))\\
-%\end{align*}
-%\end{proof}
