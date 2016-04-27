@@ -36,7 +36,7 @@
 \institute{Professor Norman Danner}
 
 %\usecolortheme{fly}
-\setbeameroption{show notes}
+%\setbeameroption{show notes}
 
 
 \begin{document}
@@ -48,6 +48,15 @@ rev = $\lambda$xs.rec(xs,
   Cons$\mapsto \LP x,\LP xs,r \RP\RP.\lambda$a.force(r) Cons$\LP$x,a$\RP$))) Nil
 \end{lstlisting}
 \end{lrbox}
+
+\defverbatim[colored]\lstfold{
+  \begin{lstlisting}[language=Caml, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
+  fold f z xs =
+    match xs with
+      [] -> z
+      x::xs' -> f x (fold f z xs')
+  \end{lstlisting}
+}
 
 \defverbatim[colored]\lstlength{
   \begin{lstlisting}[language=Caml, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
@@ -91,7 +100,7 @@ rev = $\lambda$xs.rec(xs,
   \titlepage
 \end{frame}
 
-\begin{frame}{Abstract}
+\begin{frame}{Overview}
   \begin{itemize}
     \item Complexity analysis aims to predict the resources, most often time and space, which a program requires
     \vfill
@@ -103,8 +112,7 @@ rev = $\lambda$xs.rec(xs,
     \vfill
     \item We prove an interesting fact about the recurrences for the cost of programs
   \end{itemize}
-\end{frame}
-\note{Complexity analysis aims to predict the resources, most often time and
+\note{\tiny Complexity analysis aims to predict the resources, most often time and
 space, which a program requires. Traditiional complexity analysis, you look at
 the program, you write down a recurrence which describes the cost, you solve
 the recurrence, you drop everything but the highest order term. There are
@@ -122,8 +130,44 @@ the cost model to parallel cost semantics. In the third part I prove an
 interesting theorem about the recurrences extracted from source language
 programs.
 }
+\end{frame}
 
-\begin{frame}{Introduction}
+\begin{frame}{Complexity Analysis}
+  \begin{itemize}
+    \item[]Source program
+      \lstfold
+      \vfill
+    \item[]Recurrence for cost
+      \[ T(n) = \begin{cases}
+          &c_0 \text{ if } n = 0 \\
+          &c_1 + T(n-1) \text{ otherwise}
+        \end{cases}
+      \]
+      \vfill
+    \item[]Closed form solution
+      \[T(n) = c_1 n + c_1 = \mathcal{O}(n)\]
+
+  \end{itemize}
+
+  \note{Traditional complexity analysis of a recursive program, we write down a
+  recurrence for the cost of the program. Then we solve the recurrence and drop
+the constant factors. There is no formal relation between the program and the
+recurrence.}
+
+  \note{Can we make this analysis higher-order? How do we take into account the
+    asymptotic complexity of $f$?
+
+    We could try to say that $f$ is $\mathcal{O}(x)$ where $x$ is the size of
+    the sum of its arguments. But how big are the sum of the arguments to $f$?
+
+    The size of the inputs to $f$ depend on the size of each element in the
+    list and the size of recursive calls to \T{fold}.
+
+    How to address this? Enter the \citet{Danner2015}.
+  }
+\end{frame}
+
+\begin{frame}{Overview}
   \begin{itemize}
     \item Write programs in a "source language"
     \vfill
@@ -137,6 +181,19 @@ programs.
     \vfill
     \item \textbf{potential}: size of the result of evaluating program
   \end{itemize}
+
+  \note{How do anaylsis in a way that we have a formal connection between the
+  program and the recurrence, is naturally higher-order, and compositional?
+
+  Previous work by \citet{Danner2013} and \citet{Danner2015} developed a method
+  to address this. The overview of the approach is the programmer writes their
+  programs in a source language. Then the source language program is translated
+  to whats called a complexity language. The complexity language is essentially
+  a language for expressing the recurrence for the complexity of the source
+  language program. What is a complexity? A complexity is a pair of a cost and
+  a potential. The cost is a bound on the steps required to run the program.
+  The potential is the size of the result of evaluating the program.
+}
 \end{frame}
 
 \begin{frame}{Source Language}
@@ -160,6 +217,28 @@ programs.
       \end{itemize}
     \vfill
   \end{itemize}
+
+  \note{\tiny
+    So what does the source language look like? It is a variant of System
+    T. If you're like me and can never remember the differences between the
+    variants on the lambda calculus, System T is the simply typed lambda
+    calculus with primitive recursion. The source language as structural
+    recursion as well as some additional mechanisms to control the cost of
+    programs. So we have \T{let} expressions to avoid recomputations of values
+    and suspensions to evaluating expressions we don't actually need.
+
+    The source language also has programmer-defined datatypes. Here is an
+    example of how you would define a list. The arguments to the constructor of
+    a datatype must be strictly positive.
+
+    As an example of what the source language program looks like. Here is a
+    recursive function that computes the length of a list in OCaml and the same
+    function in the source language. The \T{rec} construct gives us structural
+    recursion. It evaluates an expression to a value, and based on the
+    constructor of the value, evaluates to the appropriate branch. Inside the
+    branch we are given access to the arguments to the constructor as well as a
+    delayed computation representing the result of the recursive call.
+  }
 \end{frame}
 
 
@@ -203,15 +282,31 @@ programs.
       \end{figure}
       \vfill
   \end{itemize}
+
+  \note{The semantics of the source language are given by operation cost
+    semantics. Operational cost semantics are big step operational semantics
+    but include a notion of steps to execute the program. The judgments are of
+    the form $e$ steps to $v$ in $n$ steps.
+  }
 \end{frame}
 
 \begin{frame}{Complexity Language}
   \begin{itemize}
-    \item Language for recurrences
-    \vfill
     \item Source language without syntactic constructs for controlling costs
+    \item Types
+      \begin{align*}
+        T &::= \textbf{C} \ |\ \T{unit} \ |\ \Delta \ |\ T \times T \ |\ T \rightarrow T \\
+        \Phi &::= t \ |\ T \ |\ \Phi \times \Phi \ |\ T \rightarrow \Phi \\
+        \textbf{C} &::= 0\ |\ 1\ |\ 2\ |\ ... \\
+        \T{datatype}\Delta &= C^\Delta_0 \T{of} \Phi_{C_0}[\Delta] \ |\ ... \ |\ C^\Delta_{n-1} \T{of} \Phi_{C_{n-1}}[\Delta]
+      \end{align*}
+    \item Expressions
+      \begin{align*}
+        E &::= x | 0 | 1 | E + E | \LP\RP | \LP E,E \RP | \\
+          &\quad \pi_0 E | \pi_1 E | \lambda x.E | E\ E | C^\delta\ E | \text{rec}^\Delta(E, \overline{C \mapsto x.E_C})
+      \end{align*}
     \vfill
-    \item No \T{let}, \T{delay}, \T{split}
+    \item No longer need mechanisms for controlling cost
   \end{itemize}
 \end{frame}
 
@@ -223,13 +318,29 @@ programs.
     \vfill
     \item $\LL\tau\RR$ expression for the size of the value
     \vfill
-    \item Some cases of the translation function $\|\cdot\|$:
-      \begin{itemize}
-        \item $\|x\| = \LP 0,x \RP$
-        \item $\|\LP e_0,e_1 \RP\| = \LP \|e_0\|_c + \|e_1\|_c, \LP \|e_0\|_p,\|e_1\|_p\RP\RP$
-      \item $\|\lambda x.e\| = \LP 0, \lambda x.\|e\|\RP$
-      \item $\|e_0\ e_1\| = (1 + \|e_0\|_c + \|e_1\|_c) +_c \|e_0\|_p \|e_1\|_p$
-      \end{itemize}
+    \item Types of the translation function $\|\cdot\|$:
+      \begin{align*}
+        \|\tau\| &= \textbf{C} \times \LL \tau \RR \\
+        \LL\T{unit}\RR &= \T{unit} \\
+        \LL \sigma \times \tau \RR &= \LL \sigma \RR \times \LL \tau \RR \\
+        \LL \sigma \rightarrow \tau \RR &= \LL \sigma \RR \rightarrow \|\tau\| \\
+        \LL \T{susp}\ \tau \RR &= \|\tau\| \\
+        \LL \delta \RR &= \delta \\
+      \end{align*}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Translation}
+  \begin{itemize}
+    \item[] Some cases of the translation function
+      \begin{align*}
+        \|x\| &= \LP 0,x \RP \\
+        \|\LP e_0,e_1 \RP\| &= \LP \|e_0\|_c + \|e_1\|_c, \LP \|e_0\|_p,\|e_1\|_p\RP\RP \\
+        \|\lambda x.e\| &= \LP 0, \lambda x.\|e\|\RP \\
+        \|e_0\ e_1\| &= (1 + \|e_0\|_c + \|e_1\|_c) +_c \|e_0\|_p \|e_1\|_p \\
+        \|\T{delay}(e)\| &= \LP 0,\|e\| \RP \\
+        \|\T{force}(e)\| &= \|e\|_c +_c \|e\|_p
+      \end{align*}
   \end{itemize}
 \end{frame}
 
