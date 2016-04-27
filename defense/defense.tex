@@ -36,7 +36,7 @@
 \institute{Professor Norman Danner}
 
 %\usecolortheme{fly}
-%\setbeameroption{show notes}
+\setbeameroption{show notes}
 
 
 \begin{document}
@@ -75,6 +75,8 @@ rev = $\lambda$xs.rec(xs,
        [] -> fun ys -> ys
        (x::xs') -> fun a -> (go xs') (x::a)
     in go ys []
+
+  rev xs = foldl (fun xs x -> x::xs) [] xs
   \end{lstlisting}
 }
 
@@ -112,24 +114,25 @@ rev = $\lambda$xs.rec(xs,
     \vfill
     \item We prove an interesting fact about the recurrences for the cost of programs
   \end{itemize}
-\note{\tiny Complexity analysis aims to predict the resources, most often time and
-space, which a program requires. Traditiional complexity analysis, you look at
-the program, you write down a recurrence which describes the cost, you solve
-the recurrence, you drop everything but the highest order term. There are
-drawbacks to this approach. The foremost is that there is no formal
-relationship between the source language program and the recurrence. This makes
-it easier to make mistakes. The second drawback is the traditional approach is
-not compositional. To analyze the composition of two functions $g \circ f$ we
-need to know something about the size of the result of $f$. This gets more
-complicated with higher order functions such as \T{fold}.}
+\note{\tiny
+  Complexity analysis aims to predict the resources, most often time and space,
+  which a program requires. Traditiional complexity analysis, you look at the
+  program, you write down a recurrence which describes the cost, you solve the
+  recurrence, you drop everything but the highest order term. There are
+  drawbacks to this approach. The foremost is that there is no formal
+  relationship between the source language program and the recurrence. This
+  makes it easier to make mistakes. The second drawback is the traditional
+  approach is not compositional. To analyze the composition of two functions $g
+  \circ f$ we need to know something about the size of the result of $f$. This
+  gets more complicated with higher order functions such as \T{fold}.}
 
-\note{ My thesis comes in three parts. In the first part I analyze the cost of
-higher-order functional programs. I go through the analysis in complete detail.
-In the second part I demonstrate the flexibility of the formalism by changing
-the cost model to parallel cost semantics. In the third part I prove an
-interesting theorem about the recurrences extracted from source language
-programs.
-}
+\note{\tiny
+  My thesis comes in three parts. In the first part I analyze the cost of
+  higher-order functional programs. I go through the analysis in complete
+  detail.  In the second part I demonstrate the flexibility of the formalism by
+  changing the cost model to parallel cost semantics. In the third part I prove
+  an interesting theorem about the recurrences extracted from source language
+programs.  }
 \end{frame}
 
 \begin{frame}{Complexity Analysis}
@@ -149,12 +152,15 @@ programs.
 
   \end{itemize}
 
-  \note{Traditional complexity analysis of a recursive program, we write down a
-  recurrence for the cost of the program. Then we solve the recurrence and drop
-the constant factors. There is no formal relation between the program and the
-recurrence.}
+  \note{\tiny
+    Traditional complexity analysis of a recursive program, we write down a
+    recurrence for the cost of the program. Then we solve the recurrence and drop
+    the constant factors. There is no formal relation between the program and the
+    recurrence.
+  }
 
-  \note{Can we make this analysis higher-order? How do we take into account the
+  \note{\tiny
+    Can we make this analysis higher-order? How do we take into account the
     asymptotic complexity of $f$?
 
     We could try to say that $f$ is $\mathcal{O}(x)$ where $x$ is the size of
@@ -182,7 +188,8 @@ recurrence.}
     \item \textbf{potential}: size of the result of evaluating program
   \end{itemize}
 
-  \note{How do anaylsis in a way that we have a formal connection between the
+  \note{ \tiny
+    How do anaylsis in a way that we have a formal connection between the
   program and the recurrence, is naturally higher-order, and compositional?
 
   Previous work by \citet{Danner2013} and \citet{Danner2015} developed a method
@@ -283,7 +290,8 @@ recurrence.}
       \vfill
   \end{itemize}
 
-  \note{The semantics of the source language are given by operation cost
+  \note{\tiny
+    The semantics of the source language are given by operation cost
     semantics. Operational cost semantics are big step operational semantics
     but include a notion of steps to execute the program. The judgments are of
     the form $e$ steps to $v$ in $n$ steps.
@@ -308,6 +316,15 @@ recurrence.}
     \vfill
     \item No longer need mechanisms for controlling cost
   \end{itemize}
+
+  \note{\tiny
+    The complexity language is a language for recurrences for the cost and
+    potential of a source language program. We add an additional type
+    \textbf{C} for costs. The rest of the language is very similar to the
+    source language except we no longer need the syntactic constructs for
+    controlling the costs. So the complexity language does not have suspensions
+    or let expressions.
+  }
 \end{frame}
 
 \begin{frame}{Translation}
@@ -328,6 +345,25 @@ recurrence.}
         \LL \delta \RR &= \delta \\
       \end{align*}
   \end{itemize}
+
+  \note{\tiny
+    The translation function cross compiles source language programs to
+    complexity language programs. So a source language program of type $\tau$
+    is translated to a complexity language program of type $\textbf{C}\times
+    \LL \tau \RR$. The \textbf{C} component is a bound on the steps to evaluate
+    the program and $\LL \tau \RR$ is a complexity language expression for the
+    size of the result of executing the program.
+
+    Abstractions are less straightforward. The cost of
+    evaluating an abstraction is $0$, since abstractions are in normal form.
+    The potential of the translation of an abstraction is a function from
+    potentials to complexities. Recall that a potential captures the cost of
+    future uses of an expression. The cost of future uses of a function depends
+    on the size of inputs you apply it to. So the potential of an abstraction
+    is a function whose argument is a potential. Since applying a function has
+    both a cost and a result. The codomain of the potential of the abstraction
+    translation is a cost and a potential, aka a complexity.
+}
 \end{frame}
 
 \begin{frame}{Translation}
@@ -342,6 +378,16 @@ recurrence.}
         \|\T{force}(e)\| &= \|e\|_c +_c \|e\|_p
       \end{align*}
   \end{itemize}
+
+  \note{\tiny
+    Here are some cases of the translation function to get a better idea of
+    what is going on. In the variable case, the result of the translation is
+    $\LL 0,x \RR$. The cost of evaluating the variable is $0$ as it is already
+    in normal form. The potential is the variable itself. The cost of
+    translating a pair is the sum of the costs of translating the elements of
+    the tuple. The potential is the pair of the potentials of the translations
+    of the expressions.
+  }
 \end{frame}
 
 
@@ -359,6 +405,13 @@ recurrence.}
       %Specification of auxilary function:\\
       %\T{rec($[x_0,\dots,x_{n-1}],\dots$) [$y_0,\dots,y_{m-1}$] = [$x_{n-1},\dots,x_0,y_0,\dots,y_{m-1}$]}
   \end{itemize}
+
+  \note{\tiny
+    I'll go through two examples. The first is a higher-order function. The
+    function reverses a list but uses a higher-order function to do so in linear
+    time. Here is the implementation in OCaml. You'll notice that this is in fact a
+    higher-order fold, and that we can write the function using a fold like so.
+}
 \end{frame}
 
 \begin{frame}{Fast Reverse - Specification and Implementation}
@@ -379,6 +432,16 @@ recurrence.}
     \item
       $\to_\beta$ Cons$\LP$1,Cons$\LP$0,Nil$\RP\RP$
   \end{itemize}
+
+  \note{\tiny
+    To give you an intuition into how this works, we the recursion results
+    in nested functions. Each function takes a list of an argument and conses
+    and element of to the list. The outermost function conses the first element
+    of the original list and the innermost function conses the last element.
+    Since the outermost function is evaluated first, the first element gets
+    consed onto an empty list first and the last element gets consed on last,
+    resulting in a reversed list. (DRAW PICTURE).
+  }
 \end{frame}
 
 \begin{frame}{Fast Reverse - Translation}
@@ -395,6 +458,14 @@ recurrence.}
   &\quad \T{Cons}\mapsto \LP x, \LP xs', r\RP\RP. \LP 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\LP x, a \RP \RP)\ \T{Nil})\ xs
     \end{align*}
   \end{itemize}
+
+  \note{\tiny
+    This is the result of the translation into the complexity language. The
+    first term is the complexity of the function \T{rev} itself. The cost is
+    $0$ and the potential is a function from potentials to complexities. We are
+    interested in the analysis of applying the function \T{rev} to some list,
+    so the translation of \T{rev xs} also shown.
+  }
 \end{frame}
 
 \begin{frame}{Fast Reverse - Interpretation}
@@ -405,13 +476,47 @@ recurrence.}
     size_{list}(\ast) &= 1\\
     size_{list}(1,n) &= 1 + n\\
   \end{flalign*}
-  The interpretation of the recursor is
+
+  \note{\tiny
+    The translation of a term to the complexity language does not throw
+    away any information. That is, there is no abstractions about the list. To
+    do so we interpret the complexity language expression in a denotational
+    semantics. Denotational semantics assign meanings to programs by
+    interpreting types as sets and terms as elements of the set corrresponding
+    to their type. Abstractions of type $\tau \to \sigma$ are interpreted as
+    mathematical functions with domain $\tau$ and codomain $\sigma$. We use
+    standard denotational semantics. The exception is programmer-defined
+    datatypes. There are multiple interpretations of the size of a datatype.
+    For example, if our natural numbers are fixed width integers we may want to
+    interpret all natural numbers as having the same size. We may also
+    interpret natural numbers as an inductively defined datatypes, where the
+    interpretation of a natural number is the number itself. Another example is
+    trees. We may want to interpret trees as their number of nodes. We may also
+    want to interpret trees as their number of nodes and the maximum size of
+    their label. Another possible interpretation is the height of the tree.
+
+    Here we interpret lists as their lengths. We need $D$ because we need to be
+    able to branch on a datatype in the denotational semantics, so we introduce
+    the sum type $D$ representing the unfolding of the constructors.
+  }
+\end{frame}
+
+\begin{frame}{Fast Reverse - Interpretation}
+  Interpretation of the recursor
   \begin{align*}
     g(n) &= \bigvee\limits_{size\ z \leq n} case(z, f_C, f_N) \\
   &\text{where} \\
     f_{Nil}(x) &= (1, \lambda a.(0, a)) \\
    f_{Cons}(b) &= (1, \lambda a. (1 + g_c(\pi_1 b)) +_c g_p(\pi_1 b)\ (a + 1))\\
   \end{align*}
+
+  \note{\tiny
+    The interpretation of a structural recursion is a maximum over a $case$
+    expression.
+
+    This is a recurrence for the function. We want the recurrence for the
+    complexity of the function applied to some value.
+  }
 \end{frame}
 
 \begin{frame}{Fast Reverse - Interpretation}
@@ -434,6 +539,15 @@ recurrence.}
       \end{equation}
     \item $h_p(n,a) = n + a$
   \end{itemize}
+
+  \note{\tiny
+    So we let $h$ be the result of applying $g$ to the interpretation of some
+    list $a$. In order to make the analysis easier we break the complexity
+    recurrence into a recurrence for the cost and a recurrence for the
+    potential. Then we can solve the recurrences to get closed form solutions.
+    So the conclusion is the cost is linear in the length of the list and the
+    potential is the sum of the two lists.
+  }
 \end{frame}
 
 \begin{frame}{Parametric Insertion Sort - Source Language Insert}
