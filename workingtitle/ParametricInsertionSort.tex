@@ -482,7 +482,7 @@ the potential first.
 %
 \begin{lemma}
   \label{lem:sort_interp_potential}
-  $g_p(n) \leq (j, n)$
+  $g_p(i, n) \leq (i, n)$
 \end{lemma}
 \begin{proof}
   We prove this by induction on $n$.
@@ -514,7 +514,7 @@ recurrence for the cost of \T{sort}.
 %
 \begin{lemma}
   \label{lem:sort_interp_cost}
-  $\pi_0g(n) \leq (3 + \pi_0(\pi_1(f\ x)\ i)n^2 + 5n + 1$
+  $g_c(i, n) \leq (3 + ((f\ i)_p\ i)_c n^2 + 5n + 1$
 \end{lemma}
 %
 \begin{proof}
@@ -532,7 +532,7 @@ recurrence for the cost of \T{sort}.
         &\leq \bigvee\limits_{\substack{j < i, m \leq n\\ \text{ or } j \leq i, m < n}} 3 + c_1m^2 - 2c_1m +c_1 + 5m-5 + 1 + c_1m - c_1 + 1\\
         &\leq \bigvee\limits_{\substack{j < i, m \leq n\\ \text{ or } j \leq i, m < n}} c_1m^2 - c_1m + 5m + 1\\
         &\leq \bigvee\limits_{\substack{j < i, m \leq n\\ \text{ or } j \leq i, m < n}} (3 + \pi_0(\pi_1(f\ i)\ i))n^2 + 5n + 1\\
-        &\leq (4 + ((f\ i)\ i)_p)_cn^2 + 5n + 1
+        &\leq (3 + ((f\ i)\ i)_p)_cn^2 + 5n + 1
       \end{flalign*}
   \end{description}
 \end{proof}
