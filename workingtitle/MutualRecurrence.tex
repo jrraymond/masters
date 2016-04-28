@@ -268,6 +268,7 @@ Our last lemma is about the relatedness of $rec$ terms.
     \AxiomC{$E_C[V_1/x] \downarrow V$}
     \TrinaryInfC{$rec(E, \overline{C \mapsto x.E_C}) \downarrow V$}
   \end{prooftree}
+  \begin{sloppypar}
   By definition of $\sim_\delta$, $\exists k, C, V_0, V_0'$ such that $E \downarrow \LP k, C V_{0p} \RP, E' \downarrow C V_0'$, and $V_0 \sim_\delta V_0'$.
   Our proof proceeds by induction on the number of constructors in $C V_{0p}$.
   If $\Phi = T$, then $map^\Phi(y, \LP y, rec(y, \overline{C \mapsto x.E_C})\RP, V_{0p}) = \LP y, rec(y, \overline{C \mapsto x.E_C})\RP[V_{0p}/y] = \LP V_{0p}, rec(V_{0p}, \overline{C \mapsto x.E_C}) \RP$.
@@ -279,6 +280,7 @@ Our last lemma is about the relatedness of $rec$ terms.
   Let $\LP 0, map^\Phi(y, \LP y, rec(y, \overline{C \mapsto x.E_C})\RP, V_{0p}) \downarrow V_1$.
   Let $map^\Phi(y, \LP y, rec(y, \overline{C \mapsto x.E_C'}) \RP, V_0') \downarrow V_1'$.
   By \ref{lem:relatedstep}, $V_1 \sim_{\phi[\delta \times \texttt{susp }\tau]} V_1'$.
+  \end{sloppypar}
 
   If $\Phi = t$, then $map^\Phi(y, \LP y, rec(y, \overline{C \mapsto x.E_C})\RP, V_{0p}) = V_{0p}$.
   Similarly, $map^\Phi(y, \LP y, rec(y, \overline{C \mapsto x.E_C'})\RP V_0') = V_0'$.

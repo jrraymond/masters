@@ -10,6 +10,8 @@
 \usepackage{float}
 \usepackage{upgreek}
 \usepackage{stmaryrd}
+\usepackage[font=small]{caption}
+\usepackage{float}
 
 % ND comments.
 \usepackage[normalem]{ulem}
@@ -37,6 +39,17 @@
 %\newcommand{\pplus}{\raisebox{0.25ex}{+}\!\!\!\!\!+}
 
 \makeatletter
+\newcommand{\fs@singlerule}{%
+	\fs@plain%
+	\def\@fs@mid{\vskip1ex\hrule\vskip1ex}
+}
+\makeatother
+\floatstyle{singlerule}
+\restylefloat{figure}
+\newfloat{program}{t}{pgm}
+\floatname{program}{Program}
+
+\makeatletter
 \def\old@comma{,}
 \catcode`\,=13
 \def,{%
@@ -57,6 +70,7 @@
 
 \title{Extracting Cost Recurrences from Sequential and Parallel Functional Programs}
 \author{Justin Raymond}
+\submitdate{\today}
 
 \theoremstyle{plain}
 \newtheorem{theorem}{Theorem}[chapter]
@@ -98,6 +112,8 @@ of the program.
   me the past year. Without him, this thesis would not have made it past the
   title page. Thanks also to Jim Lipton, Dan Licata, and Danny Krizanc who,
   along with Norman Danner, taught me everything I know about Computer Science.
+  \par
+  Thank you to my readers: Norman Danner, Dan Licata, and Saleh Aliyari.
 \end{acknowledgements}
 %
 

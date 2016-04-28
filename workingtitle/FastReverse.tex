@@ -35,7 +35,7 @@ this syntactic sugar.
 %
 \begin{lstlisting}
 rev = $\lambda$xs.rec(xs, Nil $\mapsto \lambda$a.a,
-              Cons$\mapsto\LP$y$\LP$ys,r$\RP\RP$.$\lambda$b.force(r) Cons$\LP$x,b$\RP$) Nil
+              Cons$\mapsto\LP$y,$\LP$ys,r$\RP\RP$.$\lambda$b.force(r) Cons$\LP$x,b$\RP$) Nil
 \end{lstlisting}
 %
 Each recursive call creates an abstraction that applies the recursive call on
@@ -57,6 +57,12 @@ rev (Cons$\LP$0,Cons$\LP$1, Nil$\RP\RP$) $\to$
   $\to_\beta$ Cons$\LP$1,Cons$\LP$0,Nil$\RP\RP$
 \end{lstlisting}
 %
+\paragraph{}
+This example is especially interesting because traditional complexity analysis
+will tell us the recursive function which builds the nested functions runs in
+linear time, but it is not able to tell us the cost of applying the nested
+functions to value.
+
 % -------------------- BEGIN REV TRANSLATION SPLIT --------------------
 \subsection{Translation}
 We will walk through the translation from the source language to the complexity
@@ -177,13 +183,13 @@ The translation of $b$ is $\LP 0, b\RP$.
 % COMPOSE SUBSTITUTIONS
 %
 \begin{flalign*}
-  &\text{We will translate $\T{force}(r)$ and $\T{Cons}\LP x,a\RP$ individually.} \\
-  &\text{First we compose the two substitutions.} \\
+  &\text{We will translate $\T{force}(r)$ and $\T{Cons}\LP x,a\RP$ individually.} &\\
+  &\text{First we compose the two substitutions.} &\\
   %
-  &\text{let } \Theta = [\pi_0 \|c\|_p/xs', \pi_1\|c\|_p/r][\pi_0 \| b \|_p/x,\pi_1 \| b \|_p/c] \\
-  &\quadthree = [\pi_0\pi_1 \|b\|_p/xs', \pi_1\pi_1\|b\|_p/r, \pi_0 \| b \|_p/x] \\
-  &\quad \text{Since $b$ is a variable, the potential  of its translation is $b$.} \\
-  &\Theta = [\pi_0\pi_1 b/xs', \pi_1\pi_1 b/r, \pi_0 b/x] \\
+  &\text{let } \Theta = [\pi_0 \|c\|_p/xs', \pi_1\|c\|_p/r][\pi_0 \| b \|_p/x,\pi_1 \| b \|_p/c] &\\
+  &\quadthree = [\pi_0\pi_1 \|b\|_p/xs', \pi_1\pi_1\|b\|_p/r, \pi_0 \| b \|_p/x] &\\
+  &\quad \text{Since $b$ is a variable, the potential  of its translation is $b$.} &\\
+  &\Theta = [\pi_0\pi_1 b/xs', \pi_1\pi_1 b/r, \pi_0 b/x] &
 \end{flalign*}
 %
 % FORCE
@@ -431,13 +437,12 @@ will use the syntactic sugar for the rest of this thesis.
 %
 \subsection{Interpretation}
 %
-The interpretation of \T{rev} is not interesting as the cost of \T{rev} is always null.
 Instead of interpreting \T{rev}, we will interpret \T{rev} applied to a list \T{xs}.
 Below is the translation of \T{rev xs}.
 %
 \begin{flalign*}
   &\|\T{rev xs}\| = (1 + \|\T{rev}\|_c + \|xs\|_c) +_c \|\T{rev}\|_p\ \|xs\|_p \\
-  &\text{The cost of $\|\T{rev}\|$ is $0$, and we will let \T{xs} be a value, which has $0$ cost.} \\
+  &\text{The cost of $\|\T{rev}\|$ is $0$, and we will let \T{xs} be a variable, which has $0$ cost.} \\
   &= (1 + 0 + 0) +_c \|\T{rev}\|_p\ xs \\
   &= 1 +_c (\lambda xs.\T{rec}(xs, \T{Nil} \mapsto \LP 1, \lambda a. \LP 0, a \RP \RP \\
   &\qquad \T{Cons}\mapsto \LP x, \LP xs', r\RP\RP. \LP 1, \lambda a.(1 + r_c) +_c r_p\ \T{Cons}\LP x, a \RP \RP)\ \T{Nil})\ xs
@@ -459,6 +464,7 @@ We interpret the size of an \T{list} to be the number of list constructors.
   size_{list}(\T{Cons(1,n)}) &= 1 + n\\
 \end{flalign*}
 %
+$\mathbb{N}^\infty$ is the set of the natural numbers extended with infinity.
 We define the macro $R(xs)$ as the translation of the auxiliary function
 \T{rec(...)} to avoid repeated coping of the translation.
 %

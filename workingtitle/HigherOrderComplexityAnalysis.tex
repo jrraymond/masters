@@ -6,189 +6,6 @@ language program may be used to analyse the complexity of the original
 program.
 
 \section{Source Language}
-\paragraph{}
-The source language is the simply typed lambda calculus with \T{Unit},
-products, suspensions, programmer-defined inductive datatypes and a recursion
-construct. Valid signatures, types, and constructor arguments are given in
-Figure \ref{fig:source_lang_sigs_types_constructors}. The types, expressions,
-and typing judgments of the source language are given in Figure
-\ref{fig:source_lang_syntax_types}. Evaluation is call-by-value and the rules
-for evaluation are given in Figure \ref{fig:source_lang_oper_sem}.
-
-\paragraph{}
-We use big-step operational cost semantics. Small-step operational semantics
-provide an indirect notion of number of steps required to evaluate a program to
-a value. Big-step operational semantics do not allow this since intermediate
-evaluation steps are suppressed. Big-step operational semantics introduce a
-notion of cost by using evaluation judgements of the form $e \downarrow^n v$.
-For example the evaluation judgement for a tuple is
-%
-\begin{prooftree}
-  \AxiomC{$e_0 \downarrow^{n_0} v_0$}
-  \AxiomC{$e_1 \downarrow^{n_1} v_1$}
-  \BinaryInfC{$\LP e_0,e_1 \RP \downarrow^{n_0 + n_1} \LP v_0,v_1\RP$}
-\end{prooftree}
-%
-This judgement reads if $e_0$ evaluates to a value $v_0$ in $n_0$ steps and
-$e_1$ evaluates to a value $v_1$ in $n_1$ steps, then the tuple $\LP
-e_0,v_0\RP$ evaluates to the value $\LP v_0,v_1\RP$ in $n_0+n_1$ steps.
-
-\paragraph{}
-A program using datatypes must have a top-level signature $\psi$ consisting of
-datatype declarations of the form
-%
-\[ \T{datatype} \delta = C^\delta_0 \T{of} \phi_{C_0}[\delta] \ |\ ...\ |\ C^\delta_{n-1} \T{of} \phi_{C_{n-1}}[\delta] \]
-%
-Each datatype may only refer to datatypes declared earlier in the signature.
-This prevents general recursive datatypes.  The argument to each constructor is
-given by a strictly positive functor $\phi$, which is one of $t$, $\tau$,
-$\phi_0 \times \phi_1$, and $\tau \rightarrow \phi$.  The identity functor $t$
-represents recursive occurrence of the datatype.  The constant functor $\tau$
-represents a non-recursive type.  The product functor $\phi_0 \times \phi_1$
-represents a pair of arguments.  The constant exponential $\tau \rightarrow \phi$
-represents a function type.  The introduction forms for datatypes are the
-constructors.  The elimination form for a datatype is the \T{rec} construct.
-
-\paragraph{}
-To give the reader a better understanding of the source language, we will
-implement a small program, explaining the syntax and semantics we need as we
-go.  We define an \T{list} datatype in the source language below.
-%
-\[
-  \T{datatype list = Nil of unit | Cons of int$\times$list}
-\]
-%
-\T{unit} is a singleton type with only one inhabitant, the value
-$\LP\RP$, also called unit.
-
-
-The \T{listmap} function applies a function to each element in a list.
-%
-\[
-  \T{listmap f xs} = \T{rec}(xs, \T{Nil} \mapsto z.\T{Nil}, \T{Cons} \mapsto z.\T{Cons}\LP\pi_0 z, \T{force}(\pi_1\pi_1 z)\RP)
-\]
-%
-This function uses the \T{rec} construct, which is how we do structural
-recursion on datatypes.
-%
-\begin{prooftree}
-\AxiomC{$\gamma \vdash e : \delta$}
-\AxiomC{$\forall C . \gamma, x : \phi_C[\delta \times \T{susp}\ \tau] \vdash e_C : \tau$}
-\BinaryInfC{$\gamma \vdash \T{rec}^\delta(e, \overline{C \mapsto x.e_C}) : \tau$}
-\end{prooftree}
-%
-The \T{rec} is a branch on an expression. The expression is evaluated to a
-value, and the branch of the \T{rec} matching the outermost constructor of the
-value is taken. Inside the each branch of the \T{rec}, the variable $x$ is a
-value of type $\phi_C[\delta \times \T{susp } \tau]$. A suspension is an
-unevaluated computation.  A suspension has type \T{susp} $\tau$ where $\tau$ is
-the type of the suspended computation.
-
-\paragraph{}
-Suspensions are introduced using the \T{delay}$(e)$ operator.  Suspensions are
-eliminated using the \T{force}$(e)$ operator, which evaluates the suspended
-computation. The \T{rec} construct makes available all recursive calls.
-Suspensions are necessary to avoid charging for recursive calls that are not
-actually used.
-
-\paragraph{}
-The operational semantics for \T{rec} are
-%
-\begin{prooftree}
-  \AxiomC{$e \downarrow^{n_0} C v_0$}
-  \AxiomC{$\T{map}^{\phi_C}(y.\LP y, \T{delay}(\T{rec}(y, \overline{C \mapsto x.e_C}))\RP, v_0) \downarrow^{n_1} v_1$}
-  \AxiomC{$e_C[v_1/x] \downarrow^{n_2} v$}
-  \TrinaryInfC{$rec(e, \overline{C \mapsto x.e_C}) \downarrow^{1 + n_0 + n_1 + n_2} v$}
-\end{prooftree}
-%
-\T{map} is used to lift functions from $\sigma \rightarrow \tau$ to
-$\phi[\sigma] \rightarrow \phi[\tau]$. To understand the role of \T{map} in
-\T{rec}, let us consider the two branches of \T{rec} in \T{listmap}.
-%
-\[
-  \text{Let } E = \T{rec}(y, \T{Nil} \mapsto \T{Nil}, \T{Cons} \mapsto z.\T{Cons}\LP\pi_0 z, \T{force}(\pi_1\pi_1 z)\RP)
-\]
-%
-
-\paragraph{}
-The first case, $xs$ is \T{Nil}, so according to the operational semantics,
-$e \downarrow \T{Nil} \LP\RP$ in $0$ steps. Next
-%
-\[
-  \T{map}^{\phi_\T{Nil}}(y,\LP y, \T{delay}(E)\RP, \LP\RP)
-\]
-%
-is evaluated to a value $v_1$. We substitute $v_1$ for $z$ in the body of the
-\T{Nil} branch and evaluate the body to a value to get our result.
-%
-\begin{prooftree}
-  \AxiomC{}
-  \UnaryInfC{$\T{map}^\tau(x.v, v_0) \downarrow^0 v_0$}
-\end{prooftree}
-%
-So the \T{map} evaluates to $\LP\RP$.
-
-
-\paragraph{}
-In the second case, the outermost constructor of $xs$ is \T{Cons}. Let the
-argument to this constructor be the tuple $\LP x,xs'\RP$. So the map expression
-is
-%
-\[
-  \T{map}^{\phi_\T{Cons}}(y,\LP y,\T{delay}(E)\RP, (x, xs') \RP)
-\]
-%
-To evaluate the \T{map} expression, we use the rule for mapping over a pair.
-%
-\begin{prooftree}
-  \AxiomC{$\T{map}^{\phi_0}(x.v, v_0) \downarrow^{n_0} v_0'$}
-  \AxiomC{$\T{map}^{\phi_1}(x.v, v_1) \downarrow^{n_1} v_1'$}
-  \BinaryInfC{$\T{map}^{\phi_0 \times \phi_1}(x.v, \LP v_0, v_1 \RP) \downarrow^{n_0 + n_1} \LP v_0', v_1'\RP$}
-\end{prooftree}
-%
-We apply the rule for mapping over a pair.
-%
-\[
-  \LP \T{map}^\T{int}(y,\LP y,\T{delay}(E)\RP, x), \T{map}^{\phi_\T{susp list}}(y,\LP y,\T{delay}(E)\RP, xs')\RP
-\]
-%
-The first \T{map} is over a non-recursive occurrence of \T{list}. Recall the rule
-for evaluating this \T{map}.
-%
-\begin{prooftree}
-  \AxiomC{}
-  \UnaryInfC{$\T{map}^\tau(x.v, v_0) \downarrow^0 v_0$}
-\end{prooftree}
-%
-So the first \T{map} evaluates to $x$.
-
-
-The second map is over a recursive occurrence of \T{list}. The rule to
-evaluate this \T{map} is
-%
-\begin{prooftree}
-  \AxiomC{}
-  \UnaryInfC{$\T{map}^t(x.v, v_0) \downarrow^0 v[v_0/x]$}
-\end{prooftree}
-%
-The result of the \T{map} over the second element of the tuple is $\LP y,
-\T{delay}(E) \RP[xs'/y] = \LP xs',\T{delay}(E[xs'/y])\RP$. So the result of the
-\T{map} over the tuple is $\LP x, \LP xs', \T{delay}(E[xs'/y])\RP\RP$. Recall
-the body of the \T{Cons} branch of the \T{rec} is $\T{Cons}\LP f \pi_0 z,
-\T{force}(\pi_1\pi_1 z)\RP$. We have just shown how the \T{map} expression
-results in the term $\LP x, \LP xs',\T{delay}(E[xs'/z])\RP\RP$. This is the
-term $z$ is bound to inside the body of the \T{Cons} branch. So $\pi_0 z$ is
-the head of the list and $\pi_1\pi_1 z$ is a suspended computation representing
-the recursive call on the tail of the list. Since it is  suspended, we need to
-use the \T{force} function to evaluate it.
-
-
-\paragraph{}
-The $\T{let}(e_0,x.e_1)$ syntactic construct serves the purpose avoiding
-recomputation of values. If $e_0$ is an expensive computation that occurs more
-than once in $e_1$, we can use \T{let} to compute $e_0$ and use the result
-inside $e_1$ multiple times without paying cost multiple times.
-
 
 \begin{figure}
   \caption{Source language syntax and types}
@@ -419,6 +236,193 @@ inside $e_1$ multiple times without paying cost multiple times.
   \DisplayProof
 \end{figure}
 
+
+\paragraph{}
+The source language is the simply typed lambda calculus with \T{Unit},
+products, suspensions, programmer-defined inductive datatypes and a recursion
+construct. Valid signatures, types, and constructor arguments are given in
+Figure \ref{fig:source_lang_sigs_types_constructors}. The types, expressions,
+and typing judgments of the source language are given in Figure
+\ref{fig:source_lang_syntax_types}. Evaluation is call-by-value and the rules
+for evaluation are given in Figure \ref{fig:source_lang_oper_sem}.
+
+\paragraph{}
+We use big-step operational cost semantics. Small-step operational semantics
+provide an indirect notion of number of steps required to evaluate a program to
+a value. Big-step operational semantics do not allow this since intermediate
+evaluation steps are suppressed. Big-step operational semantics introduce a
+notion of cost by using evaluation judgements of the form $e \downarrow^n v$.
+For example the evaluation judgement for a tuple is
+%
+\begin{prooftree}
+  \AxiomC{$e_0 \downarrow^{n_0} v_0$}
+  \AxiomC{$e_1 \downarrow^{n_1} v_1$}
+  \BinaryInfC{$\LP e_0,e_1 \RP \downarrow^{n_0 + n_1} \LP v_0,v_1\RP$}
+\end{prooftree}
+%
+This judgement reads if $e_0$ evaluates to a value $v_0$ in $n_0$ steps and
+$e_1$ evaluates to a value $v_1$ in $n_1$ steps, then the tuple $\LP
+e_0,v_0\RP$ evaluates to the value $\LP v_0,v_1\RP$ in $n_0+n_1$ steps.
+
+\paragraph{}
+A program using datatypes must have a top-level signature $\psi$ consisting of
+datatype declarations of the form
+%
+\[ \T{datatype} \delta = C^\delta_0 \T{of} \phi_{C_0}[\delta] \ |\ ...\ |\ C^\delta_{n-1} \T{of} \phi_{C_{n-1}}[\delta] \]
+%
+Each datatype may only refer to datatypes declared earlier in the signature.
+This prevents general recursive datatypes.  The argument to each constructor is
+given by a strictly positive functor $\phi$, which is one of $t$, $\tau$,
+$\phi_0 \times \phi_1$, and $\tau \rightarrow \phi$.  The identity functor $t$
+represents recursive occurrence of the datatype.  The constant functor $\tau$
+represents a non-recursive type.  The product functor $\phi_0 \times \phi_1$
+represents a pair of arguments.  The constant exponential $\tau \rightarrow \phi$
+represents a function type.  The introduction forms for datatypes are the
+constructors.  The elimination form for a datatype is the \T{rec} construct.
+
+\paragraph{}
+To give the reader a better understanding of the source language, we will
+implement a small program, explaining the syntax and semantics we need as we
+go.  We define an \T{list} datatype in the source language below.
+%
+\[
+  \T{datatype list = Nil of unit | Cons of int$\times$list}
+\]
+%
+\T{unit} is a singleton type with only one inhabitant, the value
+$\LP\RP$, also called unit.
+
+
+The \T{listmap} function applies a function to each element in a list.
+%
+\[
+  \T{listmap f xs} = \T{rec}(xs, \T{Nil} \mapsto z.\T{Nil}, \T{Cons} \mapsto z.\T{Cons}\LP\pi_0 z, \T{force}(\pi_1\pi_1 z)\RP)
+\]
+%
+This function uses the \T{rec} construct, which is how we do structural
+recursion on datatypes.
+%
+\begin{prooftree}
+\AxiomC{$\gamma \vdash e : \delta$}
+\AxiomC{$\forall C . \gamma, x : \phi_C[\delta \times \T{susp}\ \tau] \vdash e_C : \tau$}
+\BinaryInfC{$\gamma \vdash \T{rec}^\delta(e, \overline{C \mapsto x.e_C}) : \tau$}
+\end{prooftree}
+%
+The \T{rec} is a branch on an expression. The expression is evaluated to a
+value, and the branch of the \T{rec} matching the outermost constructor of the
+value is taken. Inside the each branch of the \T{rec}, the variable $x$ is a
+value of type $\phi_C[\delta \times \T{susp } \tau]$. A suspension is an
+unevaluated computation.  A suspension has type \T{susp} $\tau$ where $\tau$ is
+the type of the suspended computation.
+
+\paragraph{}
+Suspensions are introduced using the \T{delay}$(e)$ operator.  Suspensions are
+eliminated using the \T{force}$(e)$ operator, which evaluates the suspended
+computation. The \T{rec} construct makes available all recursive calls.
+Suspensions are necessary to avoid charging for recursive calls that are not
+actually used.
+
+\paragraph{}
+The operational semantics for \T{rec} are
+%
+\begin{prooftree}
+  \AxiomC{$e \downarrow^{n_0} C v_0$}
+  \AxiomC{$\T{map}^{\phi_C}(y.\LP y, \T{delay}(\T{rec}(y, \overline{C \mapsto x.e_C}))\RP, v_0) \downarrow^{n_1} v_1$}
+  \AxiomC{$e_C[v_1/x] \downarrow^{n_2} v$}
+  \TrinaryInfC{$rec(e, \overline{C \mapsto x.e_C}) \downarrow^{1 + n_0 + n_1 + n_2} v$}
+\end{prooftree}
+%
+\T{map} is used to lift functions from $\sigma \rightarrow \tau$ to
+$\phi[\sigma] \rightarrow \phi[\tau]$. To understand the role of \T{map} in
+\T{rec}, let us consider the two branches of \T{rec} in \T{listmap}.
+%
+\[
+  \text{Let } E = \T{rec}(y, \T{Nil} \mapsto \T{Nil}, \T{Cons} \mapsto z.\T{Cons}\LP\pi_0 z, \T{force}(\pi_1\pi_1 z)\RP)
+\]
+%
+
+\paragraph{}
+The first case, $xs$ is \T{Nil}, so according to the operational semantics,
+$e \downarrow \T{Nil} \LP\RP$ in $0$ steps. Next
+%
+\[
+  \T{map}^{\phi_\T{Nil}}(y,\LP y, \T{delay}(E)\RP, \LP\RP)
+\]
+%
+is evaluated to a value $v_1$. We substitute $v_1$ for $z$ in the body of the
+\T{Nil} branch and evaluate the body to a value to get our result.
+%
+\begin{prooftree}
+  \AxiomC{}
+  \UnaryInfC{$\T{map}^\tau(x.v, v_0) \downarrow^0 v_0$}
+\end{prooftree}
+%
+So the \T{map} evaluates to $\LP\RP$.
+
+
+\paragraph{}
+In the second case, the outermost constructor of $xs$ is \T{Cons}. Let the
+argument to this constructor be the tuple $\LP x,xs'\RP$. So the map expression
+is
+%
+\[
+  \T{map}^{\phi_\T{Cons}}(y,\LP y,\T{delay}(E)\RP, (x, xs') \RP)
+\]
+%
+To evaluate the \T{map} expression, we use the rule for mapping over a pair.
+%
+\begin{prooftree}
+  \AxiomC{$\T{map}^{\phi_0}(x.v, v_0) \downarrow^{n_0} v_0'$}
+  \AxiomC{$\T{map}^{\phi_1}(x.v, v_1) \downarrow^{n_1} v_1'$}
+  \BinaryInfC{$\T{map}^{\phi_0 \times \phi_1}(x.v, \LP v_0, v_1 \RP) \downarrow^{n_0 + n_1} \LP v_0', v_1'\RP$}
+\end{prooftree}
+%
+We apply the rule for mapping over a pair.
+%
+\[
+  \LP \T{map}^\T{int}(y,\LP y,\T{delay}(E)\RP, x), \T{map}^{\phi_\T{susp list}}(y,\LP y,\T{delay}(E)\RP, xs')\RP
+\]
+%
+The first \T{map} is over a non-recursive argument of a constructor. Recall the
+rule for evaluating this \T{map}.
+%
+\begin{prooftree}
+  \AxiomC{}
+  \UnaryInfC{$\T{map}^\tau(x.v, v_0) \downarrow^0 v_0$}
+\end{prooftree}
+%
+So the first \T{map} evaluates to $x$.
+
+
+The second map is over a recursive argument of a constructor. The rule to
+evaluate this \T{map} is
+%
+\begin{prooftree}
+  \AxiomC{}
+  \UnaryInfC{$\T{map}^t(x.v, v_0) \downarrow^0 v[v_0/x]$}
+\end{prooftree}
+%
+The result of the \T{map} over the second element of the tuple is $\LP y,
+\T{delay}(E) \RP[xs'/y] = \LP xs',\T{delay}(E[xs'/y])\RP$. So the result of the
+\T{map} over the tuple is $\LP x, \LP xs', \T{delay}(E[xs'/y])\RP\RP$. Recall
+the body of the \T{Cons} branch of the \T{rec} is $\T{Cons}\LP f \pi_0 z,
+\T{force}(\pi_1\pi_1 z)\RP$. We have just shown how the \T{map} expression
+results in the term $\LP x, \LP xs',\T{delay}(E[xs'/z])\RP\RP$. This is the
+term $z$ is bound to inside the body of the \T{Cons} branch. So $\pi_0 z$ is
+the head of the list and $\pi_1\pi_1 z$ is a suspended computation representing
+the recursive call on the tail of the list. Since it is  suspended, we need to
+use the \T{force} function to evaluate it.
+
+
+\paragraph{}
+The $\T{let}(e_0,x.e_1)$ syntactic construct allows us to do function
+application in \T{map} without charging for cost. It also serves the purpose
+avoiding recomputation of values. If $e_0$ is an expensive computation that
+occurs more than once in $e_1$, we can use \T{let} to compute $e_0$ and use the
+result inside $e_1$ multiple times without paying cost multiple times.
+
+
+
 \section{Complexity Language}
 
 \paragraph{}
@@ -452,14 +456,19 @@ In the complexity language we write
 \paragraph{}
 The \T{map} function is treated as a macro $\T{map}^\Phi$ in the complexity
 language. The macro is defined by $\Phi$ and the definition mirrors the
-semantics of \T{map} in the source language.
+semantics of \T{map} in the source language. The definition is given in Figure
+\ref{fig:complexity_language_map}.
 %
+\begin{figure}
+\caption{Complexity language \T{map} macro}
+\label{fig:complexity_language_map}
 \begin{align*}
   \T{map}^t(x.E,E_0) &= E[E_0/x] \\
   \T{map}^T(x.E,E_0) &= E_0 \\
   \T{map}^{\Phi_0\times\Phi_1}(x.E,E_0) &= \LP\T{map}^{\Phi_0}(x.E,\pi_0 E_0), \T{map}^{\Phi_1}(x.E,\phi_1 E_1)\RP \\
-  \T{map}^{T \to \Phi}(x.E,E_0) = \lambda y.\T{map}^\Phi(x.E,E_0\ y)
+  \T{map}^{T \to \Phi}(x.E,E_0) &= \lambda y.\T{map}^\Phi(x.E,E_0\ y)
 \end{align*}
+\end{figure}
 %
 
 
@@ -613,7 +622,16 @@ components of the product type.
 \section{Denotational Semantics}
 
 \paragraph{}
-The denotational interpretation of the complexity language is standard. We
+The recurrences in the complexity language do not look like the recurrences one
+would expect in complexity analysis. This is because the complexity language
+recurrences contain as much information about the size of an expression as the
+source language does. In order to get recognizable recurrences, we must
+abstract values to sizes by interpreting the complexity language in a
+denotational semantics.
+
+
+
+The denotational interpretation of the complexity types are standard. We
 interpret numbers as elements of $\mathbb{Z}$, tuples of type $\tau \times
 \sigma$ as elements of the cross-product of the set of values of type $\tau$
 and the set of values of type $\sigma$, lambda expressions of type $\tau \to
@@ -622,7 +640,7 @@ set of values of type $\sigma$, and application as mathematical function
 application. The nonstandard interpretations are those of datatype constructors
 and \T{rec}. Since datatypes are programmer-defined and there are multiple
 interpretations for a single datatype, the programmer must provide their own
-translation. For example we may decide to interpret \T{list} as their length.
+interpretation. For example we may decide to interpret \T{list} as their length.
 %
 \[
   \LB \T{list} \RB = \mathbb{N}
@@ -658,10 +676,10 @@ same type. In the case of \T{list}, the restriction means the size of a $(1,
 n)$ must be strictly greater than the size of $(j, n-1)$.
 
 \paragraph{}
+\sloppypar
 In general, when we interpret a source language with programmer-defined
 datatypes, for each datatype $\Delta$ we must define an interpretation $\LB
-\Delta \RB$, a set $D^\Delta$, and a function $size : D^\Delta -> \LB \Delta
-\RB$.
+\Delta \RB$ and a function $size : D^\Delta \to \LB \Delta \RB$.
 
 
 \paragraph{}
@@ -686,10 +704,10 @@ The interpretation of \T{rec} is also nonstandard. To interpret \T{rec}, we
 introduce a semantic $case$ function.
 %
 \[
-  case^\delta : D^\delta \times \Uppi_{C} (S^{\LB \Phi_C[\delta]\RB} \to S^\tau) \to S^\tau
+  case^\delta : D^\delta \times \Uppi_{C} (\LB T\RB^{\LB \Phi_C[\delta]\RB} \to \LB T \RB^\tau) \to \LB T \RB^\tau
 \]
 %
-$S^T = \LB T \RB$ for each complexity type $T$. The interpretation of a \T{rec} is
+The interpretation of a \T{rec} is
 %
 \[
   \LB rec^\delta(E^\delta, \overline{C \mapsto x^{\phi_C[\delta \times \tau]}.E_C^\tau}) \RB \xi = \bigvee\limits_{size(z) \leq \LB E \RB \xi} case(z, \overline{f_C})
