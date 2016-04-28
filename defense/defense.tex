@@ -112,7 +112,6 @@ rev = $\lambda$xs.rec(xs,
 
 \begin{frame}{Overview}
   \begin{itemize}
-    \item<1-> Complexity analysis aims to predict the resources, most often time and space, which a program requires
     \vfill
     \item<1-> Previous work by \citet{Danner2013} and \citet{Danner2015} formalizes the extraction of recurrences for the cost of higher-order functional programs
     \vfill
@@ -124,6 +123,7 @@ rev = $\lambda$xs.rec(xs,
           \vfill
           \item<1-> We prove an interesting fact about the recurrences for the cost of programs
         \end{itemize}
+    \vfill
   \end{itemize}
 \end{frame}
 
@@ -173,7 +173,7 @@ rev = $\lambda$xs.rec(xs,
   }
 \end{frame}
 
-\begin{frame}{Higher-Order Complexity Analysis}
+\begin{frame}{Method of \citet{Danner2015}}
   \begin{itemize}
     \item<1-> Write programs in a "source language"
     \vfill
@@ -841,12 +841,14 @@ size_{list} ((i,(j,n))) &= (max\{i,j\},1 + n)
   \begin{itemize}
     \item Assign cost graphs to the evaluation of expressions
       \vfill
+    \item Tuples:
       \begin{prooftree}
         \AxiomC{$e_0 \downarrow^{n_0} v_0$}
         \AxiomC{$e_1 \downarrow^{n_1} v_1$}
         \BinaryInfC{$\LP e_0, e_1 \RP \downarrow^{n_0 \otimes n_1} \LP v_0, v_1 \RP$}
       \end{prooftree}
       \vfill
+    \item Application:
       \begin{prooftree}
         \AxiomC{$e_0 \downarrow^{n_0} \lambda x.e_0'$}
         \AxiomC{$e_1 \downarrow^{n_1} v_1$}
