@@ -32,23 +32,41 @@ program is related to the complexity language translation of the program.
 
 
 \section{Pure Potential Translation}
-Our pure potential translation is defined below. The translation of an
+Our pure potential translation is defined in Figures
+\ref{fig:pure_potential_translation_types} and
+\ref{fig:pure_potential_translation_expressions}. The translation of an
 expression is essentially the expression itself, without suspensions.
 %
-\begin{align*}
-  |x| &= x                                                                                     \\
-  |\LP\RP| &= \LP\RP                                                           \\
-  |\LP e_0, e_1 \RP | &= \LP |e_0|, |e_1| \RP                                  \\
-  |\texttt{split}(e_0, x_0. x_1. e_1)| &= |e_1|[\pi_0|e_0|/x_0, \pi_0|e_0|/x_1]                \\
-  |\lambda x.e | &= \lambda x.|e|                                                              \\
-  |e_0\ e_1| &= |e_0|\ |e_1|                                                                   \\
-  |delay(e)| &= |e|                                                                            \\
-  |force(e)| &= |e|                                                                            \\
-  |C_i^\delta e| &= C_i^\delta |e|                                                             \\
-  |rec^\delta(e, \overline{C \mapsto x.e_C})| &= rec^\delta(|e|, \overline{C \mapsto x.|e_C|}) \\
-  |map^\phi(x.v_0, v_1)| &= map^{|\phi|}(x.|v_0|, |v_1|)                                       \\
-  |let(e_0, x.e_1)| &= |e_1|[|e_0|/x]
-\end{align*}
+\begin{figure}
+  \caption{Pure Potential Translation of Types}
+  \label{fig:pure_potential_translation_types}
+  \begin{align*}
+    |\T{unit}| &= \T{unit} \\
+    |\sigma \times \tau| &= |\sigma| \times |\tau| \\
+    |\sigma \to \tau| &= |\sigma| \to |\tau| \\
+    |\T{susp}\ \tau| &= |\tau| \\
+    |\delta| &= \delta
+  \end{align*}
+\end{figure}
+%
+\begin{figure}
+  \caption{Pure Potential Translation of Expressions}
+  \label{fig:pure_potential_translation_expressions}
+  \begin{align*}
+    |x| &= x                                                                                     \\
+    |\LP\RP| &= \LP\RP                                                           \\
+    |\LP e_0, e_1 \RP | &= \LP |e_0|, |e_1| \RP                                  \\
+    |\texttt{split}(e_0, x_0. x_1. e_1)| &= |e_1|[\pi_0|e_0|/x_0, \pi_0|e_0|/x_1]                \\
+    |\lambda x.e | &= \lambda x.|e|                                                              \\
+    |e_0\ e_1| &= |e_0|\ |e_1|                                                                   \\
+    |delay(e)| &= |e|                                                                            \\
+    |force(e)| &= |e|                                                                            \\
+    |C_i^\delta e| &= C_i^\delta |e|                                                             \\
+    |rec^\delta(e, \overline{C \mapsto x.e_C})| &= rec^\delta(|e|, \overline{C \mapsto x.|e_C|}) \\
+    |map^\phi(x.v_0, v_1)| &= map^{|\phi|}(x.|v_0|, |v_1|)                                       \\
+    |let(e_0, x.e_1)| &= |e_1|[|e_0|/x]
+  \end{align*}
+\end{figure}
 %
 \section{Logical Relation}
 We define our logical relation below. The relation is between a potential and a
